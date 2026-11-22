@@ -292,6 +292,83 @@ footer a{color:var(--muted)}
   .sum-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   #navStart{display:none}
 }
+/* ===== tabs, sign-in, sync bar ===== */
+.tabbar{display:flex;gap:6px;padding:5px;border-radius:999px;background:var(--ink2);border:1.5px solid var(--line);width:max-content;max-width:100%;margin-bottom:24px}
+.tab{padding:9px 20px;border-radius:999px;font-weight:700;font-size:15px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.tab:hover{color:var(--paper)}
+.tab.on{background:var(--paper);color:var(--ink)}
+.badge{min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--orange);color:var(--ink);font-size:12px;font-weight:850;display:inline-grid;place-items:center}
+.btn.gbtn{background:#fff;color:#1f1f1f;gap:12px;padding-left:22px}
+.hero-note{margin-top:14px;max-width:34em;font-size:16px}
+.syncbar{position:fixed;left:50%;top:78px;transform:translateX(-50%);z-index:35;display:flex;gap:12px;align-items:center;padding:8px 8px 8px 18px;background:var(--yellow);color:var(--ink);border-radius:999px;font-weight:650;font-size:14px;max-width:94vw;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.syncbar .btn{background:var(--ink);color:var(--paper);box-shadow:none}
+#detail{z-index:55}
+/* ===== wizard ===== */
+.steps3{display:flex;gap:8px;list-style:none;padding:0;margin:0 0 24px}
+.steps3 li{flex:1;padding-top:8px;border-top:3px solid var(--line);font-size:13px;font-weight:700;color:var(--dim)}
+.steps3 li.on{border-color:var(--yellow);color:var(--paper)}
+.steps3 li.done{border-color:#6ff0a0;color:#6ff0a0}
+.wt{font-size:clamp(26px,4vw,34px);font-weight:850;letter-spacing:-.02em;line-height:1.1}
+.hpick{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;margin:20px 0;border-radius:14px;background:var(--ink);border:1.5px solid var(--line)}
+.hpick b{font-size:clamp(24px,5.5vw,34px);font-weight:900;font-stretch:112%;letter-spacing:-.02em;word-break:break-all;line-height:1.1}
+/* ===== trade view ===== */
+.t-head{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+.ph{font-size:20px;font-weight:800;letter-spacing:-.01em;margin-bottom:8px}
+.gate{max-width:560px;margin:30px auto;text-align:center;display:grid;gap:14px;justify-items:center;padding:40px 28px}
+.gate h2{font-size:clamp(26px,4vw,36px);font-weight:850;letter-spacing:-.02em;line-height:1.1}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin:28px 0 18px}
+.traders{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.trader{display:flex;flex-direction:column;gap:14px;padding:18px;background:var(--ink2);border:1.5px solid var(--line);border-radius:14px}
+.trader .row{display:flex;gap:12px;align-items:center}
+.tav{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:20px;color:var(--ink);background:hsl(var(--h) 85% 68%);flex:none}
+.trader .h{font-size:19px;font-weight:800;letter-spacing:-.01em;word-break:break-all}
+.trader small{color:var(--muted);font-size:14px}
+.tstats{display:flex;gap:18px;font-size:14px;color:var(--muted)}.tstats b{color:var(--paper);font-weight:800}
+.offer{background:var(--ink2);border:1.5px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+.offer-h{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.offer-b{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin:18px 0}
+.offer-b small{display:block;color:var(--muted);font-size:13px;margin-bottom:8px}
+.stackrow{display:flex;flex-wrap:wrap;gap:8px}
+.swap{font-size:28px;color:var(--dim)}
+.offer-a{display:flex;gap:10px;flex-wrap:wrap}
+.mini.lg{width:62px;border-radius:9px;padding:3px;cursor:pointer;transition:transform .15s}
+.mini.lg:hover{transform:translateY(-3px)}
+.mini.lg img{border-radius:6px}
+.status{padding:4px 12px;border-radius:99px;font-size:13px;font-weight:750;border:1.5px solid}
+.st-pending{color:var(--yellow);border-color:var(--yellow)}.st-accepted{color:#6ff0a0;border-color:#6ff0a0}.st-declined{color:#ff9b8a;border-color:#ff9b8a}.st-cancelled{color:var(--dim);border-color:var(--line)}
+/* ===== composer ===== */
+.comp-box{position:relative;display:flex;flex-direction:column;width:min(1120px,100%);height:min(860px,calc(100vh - 32px));background:var(--ink2);border:1.5px solid var(--line);border-radius:18px;overflow:hidden}
+.comp-h{padding:22px 76px 14px 26px}
+.comp-h h3{font-size:clamp(22px,3vw,30px);font-weight:850;letter-spacing:-.02em;line-height:1.1;word-break:break-all}
+.comp-tabs{display:none;gap:8px;padding:0 20px 12px}
+.comp-tabs button{flex:1;padding:10px;border-radius:999px;border:1.5px solid var(--line);font-weight:700;font-size:14px}
+.comp-tabs button.on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.comp-cols{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:0;border-top:1.5px solid var(--line)}
+.comp-cols section{display:flex;flex-direction:column;min-height:0;padding:16px 18px 0}
+.comp-cols section+section{border-left:1.5px solid var(--line)}
+.col-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.col-h h4{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.col-h span{font-size:14px}
+.csearch{background:var(--ink);border:1.5px solid var(--line);color:var(--paper);font:inherit;font-size:14px;padding:8px 14px;border-radius:999px;outline:none;min-width:0;width:170px}
+.csearch:focus{border-color:var(--yellow)}
+.pgrid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:14px;align-content:start;padding:4px 4px 20px}
+.pk{position:relative;cursor:pointer;border-radius:14px;outline-offset:4px;transition:transform .15s}
+.pk:hover{transform:translateY(-3px)}
+.pk.sel{outline:3px solid var(--yellow)}
+.pk .tick{position:absolute;top:-6px;right:-6px;width:26px;height:26px;border-radius:50%;background:var(--yellow);color:var(--ink);font-weight:900;font-size:15px;display:none;place-items:center;z-index:3}
+.pk.sel .tick{display:grid}
+.comp-f{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 22px;border-top:1.5px solid var(--line);background:var(--ink)}
+#cSummary b{color:var(--paper)}
+@media (max-width:900px){
+  .t-head{grid-template-columns:1fr}
+  .comp-tabs{display:flex}
+  .comp-cols{grid-template-columns:1fr}
+  .comp-cols section+section{border-left:0}
+  .comp-cols[data-tab=give] #colGet,.comp-cols[data-tab=get] #colGive{display:none}
+  .offer-b{grid-template-columns:1fr}.swap{transform:rotate(90deg);justify-self:start}
+}
+@media (max-width:520px){.tab{padding:9px 14px}.comp-f .btn{width:100%}.csearch{width:130px}}
+
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -306,11 +383,11 @@ footer a{color:var(--muted)}
       <button class="btn sm" id="navPack" data-act="open-pack">Open pack</button>
       <details class="menu" id="menu"><summary class="icon-btn" aria-label="Menu">&#8943;</summary>
         <div class="menu-pop">
-          <button data-act="home">Change username</button>
           <button data-act="refresh">Refresh from Last.fm</button>
           <button data-act="pick">Load a Spotify export</button>
           <button data-act="invite">Invite a friend</button>
           <button data-act="reset">Reset my collection</button>
+          <button data-act="signout">Sign out</button>
         </div>
       </details>
     </div>
@@ -322,13 +399,10 @@ footer a{color:var(--muted)}
     <div class="hero">
       <div>
         <h1 class="display">The weirder your taste, the rarer your cards.</h1>
-        <p class="lead">Type your Last.fm username. Every song you play becomes a trading card, rated by how few people listen to it.</p>
-        <form class="lookup" id="lookup" autocomplete="off">
-          <label class="sr" for="luser">Last.fm username</label>
-          <input id="luser" type="text" placeholder="Your Last.fm username" autocapitalize="off" spellcheck="false">
-          <button class="btn lg" type="submit">Make my cards</button>
-        </form>
+        <p class="lead">Sign in, link your Last.fm, and every song you play becomes a trading card, rated by how few people listen to it. Then trade your finds with other collectors.</p>
+        <div style="margin-top:30px"><button class="btn lg gbtn" type="button" data-act="start"><svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continue with Google</button></div>
         <p id="formMsg" class="form-msg" role="status"></p>
+        <p class="hero-note muted">New here? We'll set you up in three quick steps: Google, Last.fm, and a random in-game name.</p>
         <div id="keyBox" class="hidden"><input id="lfm" type="text" placeholder="Site owner: paste your Last.fm API key"></div>
         <div class="hero-links"><button class="link" type="button" data-act="demo">Try a demo collection</button><a href="#connect">I don't have Last.fm yet</a></div>
       </div>
@@ -340,9 +414,9 @@ footer a{color:var(--muted)}
     <h2 class="h2">Your listening, graded.</h2>
     <p class="sub">Streamdex reads your most-played songs, checks how many people worldwide listen to each one, and prints a card to match.</p>
     <div class="steps">
-      <div class="step"><div class="n">1</div><h3>Enter your username</h3><p>We load your top 250 songs from your public Last.fm profile. No password, no sign-up on our side.</p></div>
+      <div class="step"><div class="n">1</div><h3>Create your account</h3><p>Sign in with Google, link your Last.fm, and get a random in-game name. We load your top 250 songs from your public profile.</p></div>
       <div class="step"><div class="n">2</div><h3>We rate every song</h3><p>The fewer listeners a song has, the higher its rarity. A bedroom demo with 300 listeners outranks a stadium hit.</p></div>
-      <div class="step"><div class="n">3</div><h3>Open packs</h3><p>Each pack holds five cards from your collection. Rare pulls glow, and Mythic Secrets are the ones to chase.</p></div>
+      <div class="step"><div class="n">3</div><h3>Open packs, then trade</h3><p>Each pack holds five cards. Rare pulls glow, and Mythic Secrets are the ones to chase. Swap favourites with other collectors.</p></div>
     </div>
   </div></section>
 
@@ -377,17 +451,18 @@ footer a{color:var(--muted)}
   <section class="block faq" id="faq"><div class="wrap">
     <h2 class="h2">Questions</h2>
     <div style="margin-top:30px">
-      <details><summary>Is my data safe?</summary><p>Your username goes to Last.fm to fetch your public top songs. Your cards and binder are saved in this browser. If you sign in with Google, they are also saved to your private account so they follow you to other devices; nobody else can read them. A Spotify export is read on your device and never uploaded.</p></details>
+      <details><summary>Is my data safe?</summary><p>Your cards are saved to your private account, and your Last.fm username is only used to fetch your public top songs. To make trading possible, your in-game name and the cards you own are visible to other signed-in players. Your Google name and email are never shown. A Spotify export is read on your device and never uploaded.</p></details>
       <details><summary>Why Last.fm and not a Spotify login?</summary><p>Spotify limits new apps to a handful of approved users, so a public game can't log everyone in. Last.fm is open, free, and works with a username.</p></details>
       <details><summary>How is rarity decided?</summary><p>By how many people have listened to the song on Last.fm. Fewer listeners means a rarer card. Songs Last.fm can't find count as the most obscure.</p></details>
       <details><summary>How often can I open packs?</summary><p>You start with five packs, and one more arrives every 20 minutes up to five. Cards you discover are yours to keep.</p></details>
-      <details><summary>What does signing in with Google do?</summary><p>It saves your collection and pack timer to your account, so you can pick up on any device and never lose your cards if you clear your browser. We only use your Google account for sign-in. Songs and listening history are not shared with Google.</p></details>
+      <details><summary>How does trading work?</summary><p>Browse other collectors, pick up to five cards each way, and send an offer. Your cards are held safely while the offer is open. If they accept, the swap happens instantly. If they decline or you cancel, your cards come straight back. It's all free.</p></details>
       <details><summary>Is this connected to Spotify?</summary><p>No. Streamdex is a fan project and isn't affiliated with, or endorsed by, Spotify or Last.fm.</p></details>
     </div>
   </div></section>
 </main>
 
 <main id="app" class="app hidden"><div class="wrap">
+  <div class="tabbar" id="tabsA"></div>
   <section class="profile" id="profile"></section>
   <div class="tools">
     <label class="sr" for="q">Search your cards</label>
@@ -398,6 +473,13 @@ footer a{color:var(--muted)}
   </div>
   <div class="chips" id="chips"></div>
   <div class="grid" id="grid"></div>
+</div></main>
+
+<main id="trade" class="app hidden"><div class="wrap">
+  <div class="tabbar" id="tabsT"></div>
+  <div id="tradeHead"></div>
+  <div class="seg" id="tradeSeg"></div>
+  <div id="tpane"></div>
 </div></main>
 
 <footer><div class="wrap"><span>Streamdex is a fan project, not affiliated with Spotify or Last.fm.</span><span>Music data from <a href="https://www.last.fm" target="_blank" rel="noopener">Last.fm</a></span></div>
@@ -414,22 +496,21 @@ footer a{color:var(--muted)}
   </div>
 </div>
 
-<div id="setup" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="setupT">
+<div id="wizard" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="wizT">
   <div class="modal-bg"></div>
-  <div class="modal-box" style="grid-template-columns:1fr;max-width:540px">
-    <div>
-      <h3 id="setupT" style="font-size:30px;font-weight:850;letter-spacing:-.02em;line-height:1.1">One last step</h3>
-      <p class="muted" id="setupP" style="margin:12px 0 4px">Enter your Last.fm username once and we'll remember it with your account. You won't need to type it again.</p>
-      <form class="lookup" id="setupForm" autocomplete="off" style="margin-top:18px">
-        <label class="sr" for="suser">Last.fm username</label>
-        <input id="suser" type="text" placeholder="Your Last.fm username" autocapitalize="off" spellcheck="false">
-        <button class="btn lg" type="submit">Make my cards</button>
-      </form>
-      <p id="setupMsg" class="form-msg" role="status"></p>
-      <button class="link muted" type="button" data-act="setup-skip">Skip for now</button>
-    </div>
+  <div class="modal-box" style="grid-template-columns:1fr;max-width:560px;align-items:start"><div id="wizBody"></div></div>
+</div>
+<div id="composer" class="modal hidden" role="dialog" aria-modal="true" aria-label="Build a trade">
+  <div class="modal-bg" data-act="composer-close"></div>
+  <div class="comp-box">
+    <button class="x" data-act="composer-close" aria-label="Close">&times;</button>
+    <div class="comp-h"><h3>Trade with <span id="cHandle"></span></h3><p class="muted" style="margin-top:4px">Pick up to five cards each way. Your cards are held safely until they answer.</p></div>
+    <div class="comp-tabs"><button type="button" data-ctab="give" class="on">You give <span id="cgN">0</span></button><button type="button" data-ctab="get">You get <span id="ctN">0</span></button></div>
+    <div class="comp-cols" data-tab="give"><section id="colGive"></section><section id="colGet"></section></div>
+    <div class="comp-f"><div id="cSummary" class="muted"></div><button class="btn lg" id="cSend" data-act="send-offer" disabled>Send offer</button></div>
   </div>
 </div>
+<div id="syncBar" class="syncbar hidden" role="status"><span id="syncTxt"></span><button class="btn sm" id="syncRetry" data-act="retry-sync">Retry</button></div>
 <div id="stage" class="stage hidden" role="dialog" aria-modal="true" aria-label="Open a pack">
   <button class="x" data-act="stage-close" aria-label="Close">&times;</button>
   <div id="packStep">
@@ -621,7 +702,7 @@ function cardHTML(c, total){
     <div class="shade"></div>
     <div class="top"><span class="pill">${r.stars} ${r.name}</span><span class="hp">HP <b>${hp}</b></span></div>
     <div class="info">
-      <div class="type"><span><i></i>${esc(c.type)}</span><em>#${String(c.no).padStart(3,"0")}/${total}</em></div>
+      <div class="type"><span><i></i>${esc(c.type)}</span><em>${c.traded ? "Traded" : "#" + String(c.no).padStart(3,"0") + "/" + total}</em></div>
       <div class="nm">${esc(c.name)}</div>
       <div class="ar">${esc(c.artist)}</div>
       <div class="stats"><div><b>${c.plays}</b><span>plays</span></div><div><b>${l}</b><span>listeners</span></div><div><b>${rs}</b><span>rarity</span></div></div>
@@ -702,7 +783,7 @@ function spendPack(){
   p.n -= 1; ls.set("packs:"+USER, p); return true;
 }
 function updatePacks(){
-  if($("#app").classList.contains("hidden")) return;
+  if($("#navApp").classList.contains("hidden")) return;
   const s = packs(), inf = isInfinite(), left = CARDS.length - revealed().size;
   const label = left <= 0 ? "Collection complete" : inf ? "Open pack" : s.n > 0 ? `Open pack (${s.n})` : `Next pack in ${fmtTime(s.next)}`;
   const nb = $("#navPack"); if(nb){ nb.textContent = label; nb.disabled = left <= 0 || (!inf && s.n < 1); }
@@ -736,25 +817,28 @@ function renderLedger(){
     <span class="th muted">${i === 5 ? fmtN(lis(75))+"+ listeners" : "Under about "+fmtN(lis(r.max))+" listeners"}</span><span class="pct">${r.odds}%</span></li>`).join("");
 }
 function visibleCards(){
-  const rev = revealed(), q = QUERY.trim().toLowerCase();
-  const list = CARDS.filter(c => (FILTER === "all" || rarityFor(c.niche).key === FILTER) && (!HIDE_LOCKED || rev.has(c.id)) && (!q || (rev.has(c.id) && (c.name+" "+c.artist).toLowerCase().includes(q))));
-  if(SORT === "plays") list.sort((a,b) => (rev.has(b.id)-rev.has(a.id)) || (rev.has(a.id) ? b.plays-a.plays : a.no-b.no));
-  else if(SORT === "az") list.sort((a,b) => (rev.has(b.id)-rev.has(a.id)) || (rev.has(a.id) ? a.name.localeCompare(b.name) : a.no-b.no));
-  else list.sort((a,b) => a.no-b.no);
+  const isO = ownedPred(), q = QUERY.trim().toLowerCase();
+  const match = c => (FILTER === "all" || rarityFor(c.niche).key === FILTER) && (!q || (isO(c) && (c.name+" "+c.artist).toLowerCase().includes(q)));
+  const list = [...CARDS.filter(c => match(c) && (!HIDE_LOCKED || isO(c))), ...extrasList().filter(match)];
+  const o = c => isO(c) ? 1 : 0, no = c => c.no || 0;
+  if(SORT === "plays") list.sort((a,b) => (o(b)-o(a)) || (isO(a) ? b.plays-a.plays : no(a)-no(b)));
+  else if(SORT === "az") list.sort((a,b) => (o(b)-o(a)) || (isO(a) ? a.name.localeCompare(b.name) : no(a)-no(b)));
+  else list.sort((a,b) => a.niche-b.niche || b.plays-a.plays);
   return list;
 }
 function renderProfile(){
-  const rev = revealed(), owned = CARDS.filter(c => rev.has(c.id));
-  const power = owned.reduce((s,c) => s + RARITIES[rarityIdx(c)].pts, 0);
+  const isO = ownedPred(), all = ownedCards(), mine = CARDS.filter(isO), exN = all.length - mine.length;
+  const power = all.reduce((s,c) => s + RARITIES[rarityIdx(c)].pts, 0);
   const rank = [...RANKS].reverse().find(r => power >= r[0])[1];
-  const rarest = owned.length ? owned.reduce((a,b) => a.niche <= b.niche ? a : b) : null;
-  const pct = CARDS.length ? Math.round(owned.length/CARDS.length*100) : 0;
-  const name = USER === "demo" ? "Demo" : (UNAME || "You");
+  const rarest = all.length ? all.reduce((a,b) => a.niche <= b.niche ? a : b) : null;
+  const pct = CARDS.length ? Math.round(mine.length/CARDS.length*100) : 0;
+  const name = USER === "demo" ? "Demo" : (HANDLE || UNAME || "You");
+  const subline = HANDLE && UNAME ? `${rank} · Last.fm ${UNAME}` : rank;
   $("#profile").innerHTML = `
    <div class="panel">
-     <div class="who"><div class="avatar" aria-hidden="true">${esc(name[0].toUpperCase())}</div><div><h2>${esc(name)}'s collection</h2><div class="muted">${esc(rank)}</div></div></div>
+     <div class="who"><div class="avatar" aria-hidden="true">${esc(name[0].toUpperCase())}</div><div><h2>${esc(name)}${HANDLE ? "" : "'s collection"}</h2><div class="muted">${esc(subline)}</div></div></div>
      <div class="kpis">
-       <div class="kpi"><span>Discovered</span><b class="num">${owned.length}<span style="display:inline;font-size:16px;font-weight:600;color:var(--muted)"> / ${CARDS.length}</span></b></div>
+       <div class="kpi"><span>Discovered</span><b class="num">${mine.length}<span style="display:inline;font-size:16px;font-weight:600;color:var(--muted)"> / ${CARDS.length}${exN ? " +" + exN + " traded" : ""}</span></b></div>
        <div class="kpi"><span>Collection power</span><b class="num">${power.toLocaleString()}</b></div>
        <div class="kpi"><span>Rarest find</span><b>${rarest ? esc(rarest.name) : "None yet"}</b></div>
      </div>
@@ -764,28 +848,29 @@ function renderProfile(){
      <div><div class="muted">Packs ready</div><div class="packs-n num" id="pkN"></div><div class="muted" id="pkTimer" style="margin-top:6px"></div></div>
      <div class="packdots" id="pkDots"></div>
      <button class="btn lg" id="pkOpen" data-act="open-pack">Open a pack</button>
-     <div class="sync" id="syncMsg">${AUTH_USER ? "Saved to your account" : (cloudReady() ? "Sign in with Google to save across devices" : "")}</div>
+     <div class="sync" id="syncMsg">${AUTH_USER ? "Saved to your account" : (cloudReady() ? "Sign in with Google to save across devices and trade" : "")}</div>
    </div>`;
   updatePacks();
 }
 function renderChips(){
-  const rev = revealed(), counts = {}; CARDS.filter(c => rev.has(c.id)).forEach(c => { const k = rarityFor(c.niche).key; counts[k] = (counts[k]||0)+1; });
-  const owned = CARDS.filter(c => rev.has(c.id)).length;
-  $("#chips").innerHTML = `<button class="chip ${FILTER==="all"?"on":""}" data-filter="all">All <span class="num">${owned}</span></button>` +
+  const all = ownedCards(), counts = {}; all.forEach(c => { const k = rarityFor(c.niche).key; counts[k] = (counts[k]||0)+1; });
+  $("#chips").innerHTML = `<button class="chip ${FILTER==="all"?"on":""}" data-filter="all">All <span class="num">${all.length}</span></button>` +
     RARITIES.map(r => `<button class="chip ${FILTER===r.key?"on":""}" data-filter="${r.key}" style="--c1:${r.c1}"><i></i>${r.name} <span class="num">${counts[r.key]||0}</span></button>`).join("");
 }
 function renderGrid(){
-  const rev = revealed(), list = visibleCards();
-  $("#grid").innerHTML = list.length ? list.map(c => rev.has(c.id)
+  const isO = ownedPred(), lost = lostSet(), list = visibleCards();
+  $("#grid").innerHTML = list.length ? list.map(c => isO(c)
     ? `<div class="cell" role="button" tabindex="0" data-open="${esc(c.id)}" aria-label="${esc(c.name)} by ${esc(c.artist)}">${cardHTML(c, CARDS.length)}</div>`
+    : lost.has(c.id) ? `<div class="slot" data-gone="1"><b>&#8644;</b><span>#${String(c.no).padStart(3,"0")} traded</span></div>`
     : `<div class="slot" data-locked="1"><b>?</b><span>#${String(c.no).padStart(3,"0")}</span></div>`).join("")
     : `<div class="empty">No cards match. Clear the search or pick another rarity.</div>`;
 }
 function renderAll(){ renderProfile(); renderChips(); renderGrid(); }
 
 /* ----- views ----- */
-function showApp(){ $("#landing").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); window.scrollTo(0,0); renderAll(); }
-function showLanding(){ $("#app").classList.add("hidden"); $("#landing").classList.remove("hidden"); $("#navLand").classList.remove("hidden"); $("#navApp").classList.add("hidden"); document.body.classList.remove("inapp"); window.scrollTo(0,0); }
+function showApp(){ $("#landing").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "app"; window.scrollTo(0,0); renderTabs(); renderAll(); }
+function showTrade(){ $("#landing").classList.add("hidden"); $("#app").classList.add("hidden"); $("#trade").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "trade"; window.scrollTo(0,0); renderTrade(true); if(TSUB === "find") loadTraders(TQ); }
+function showLanding(){ $("#app").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#landing").classList.remove("hidden"); $("#navLand").classList.remove("hidden"); $("#navApp").classList.add("hidden"); document.body.classList.remove("inapp"); VIEW = "landing"; window.scrollTo(0,0); }
 function startGame(id, name){
   USER = id; UNAME = name || ""; FILTER = "all"; QUERY = ""; $("#q").value = "";
   ls.set("cards", CARDS); ls.set("userid", id); ls.set("uname", UNAME);
@@ -808,10 +893,10 @@ function fail(e){
 }
 
 /* ----- load flows ----- */
-async function handleUser(){
-  const name = $("#luser").value.trim().replace(/^@/, "");
+async function handleUser(nameArg){
+  const name = String(nameArg || "").trim().replace(/^@/, "");
   const fm = $("#formMsg"); fm.classList.remove("err"); fm.textContent = "";
-  if(!name){ fm.textContent = "Enter your Last.fm username to start."; fm.classList.add("err"); $("#luser").focus(); return; }
+  if(!name){ toast("Enter your Last.fm username first."); return; }
   const key = lfmKey();
   if(!key){ fm.textContent = "This site needs a Last.fm API key. The owner can add one below."; fm.classList.add("err"); $("#keyBox").classList.remove("hidden"); return; }
   if(!confirmReplace("lfm:" + name.toLowerCase())) return;
@@ -838,7 +923,7 @@ async function handleFiles(fileList){
 /* ================= card detail ================= */
 let DLIST = [], DI = 0;
 function openDetail(id){
-  const rev = revealed(); DLIST = visibleCards().filter(c => rev.has(c.id)); DI = DLIST.findIndex(c => c.id === id); if(DI < 0) return;
+  DLIST = visibleCards().filter(ownedPred()); DI = DLIST.findIndex(c => c.id === id); if(DI < 0) return;
   paintDetail(); $("#detail").classList.remove("hidden"); document.body.classList.add("noscroll"); $("#detail .x").focus();
 }
 function paintDetail(){
@@ -876,7 +961,7 @@ async function cardCanvas(c){
   const pill = `${r.stars} ${r.name}`; g.font = `750 24px ${F}`; const pw = g.measureText(pill).width + 44;
   rr(g,46,46,pw,48,24); g.fillStyle = "rgba(10,12,38,.7)"; g.fill(); g.lineWidth = 3; g.strokeStyle = r.c1; g.stroke(); g.fillStyle = "#fff"; g.textBaseline = "middle"; g.fillText(pill, 68, 71);
   g.textBaseline = "alphabetic"; g.fillStyle = r.c1; g.font = `650 26px ${F}`; g.fillText(c.type, 54, 700);
-  g.fillStyle = "rgba(255,255,255,.6)"; g.textAlign = "right"; g.fillText(`#${String(c.no).padStart(3,"0")}/${CARDS.length}`, W-54, 700); g.textAlign = "left";
+  g.fillStyle = "rgba(255,255,255,.6)"; g.textAlign = "right"; g.fillText(c.traded ? "TRADED" : `#${String(c.no).padStart(3,"0")}/${CARDS.length}`, W-54, 700); g.textAlign = "left";
   g.fillStyle = "#fff"; g.font = `850 62px ${F}`;
   const words = c.name.split(" "), lines = []; let cur = "";
   for(const w of words){ const t = cur ? cur+" "+w : w; if(g.measureText(t).width > W-108 && cur){ lines.push(cur); cur = w; } else cur = t; }
@@ -985,18 +1070,30 @@ function showSummary(){
 
 /* ================= events ================= */
 const actions = {
-  "home": () => { $("#menu")?.removeAttribute("open"); showLanding(); },
+  "home": () => { if(CARDS.length) (VIEW === "trade" ? showTrade() : showApp()); else showLanding(); },
   "sound": () => { Snd.on = !Snd.on; ls.set("snd", Snd.on); paintSound(); if(Snd.on) Snd.flip(); },
   "demo": () => { CARDS = demoCards(); USER = "demo"; UNAME = "Demo"; FILTER = "all"; QUERY = ""; $("#q").value = ""; showApp(); if(revealed().size === 0) setTimeout(openStage, 600); },
   "pick": () => { $("#menu")?.removeAttribute("open"); $("#files").click(); },
   "invite": async () => { $("#menu")?.removeAttribute("open"); const url = location.origin + location.pathname;
     if(navigator.share){ try{ await navigator.share({ title:"Streamdex", text:"Turn your listening into rare trading cards.", url }); return; }catch{} }
     try{ await navigator.clipboard.writeText(url); toast("Link copied. Send it to a friend."); }catch{ toast(url); } },
-  "reset": () => { $("#menu")?.removeAttribute("open"); if(!confirm(AUTH_USER ? "Clear this collection, on this device and in your saved account, and start over? This can't be undone." : "Clear this collection and start over? This can't be undone.")) return;
-    cloudDelete(); ["cards","userid","uname","revealed:"+USER,"packs:"+USER].forEach(k => ls.del(k)); CARDS = []; USER = "me"; showLanding(); },
+  "reset": async () => { $("#menu")?.removeAttribute("open");
+    if(TRADES.some(t => t.status === "pending")){ toast("Finish or cancel your open trades first."); return; }
+    if(!confirm("Reset your collection? Your cards, progress and traded cards are cleared and you start fresh. Your in-game name stays. This can't be undone.")) return;
+    const name = lfmName(); ["revealed:"+USER, "packs:"+USER, "lost", "extras"].forEach(k => ls.del(k));
+    if(cloudReady() && AUTH_USER){ try{ await uref().set({ revealed:[], packs:null, lost:[], extras:[], cards:[] }, { merge:true }); }catch{} }
+    if(name) handleUser(name); else { CARDS = []; USER = "me"; showLanding(); } },
   "auth": () => { AUTH_USER ? signOutGoogle() : signInGoogle(); },
-  "refresh": () => { $("#menu")?.removeAttribute("open"); const n = lfmName(); if(!n){ toast("Enter your Last.fm username first."); showLanding(); return; } $("#luser").value = n; handleUser(); },
-  "setup-skip": closeSetup,
+  "signout": () => { $("#menu")?.removeAttribute("open"); signOutGoogle(); },
+  "start": () => { AUTH_USER ? cloudPull() : signInGoogle(); },
+  "tab-col": showApp, "tab-trade": showTrade,
+  "trade-refresh": () => loadTraders(TQ),
+  "composer-close": closeComposer, "send-offer": sendOffer,
+  "wiz-roll": () => { WIZ.handle = genHandle(); const h = $("#hName"); if(h) h.textContent = WIZ.handle; },
+  "wiz-claim": wizClaim, "wiz-open": () => openWizard(HANDLE ? 2 : (CARDS.length ? 3 : 2)),
+  "wiz-signout": signOutGoogle,
+  "retry-sync": async () => { setBanner(null); if(AUTH_USER){ const ok = await cloudSaveNow(); if(!ok) return; if(!CARDS.length) cloudPull(); } },
+  "refresh": () => { $("#menu")?.removeAttribute("open"); const n = lfmName(); if(!n){ toast("Link your Last.fm first."); return; } handleUser(n); },
   "open-pack": openStage,
   "tear": tearPack,
   "again": () => { const s = packs(); if(!isInfinite() && s.n < 1) return; showStep("pack"); $("#packBtn").className = "pack"; PACK_BUSY = false; PACK = null; $("#packBtn").focus(); },
@@ -1009,38 +1106,76 @@ document.addEventListener("click", e => {
   const a = e.target.closest("[data-act]");
   if(a){ const f = actions[a.dataset.act]; if(f){ if(a.tagName === "A") e.preventDefault(); f(a, e); return; } }
   const fl = e.target.closest("[data-filter]"); if(fl){ FILTER = fl.dataset.filter; renderChips(); renderGrid(); return; }
+  if(tradeClick(e)) return;
   const op = e.target.closest("[data-open]"); if(op){ openDetail(op.dataset.open); return; }
+  if(e.target.closest("[data-gone]")){ toast("You traded this card away."); return; }
   if(e.target.closest("[data-locked]")){ toast("Open packs to discover this card."); return; }
   if(e.target.closest("#stack")) advance();
   if($("#menu")?.open && !e.target.closest("#menu")) $("#menu").removeAttribute("open");
 });
 document.addEventListener("keydown", e => {
-  if(e.key === "Escape"){ if(!$("#detail").classList.contains("hidden")) closeDetail(); else if(!$("#stage").classList.contains("hidden")) closeStage(); return; }
+  if(e.key === "Escape"){ if(!$("#detail").classList.contains("hidden")) closeDetail(); else if(!$("#composer").classList.contains("hidden")) closeComposer(); else if(!$("#stage").classList.contains("hidden")) closeStage(); return; }
   if(!$("#detail").classList.contains("hidden")){ if(e.key === "ArrowLeft") stepDetail(-1); if(e.key === "ArrowRight") stepDetail(1); return; }
   if(!$("#stage").classList.contains("hidden") && !$("#dealStep").classList.contains("hidden") && (e.key === " " || e.key === "Enter")){ e.preventDefault(); advance(); return; }
-  if((e.key === "Enter" || e.key === " ") && e.target.matches?.(".cell")){ e.preventDefault(); openDetail(e.target.dataset.open); }
+  if((e.key === "Enter" || e.key === " ") && e.target.matches?.(".cell,.pk,.mini[data-prev]")){ e.preventDefault(); e.target.click(); }
 });
-$("#setupForm").addEventListener("submit", e => { e.preventDefault(); const v = $("#suser").value.trim().replace(/^@/, "");
-  if(!v){ $("#setupMsg").textContent = "Enter your Last.fm username."; return; }
-  closeSetup(); $("#luser").value = v; handleUser(); });
-$("#lookup").addEventListener("submit", e => { e.preventDefault(); handleUser(); });
 $("#files").addEventListener("change", e => { if(e.target.files.length) handleFiles(e.target.files); e.target.value = ""; });
 $("#q").addEventListener("input", e => { QUERY = e.target.value; renderGrid(); });
 $("#sort").addEventListener("change", e => { SORT = e.target.value; renderGrid(); });
 $("#lfm").addEventListener("change", () => ls.set("lfm", $("#lfm").value.trim()));
 
-/* ================= Google sign-in + cloud save (Firebase, free Spark plan) ================= */
+/* ================= account, cloud save and trading (Firebase free tier) ================= */
 let AUTH = null, DB = null, AUTH_USER = null, CLOUD_META = null, saveT = null, syncWarned = false;
+let HANDLE = ls.get("handle", ""), VIEW = "landing", TRADES = [], tradeUnsub = null, TSUB = "find", TQ = "", TRADERS = [], TLOAD = false, COMP = null, WIZ = { step:0, handle:"", build:null, busy:false }, QUEUE = Promise.resolve(), tqT = null;
+const APPLYING = new Set(), PREV = new Map();
 const cloudReady = () => !!(AUTH && DB);
 const lfmName = () => ls.get("lfmuser", "") || (USER.startsWith("lfm:") ? USER.slice(4) : "");
-function openSetup(){
-  const f = (AUTH_USER?.displayName || "").split(" ")[0];
-  $("#setupT").textContent = f ? `Welcome, ${f}` : "One last step";
-  $("#suser").value = lfmName(); $("#setupMsg").textContent = "";
-  $("#setup").classList.remove("hidden"); document.body.classList.add("noscroll"); $("#suser").focus();
+const uref = () => DB.collection("users").doc(AUTH_USER.uid);
+const pref = () => DB.collection("profiles").doc(AUTH_USER.uid);
+const iref = () => DB.collection("inventories").doc(AUTH_USER.uid);
+const lostSet = () => USER === "demo" ? new Set() : new Set(ls.get("lost", []));
+const extrasList = () => USER === "demo" ? [] : ls.get("extras", []);
+function ownedPred(){ const rev = revealed(), lost = lostSet(); return c => !!c.traded || (rev.has(c.id) && !lost.has(c.id)); }
+function ownedCards(){ const rev = revealed(), lost = lostSet(); return [...CARDS.filter(c => rev.has(c.id) && !lost.has(c.id)), ...extrasList()]; }
+const hueOf = s => [...String(s)].reduce((a,c) => (a*31 + c.charCodeAt(0)) % 360, 7);
+const ago = ms => { const s = Math.floor((Date.now()-ms)/1000); if(s < 60) return "just now"; const m = Math.floor(s/60); if(m < 60) return m+"m ago"; const h = Math.floor(m/60); return h < 24 ? h+"h ago" : Math.floor(h/24)+"d ago"; };
+
+/*INV*/
+const isHome = c => c.id.startsWith("t:");
+function invOf(x){ x = x || {}; return { revealed:x.revealed||[], lost:[...(x.lost||[])], extras:[...(x.extras||[])], applied:[...(x.applied||[])] }; }
+function ownsCard(d, c){ return isHome(c) ? (d.revealed.includes(c.id) && !d.lost.includes(c.id)) : d.extras.some(e => e.id === c.id); }
+function removeCard(d, c){ if(isHome(c)){ if(!d.lost.includes(c.id)) d.lost.push(c.id); } else d.extras = d.extras.filter(e => e.id !== c.id); }
+function returnCard(d, c){ if(isHome(c)) d.lost = d.lost.filter(x => x !== c.id); else if(!d.extras.some(e => e.id === c.id)) d.extras.push(c); }
+function addIncoming(d, c){
+  const raw = c.raw || c.id.replace(/^t:/, ""), home = "t:" + raw;
+  if(d.lost.includes(home)){ d.lost = d.lost.filter(x => x !== home); return; }
+  d.extras.push({ ...c, raw, traded:true, id:"x:" + raw + "#" + Math.random().toString(36).slice(2,8) });
 }
-function closeSetup(){ $("#setup").classList.add("hidden"); document.body.classList.remove("noscroll"); }
-function setSync(t, ok){ let el = $("#syncMsg"); if(!el) return; el.textContent = t; el.classList.toggle("ok", !!ok); }
+const tradeCard = c => ({ ...c, raw: c.raw || c.id.replace(/^t:/, "") });
+/*END INV*/
+function mirror(d){ ls.set("lost", d.lost); ls.set("extras", d.extras); ls.set("applied", d.applied); }
+function refreshViews(){ if(VIEW === "app") renderAll(); else if(VIEW === "trade") renderTrade(true); }
+
+/* ----- messages ----- */
+function setSync(t, ok){ const el = $("#syncMsg"); if(!el) return; el.textContent = t; el.classList.toggle("ok", !!ok); }
+function setBanner(msg, retry){ const b = $("#syncBar"); if(!msg){ b.classList.add("hidden"); return; } $("#syncTxt").textContent = msg; $("#syncRetry").classList.toggle("hidden", !retry); b.classList.remove("hidden"); }
+function cloudErrText(e){
+  const c = String((e && e.code) || "");
+  if(/permission-denied/.test(c)) return "Cloud save is blocked by your Firestore rules. Publish the latest rules in the Firebase console.";
+  if(/unavailable|network|deadline/.test(c)) return "Couldn't reach Firebase. An ad blocker or network filter may be blocking it.";
+  if(/not-found|failed-precondition/.test(c)) return "The Firestore database isn't set up yet. Create it in the Firebase console.";
+  if(/unauthenticated/.test(c)) return "You're signed out. Sign in again.";
+  return "Cloud sync problem" + (c ? " (" + c + ")" : "") + ".";
+}
+function tradeErrText(e){
+  const c = e && e.code;
+  if(c === "not-owned") return "You don't have one of those cards any more.";
+  if(c === "trade-gone") return "That offer isn't available any more.";
+  return cloudErrText(e);
+}
+function flashBanner(text, color){ const b = $("#banner"); b.textContent = text; b.style.setProperty("--bc", color); b.classList.remove("show"); void b.offsetWidth; b.classList.add("show"); }
+
+/* ----- auth ----- */
 function paintAuth(){
   const b = $("#authBtn"); if(!b) return;
   if(AUTH_USER){
@@ -1054,8 +1189,9 @@ function initCloud(){
   if(!window.firebase || !cfg || !cfg.apiKey || !cfg.projectId) return;
   try{
     firebase.initializeApp(cfg); AUTH = firebase.auth(); DB = firebase.firestore();
+    try{ DB.settings({ experimentalAutoDetectLongPolling:true, merge:true }); }catch{}
     AUTH.getRedirectResult().catch(e => { if(e && e.code !== "auth/no-auth-event") toast("Sign-in failed. Try again."); });
-    AUTH.onAuthStateChanged(async u => { AUTH_USER = u; paintAuth(); CLOUD_META = null; if(u) await cloudPull(); });
+    AUTH.onAuthStateChanged(async u => { AUTH_USER = u; paintAuth(); CLOUD_META = null; stopTrades(); if(u) await cloudPull(); else { setBanner(null); renderTabs(); if(VIEW === "trade") renderTrade(true); } });
   }catch{ AUTH = DB = null; }
 }
 async function signInGoogle(){
@@ -1068,67 +1204,358 @@ async function signInGoogle(){
     else if(e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast("Sign-in failed. Try again.");
   }
 }
+function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|lfmuser|handle|lost|extras|applied|revealed:|packs:)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
 async function signOutGoogle(){
   if(!cloudReady()) return;
-  try{ clearTimeout(saveT); await cloudSaveNow(); await AUTH.signOut(); toast("Signed out. Your cards stay in this browser."); }catch{ toast("Couldn't sign out. Try again."); }
+  clearTimeout(saveT);
+  const ok = await cloudSaveNow();
+  if(!ok && !confirm("We couldn't back up your latest changes. Signing out will remove this device's copy. Sign out anyway?")) return;
+  try{ await AUTH.signOut(); }catch{ toast("Couldn't sign out. Try again."); return; }
+  wipeLocal(); CARDS = []; USER = "me"; UNAME = ""; HANDLE = ""; closeWizard(); closeComposer(); setBanner(null); showLanding(); toast("Signed out.");
 }
+
+/* ----- cloud save ----- */
 function snapshot(){
-  return { lfm:lfmName(), cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get("packs:"+USER, null), updated:Date.now() };
+  const s = { lfm:lfmName(), cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get("packs:"+USER, null), updated:Date.now() };
+  if(HANDLE) s.handle = HANDLE; return s;
 }
-function cloudSave(){
-  if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return;
-  clearTimeout(saveT); saveT = setTimeout(cloudSaveNow, 800);
+function profileDocs(){
+  const own = ownedCards(), power = own.reduce((s,c) => s + RARITIES[rarityIdx(c)].pts, 0), r = own.length ? own.reduce((a,b) => a.niche <= b.niche ? a : b) : null;
+  return { profile:{ handle:HANDLE, handleLower:HANDLE.toLowerCase(), owned:own.length, power, rarest: r ? { name:r.name, artist:r.artist, niche:r.niche } : null, updated:Date.now() }, inv:{ cards:own, updated:Date.now() } };
 }
+function cloudSave(){ if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return; clearTimeout(saveT); saveT = setTimeout(cloudSaveNow, 800); }
 async function cloudSaveNow(){
-  if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return;
+  if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return true;
   const snap = snapshot();
-  try{ await DB.collection("users").doc(AUTH_USER.uid).set(snap); CLOUD_META = { userid:snap.userid, n:snap.revealed.length }; syncWarned = false; setSync("Saved to your account", true); }
-  catch{ if(!syncWarned){ syncWarned = true; toast("Couldn't save to your account. Your cards are still safe on this device."); } }
+  try{
+    const b = DB.batch(); b.set(uref(), snap, { merge:true });
+    if(HANDLE){ const p = profileDocs(); b.set(pref(), p.profile, { merge:true }); b.set(iref(), p.inv); }
+    await b.commit();
+    CLOUD_META = { userid:snap.userid, n:snap.revealed.length }; syncWarned = false; setSync("Saved to your account", true); setBanner(null); return true;
+  }catch(e){ if(!syncWarned){ syncWarned = true; setBanner(cloudErrText(e), true); } return false; }
 }
-async function cloudDelete(){
-  if(!cloudReady() || !AUTH_USER) return;
-  try{ await DB.collection("users").doc(AUTH_USER.uid).delete(); CLOUD_META = null; }catch{}
-}
-// Ask before a new load replaces a different saved collection.
 function confirmReplace(newId){
   if(!AUTH_USER || !CLOUD_META || !CLOUD_META.n || CLOUD_META.userid === newId) return true;
   return confirm(`This will replace the collection saved to your account (${CLOUD_META.n} cards discovered). Continue?`);
 }
 async function cloudPull(){
-  try{
-    const snap = await DB.collection("users").doc(AUTH_USER.uid).get();
-    const localCards = ls.get("cards", null), localUser = ls.get("userid", "me");
-    const hasLocal = !!(localCards && localCards.length), localN = hasLocal ? new Set(ls.get("revealed:"+localUser, [])).size : 0;
-    if(snap.exists && Array.isArray(snap.data().cards) && snap.data().cards.length){
-      const d = snap.data(), cloudN = (d.revealed || []).length;
-      CLOUD_META = { userid:d.userid, n:cloudN }; if(d.lfm) ls.set("lfmuser", d.lfm);
-      if(hasLocal && localUser !== d.userid && localN > 0){
-        const useCloud = confirm(`Use the collection saved to your account (${cloudN} cards discovered)?\n\nOK loads your saved collection.\nCancel keeps the one on this device and replaces the saved one.`);
-        if(!useCloud){ await cloudSaveNow(); return; }
-      }
-      const merged = new Set(d.revealed || []);
-      if(hasLocal && localUser === d.userid) ls.get("revealed:"+localUser, []).forEach(id => merged.add(id));
-      CARDS = d.cards; USER = d.userid; UNAME = d.uname || "";
-      ls.set("cards", CARDS); ls.set("userid", USER); ls.set("uname", UNAME); ls.set("revealed:"+USER, [...merged]);
-      if(d.packs && !(hasLocal && localUser === d.userid && ls.get("packs:"+USER, null))) ls.set("packs:"+USER, d.packs);
-      FILTER = "all"; QUERY = ""; $("#q").value = "";
-      showApp(); toast("Welcome back. Your saved collection is loaded.");
-      if(merged.size !== cloudN) cloudSave(); else setSync("Saved to your account", true);
-    } else if(hasLocal && localUser !== "demo"){
-      CARDS = localCards; USER = localUser; UNAME = ls.get("uname", ""); await cloudSaveNow(); toast("Your collection is now saved to your account.");
-    } else {
-      const n = lfmName();
-      if(n){ $("#luser").value = n; handleUser(); } else openSetup();
-    }
-  }catch{ toast("Couldn't reach your saved collection. Your cards are still safe on this device."); }
+  setBanner(null);
+  let d;
+  try{ const s = await uref().get(); d = s.exists ? s.data() : {}; }
+  catch(e){ setBanner(cloudErrText(e), true); return; }
+  CLOUD_META = { userid:d.userid, n:(d.revealed || []).length };
+  if(d.lfm) ls.set("lfmuser", d.lfm);
+  ls.set("lost", d.lost || []); ls.set("extras", d.extras || []); ls.set("applied", d.applied || []);
+  HANDLE = d.handle || ""; ls.set("handle", HANDLE);
+  if(Array.isArray(d.cards) && d.cards.length){
+    const localUser = ls.get("userid", "me"), merged = new Set(d.revealed || []);
+    if(localUser === d.userid) ls.get("revealed:" + localUser, []).forEach(id => merged.add(id));
+    CARDS = d.cards; USER = d.userid; UNAME = d.uname || "";
+    ls.set("cards", CARDS); ls.set("userid", USER); ls.set("uname", UNAME); ls.set("revealed:" + USER, [...merged]);
+    if(d.packs && !(localUser === d.userid && ls.get("packs:" + USER, null))) ls.set("packs:" + USER, d.packs);
+    FILTER = "all"; QUERY = ""; $("#q").value = "";
+    showApp();
+    if(!HANDLE) openWizard(3);
+    else { startTrades(); if(merged.size !== CLOUD_META.n) cloudSave(); else setSync("Saved to your account", true); }
+  } else openWizard(2);
 }
+
+/* ----- registration wizard ----- */
+const H_ADJ = ["Neon","Velvet","Electric","Cosmic","Midnight","Golden","Crimson","Lunar","Analog","Hollow","Static","Mellow","Wild","Silver","Rusty","Fuzzy","Vivid","Gilded","Misty","Sunlit","Stormy","Dusty","Atomic","Jazzy","Moody","Quiet","Swift","Lucky","Dreamy","Funky"];
+const H_NOUN = ["Falcon","Vinyl","Cassette","Comet","Otter","Fox","Raven","Synth","Groove","Riff","Echo","Mixtape","Tiger","Lynx","Orbit","Harbor","Walrus","Drummer","Piano","Banjo","Moth","Sparrow","Ember","Tempo","Chorus","Needle","Reverb","Sonic","Badger","Heron"];
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+const genHandle = () => pickOne(H_ADJ) + pickOne(H_NOUN) + (10 + Math.floor(Math.random() * 990));
+function openWizard(step){ WIZ.step = step; WIZ.busy = false; if(step === 3 && !WIZ.handle) WIZ.handle = genHandle(); renderWizard(); $("#wizard").classList.remove("hidden"); document.body.classList.add("noscroll"); }
+function closeWizard(){ $("#wizard").classList.add("hidden"); if($("#detail").classList.contains("hidden") && $("#composer").classList.contains("hidden")) document.body.classList.remove("noscroll"); }
+function wizMsg(t){ const m = $("#wizMsg"); if(m){ m.textContent = t; m.classList.add("err"); } }
+function renderWizard(){
+  const f = (AUTH_USER?.displayName || "").split(" ")[0];
+  const st = (n, l) => `<li class="${WIZ.step > n ? "done" : WIZ.step === n ? "on" : ""}">${n}. ${l}</li>`;
+  const head = `<ol class="steps3">${st(1,"Google")}${st(2,"Last.fm")}${st(3,"Your name")}</ol>`;
+  const foot = `<button class="link muted" type="button" data-act="wiz-signout" style="margin-top:6px;font-size:14px">Use a different Google account</button>`;
+  if(WIZ.step === 2){
+    $("#wizBody").innerHTML = head + `<h3 class="wt" id="wizT">${f ? "Welcome, " + esc(f) : "Welcome"}</h3>
+      <p class="muted" style="margin:10px 0 0">Link your Last.fm so we can turn your listening into cards. Your Last.fm profile needs to be public.</p>
+      <form id="wizForm" class="lookup" autocomplete="off" style="margin-top:20px"><label class="sr" for="wUser">Last.fm username</label>
+        <input id="wUser" type="text" placeholder="Your Last.fm username" autocapitalize="off" spellcheck="false" value="${esc(lfmName())}"><button class="btn lg" type="submit">Continue</button></form>
+      <p class="form-msg" id="wizMsg" role="status"></p>
+      <p class="muted" style="font-size:15px">No Last.fm yet? <a href="https://www.last.fm/join" target="_blank" rel="noopener">Create a free account</a>, connect Spotify, then come back.</p>` + foot;
+    setTimeout(() => $("#wUser")?.focus(), 50);
+  } else {
+    $("#wizBody").innerHTML = head + `<h3 class="wt" id="wizT">Your trader name</h3>
+      <p class="muted" style="margin:10px 0 0">This is how other collectors will find and see you in trades. It's randomly generated and stays with your account. Reroll until you like it.</p>
+      <div class="hpick"><b id="hName">${esc(WIZ.handle)}</b><button class="btn ghost sm" type="button" data-act="wiz-roll">Reroll</button></div>
+      <button class="btn lg" id="wizGo" type="button" data-act="wiz-claim" style="width:100%">Create my account</button>
+      <p class="form-msg" id="wizMsg" role="status"></p>` + foot;
+  }
+}
+async function wizBuild(name){
+  const key = lfmKey(); if(!key){ wizMsg("This site needs a Last.fm API key. The owner can add one."); $("#keyBox").classList.remove("hidden"); return; }
+  showLoading();
+  try{
+    const { list, name: real } = await fromLastfm(name, key);
+    const cards = await buildCards(list, key, onProgress);
+    hideLoading(); ls.set("lfmuser", name);
+    WIZ.build = { id:"lfm:" + name.toLowerCase(), real, cards };
+    if(HANDLE) finishRegistration(); else openWizard(3);
+  }catch(e){ hideLoading(); wizMsg(e.message); }
+}
+function finishRegistration(){
+  const b = WIZ.build; WIZ.build = null; CARDS = b.cards; closeWizard(); startGame(b.id, b.real); startTrades();
+}
+async function claimHandle(h){
+  const lower = h.toLowerCase(), hr = DB.collection("handles").doc(lower);
+  await DB.runTransaction(async tx => {
+    if((await tx.get(hr)).exists) throw { code:"handle-taken" };
+    tx.set(hr, { uid:AUTH_USER.uid, handle:h, created:Date.now() });
+    tx.set(uref(), { handle:h, lfm:lfmName() }, { merge:true });
+    tx.set(pref(), { handle:h, handleLower:lower, owned:0, power:0, rarest:null, updated:Date.now() }, { merge:true });
+  });
+}
+async function wizClaim(){
+  if(WIZ.busy) return; WIZ.busy = true;
+  const go = $("#wizGo"); if(go){ go.disabled = true; go.textContent = "Creating…"; }
+  let ok = false;
+  for(let i = 0; i < 6 && !ok; i++){
+    try{ await claimHandle(WIZ.handle); ok = true; }
+    catch(e){
+      if(e && e.code === "handle-taken"){ WIZ.handle = genHandle(); continue; }
+      WIZ.busy = false; if(go){ go.disabled = false; go.textContent = "Create my account"; } wizMsg(cloudErrText(e)); return;
+    }
+  }
+  if(!ok){ WIZ.busy = false; renderWizard(); wizMsg("Couldn't find a free name. Try again."); return; }
+  HANDLE = WIZ.handle; ls.set("handle", HANDLE); WIZ.busy = false;
+  toast("Welcome, " + HANDLE + "!");
+  if(WIZ.build) finishRegistration(); else { closeWizard(); showApp(); cloudSave(); startTrades(); }
+}
+
+/* ----- trades: listener + applying finished trades ----- */
+function startTrades(){
+  if(!cloudReady() || !AUTH_USER || !HANDLE || tradeUnsub) return;
+  tradeUnsub = DB.collection("trades").where("parts", "array-contains", AUTH_USER.uid).onSnapshot(snap => {
+    TRADES = snap.docs.map(x => ({ id:x.id, ...x.data() })).sort((a,b) => (b.updated || 0) - (a.updated || 0));
+    renderTabs(); if(VIEW === "trade") renderTrade(false); processTrades();
+  }, e => setBanner(cloudErrText(e), false));
+  renderTabs();
+}
+function stopTrades(){ if(tradeUnsub){ tradeUnsub(); tradeUnsub = null; } TRADES = []; }
+function processTrades(){
+  const me = AUTH_USER?.uid, done = new Set(ls.get("applied", []));
+  TRADES.filter(t => t.from === me && t.status !== "pending" && !done.has(t.id) && !APPLYING.has(t.id)).forEach(t => {
+    APPLYING.add(t.id); QUEUE = QUEUE.then(() => applyTrade(t)).catch(() => {}).then(() => APPLYING.delete(t.id));
+  });
+}
+async function applyTrade(t){
+  const res = await DB.runTransaction(async tx => {
+    const ud = await tx.get(uref()), d = invOf(ud.exists ? ud.data() : {});
+    if(d.applied.includes(t.id)) return { d, did:false };
+    if(t.status === "accepted") t.want.forEach(c => addIncoming(d, c)); else t.offer.forEach(c => returnCard(d, c));
+    d.applied.push(t.id);
+    tx.set(uref(), { lost:d.lost, extras:d.extras, applied:d.applied }, { merge:true });
+    return { d, did:true };
+  });
+  mirror(res.d);
+  if(res.did){
+    if(t.status === "accepted"){ toast(`${t.toHandle} accepted your offer. New cards added.`); flashBanner("Trade complete", "#6ff0a0"); FX.burst(innerWidth/2, innerHeight/2, ["#6ff0a0","#ffe14a","#ffffff"], 120); }
+    else toast(`${t.toHandle} ${t.status === "declined" ? "declined" : "didn't take"} your offer. Your cards are back.`);
+    cloudSave(); refreshViews();
+  }
+}
+async function acceptTrade(id){
+  const t = TRADES.find(x => x.id === id); if(!t || t.status !== "pending" || t.to !== AUTH_USER.uid) return;
+  await cloudSaveNow(); const tref = DB.collection("trades").doc(id);
+  try{
+    const d = await DB.runTransaction(async tx => {
+      const ts = await tx.get(tref); if(!ts.exists || ts.data().status !== "pending") throw { code:"trade-gone" };
+      const T = ts.data(), ud = await tx.get(uref()), d = invOf(ud.exists ? ud.data() : {});
+      if(!T.want.every(c => ownsCard(d, c))) throw { code:"not-owned" };
+      T.want.forEach(c => removeCard(d, c)); T.offer.forEach(c => addIncoming(d, c)); d.applied.push(id);
+      tx.update(tref, { status:"accepted", updated:Date.now() });
+      tx.set(uref(), { lost:d.lost, extras:d.extras, applied:d.applied }, { merge:true });
+      return d;
+    });
+    mirror(d); toast("Trade complete. New cards added to your collection."); flashBanner("Trade complete", "#6ff0a0"); FX.burst(innerWidth/2, innerHeight/2, ["#6ff0a0","#ffe14a","#ffffff"], 140); cloudSave(); refreshViews();
+  }catch(e){ toast(tradeErrText(e)); }
+}
+async function declineTrade(id){
+  try{ await DB.collection("trades").doc(id).update({ status:"declined", updated:Date.now() }); toast("Offer declined."); }catch(e){ toast(tradeErrText(e)); }
+}
+async function cancelTrade(id){
+  const tref = DB.collection("trades").doc(id);
+  try{
+    const d = await DB.runTransaction(async tx => {
+      const ts = await tx.get(tref); if(!ts.exists || ts.data().status !== "pending") throw { code:"trade-gone" };
+      const T = ts.data(), ud = await tx.get(uref()), d = invOf(ud.exists ? ud.data() : {});
+      T.offer.forEach(c => returnCard(d, c)); d.applied.push(id);
+      tx.update(tref, { status:"cancelled", updated:Date.now() });
+      tx.set(uref(), { lost:d.lost, extras:d.extras, applied:d.applied }, { merge:true });
+      return d;
+    });
+    mirror(d); toast("Offer cancelled. Your cards are back."); cloudSave(); refreshViews();
+  }catch(e){ toast(tradeErrText(e)); }
+}
+
+/* ----- trade view ----- */
+const incomingN = () => AUTH_USER ? TRADES.filter(t => t.to === AUTH_USER.uid && t.status === "pending").length : 0;
+function renderTabs(){
+  const n = incomingN();
+  const h = `<button class="tab ${VIEW === "app" ? "on" : ""}" data-act="tab-col">Collection</button><button class="tab ${VIEW === "trade" ? "on" : ""}" data-act="tab-trade">Trade${n ? `<b class="badge">${n}</b>` : ""}</button>`;
+  $$(".tabbar").forEach(e => e.innerHTML = h);
+}
+function thumbs(cards){
+  if(!cards.length) return '<span class="muted">Nothing, it\'s a gift</span>';
+  return cards.map(c => { PREV.set(c.id, c); return `<div class="mini lg r-${rarityFor(c.niche).key}" role="button" tabindex="0" data-prev="${esc(c.id)}" title="${esc(c.name)} by ${esc(c.artist)}"><img alt="${esc(c.name)}" src="${esc(c.art || genArt(c.id))}" data-seed="${esc(c.id)}"></div>`; }).join("");
+}
+function offerHTML(t){
+  const me = AUTH_USER.uid, mine = t.from === me, other = mine ? t.toHandle : t.fromHandle;
+  const give = mine ? t.offer : t.want, get = mine ? t.want : t.offer;
+  const who = mine ? `You offered <b>${esc(other)}</b>` : `<b>${esc(other)}</b> offered you`;
+  const act = t.status !== "pending" ? "" : mine ? `<button class="btn ghost sm" data-cancel="${esc(t.id)}">Cancel offer</button>`
+    : `<button class="btn sm" data-accept="${esc(t.id)}">Accept trade</button><button class="btn ghost sm" data-decline="${esc(t.id)}">Decline</button>`;
+  return `<article class="offer"><div class="offer-h"><div>${who} <span class="muted">· ${ago(t.updated || t.created || Date.now())}</span></div><span class="status st-${t.status}">${t.status[0].toUpperCase() + t.status.slice(1)}</span></div>
+    <div class="offer-b"><div><small>You give</small><div class="stackrow">${thumbs(give)}</div></div><div class="swap" aria-hidden="true">&#8644;</div><div><small>You get</small><div class="stackrow">${thumbs(get)}</div></div></div>
+    ${act ? `<div class="offer-a">${act}</div>` : ""}</article>`;
+}
+function renderTrade(force){
+  renderTabs();
+  const head = $("#tradeHead"), seg = $("#tradeSeg"), pane = $("#tpane"); if(!head) return;
+  const gate = (t, p, btn, act) => { head.innerHTML = `<div class="panel gate"><h2>${t}</h2><p class="muted">${p}</p>${btn ? `<button class="btn lg" data-act="${act}">${btn}</button>` : ""}</div>`; seg.innerHTML = ""; pane.innerHTML = ""; };
+  if(USER === "demo") return gate("Trading is for real collections", "The demo is just for looking around. Create an account to build your own cards and trade them with other collectors.", "Create my account", "start");
+  if(!AUTH_USER) return gate("Sign in to trade", "Trading needs an account so your cards and your trader name belong to you. It takes about a minute.", "Continue with Google", "start");
+  if(!HANDLE) return gate("One more step", "Finish setting up your account to get your trader name and start trading.", "Finish setup", "wiz-open");
+  const me = AUTH_USER.uid, inc = TRADES.filter(t => t.to === me && t.status === "pending"), out = TRADES.filter(t => t.from === me && t.status === "pending"), hist = TRADES.filter(t => t.status !== "pending");
+  head.innerHTML = `<section class="t-head"><div class="panel"><div class="who"><div class="avatar" aria-hidden="true">${esc(HANDLE[0].toUpperCase())}</div><div><h2>${esc(HANDLE)}</h2><div class="muted">Your trader name</div></div></div>
+    <div class="kpis"><div class="kpi"><span>Cards to trade</span><b class="num">${ownedCards().length}</b></div><div class="kpi"><span>Offers for you</span><b class="num">${inc.length}</b></div><div class="kpi"><span>Waiting on others</span><b class="num">${out.length}</b></div></div></div>
+    <div class="panel"><h3 class="ph">How trading works</h3><p class="muted">Find a collector, pick up to five cards each way, and send an offer. Your cards are held safe while it's pending and come straight back if it's declined or cancelled. Everything is free.</p></div></section>`;
+  const seg0 = [["find","Find traders",0],["in","For you",inc.length],["out","Sent",out.length],["hist","History",0]];
+  seg.innerHTML = seg0.map(([k,l,n]) => `<button class="chip ${TSUB === k ? "on" : ""}" data-tsub="${k}">${l}${n ? ` <span class="num">${n}</span>` : ""}</button>`).join("");
+  if(TSUB === "find"){
+    if(force || !$("#tq")){ pane.innerHTML = `<div class="tools" style="margin-top:0"><label class="sr" for="tq">Search traders</label><input id="tq" type="search" placeholder="Search trader names" value="${esc(TQ)}"><button class="btn ghost sm" data-act="trade-refresh">Refresh</button></div><div class="traders" id="traders"></div>`; renderTraders(); }
+    return;
+  }
+  const list = TSUB === "in" ? inc : TSUB === "out" ? out : hist;
+  const empty = { in:"No offers waiting. Share your name and let people find you.", out:"You haven't sent any offers that are still open.", hist:"Finished trades will show up here." }[TSUB];
+  pane.innerHTML = list.length ? list.map(offerHTML).join("") : `<div class="panel empty" style="grid-column:auto">${empty}</div>`;
+}
+async function loadTraders(q){
+  if(!cloudReady() || !AUTH_USER || !HANDLE) return;
+  TLOAD = true; renderTraders();
+  try{
+    const col = DB.collection("profiles"); let snap;
+    if(q){ const l = q.toLowerCase(); snap = await col.where("handleLower", ">=", l).where("handleLower", "<=", l + "\uf8ff").limit(12).get(); }
+    else snap = await col.orderBy("updated", "desc").limit(14).get();
+    TRADERS = snap.docs.map(d => ({ uid:d.id, ...d.data() })).filter(p => p.uid !== AUTH_USER.uid && p.handle && (p.owned || 0) > 0);
+  }catch(e){ TRADERS = []; toast(cloudErrText(e)); }
+  TLOAD = false; renderTraders();
+}
+function renderTraders(){
+  const el = $("#traders"); if(!el) return;
+  if(TLOAD){ el.innerHTML = '<div class="empty">Looking for collectors…</div>'; return; }
+  el.innerHTML = TRADERS.length ? TRADERS.map(p => `<div class="trader"><div class="row"><div class="tav" style="--h:${hueOf(p.handle)}" aria-hidden="true">${esc(p.handle[0].toUpperCase())}</div><div><b class="h">${esc(p.handle)}</b><br><small>${p.rarest ? "Rarest: " + esc(p.rarest.name) : "New collector"}</small></div></div>
+    <div class="tstats"><span><b>${p.owned || 0}</b> cards</span><span><b>${(p.power || 0).toLocaleString()}</b> power</span></div><button class="btn sm" data-trade="${esc(p.uid)}">Trade with ${esc(p.handle)}</button></div>`).join("")
+    : `<div class="empty">${TQ ? "No collectors match that name." : "No other collectors yet. Invite a friend and be the first to trade."}<br><br><button class="btn ghost sm" data-act="invite">Invite a friend</button></div>`;
+}
+function openCard(c){ DLIST = [c]; DI = 0; paintDetail(); $("#detail").classList.remove("hidden"); document.body.classList.add("noscroll"); }
+
+/* ----- composer ----- */
+const findCard = (side, id) => (side === "give" ? ownedCards() : COMP.theirs).find(c => c.id === id);
+async function openComposer(uid){
+  const p = TRADERS.find(x => x.uid === uid); if(!p) return;
+  if(TRADES.filter(t => t.from === AUTH_USER.uid && t.status === "pending").length >= 10){ toast("You have 10 open offers. Cancel one first."); return; }
+  COMP = { uid, handle:p.handle, theirs:[], give:[], get:[], tab:"give", q:{ give:"", get:"" }, ready:false };
+  $("#cHandle").textContent = p.handle; $("#composer").classList.remove("hidden"); document.body.classList.add("noscroll"); paintComposer();
+  try{
+    const s = await DB.collection("inventories").doc(uid).get();
+    if(!COMP || COMP.uid !== uid) return;
+    COMP.theirs = (s.exists && s.data().cards) || [];
+  }catch(e){ toast(cloudErrText(e)); closeComposer(); return; }
+  COMP.ready = true; paintCol("get"); updateSummary();
+}
+function closeComposer(){ COMP = null; $("#composer").classList.add("hidden"); if($("#detail").classList.contains("hidden") && $("#wizard").classList.contains("hidden")) document.body.classList.remove("noscroll"); }
+function colShell(side){
+  const you = side === "give";
+  return `<div class="col-h"><div><h4>${you ? "You give" : "You get"}</h4><span class="muted" id="cn-${side}"></span></div><input class="csearch" id="${you ? "cqG" : "cqT"}" type="search" aria-label="Search cards" placeholder="Search ${you ? "your" : "their"} cards" value="${esc(COMP.q[side])}"></div><div class="pgrid" id="pg-${side}"></div>`;
+}
+function paintComposer(){
+  if(!COMP) return;
+  $("#colGive").innerHTML = colShell("give"); $("#colGet").innerHTML = colShell("get");
+  paintCol("give"); paintCol("get"); applyCTab(); updateSummary();
+}
+function paintCol(side){
+  const C = COMP, grid = $("#pg-" + side); if(!C || !grid) return;
+  if(side === "get" && !C.ready){ grid.innerHTML = '<div class="empty">Loading their cards…</div>'; return; }
+  const q = C.q[side].trim().toLowerCase(), src = side === "give" ? ownedCards() : C.theirs;
+  const list = src.filter(c => !q || (c.name + " " + c.artist).toLowerCase().includes(q)).sort((a,b) => a.niche - b.niche || b.plays - a.plays);
+  grid.innerHTML = list.length ? list.map(c => { const on = C[side].includes(c.id);
+    return `<div class="pk ${on ? "sel" : ""}" role="button" tabindex="0" aria-pressed="${on}" data-pick="${side}" data-cid="${esc(c.id)}">${cardHTML(c, CARDS.length)}<span class="tick">&#10003;</span></div>`; }).join("")
+    : `<div class="empty">${side === "give" ? "You have no cards to offer yet. Open a pack first." : "No cards to show."}</div>`;
+}
+function togglePick(side, id){
+  const C = COMP; if(!C) return; const arr = C[side], i = arr.indexOf(id);
+  if(i >= 0) arr.splice(i, 1); else { if(arr.length >= 5){ toast("Up to 5 cards each way."); return; } arr.push(id); }
+  const el = $$(`.pk[data-pick="${side}"]`).find(e => e.dataset.cid === id);
+  if(el){ el.classList.toggle("sel", arr.includes(id)); el.setAttribute("aria-pressed", String(arr.includes(id))); }
+  updateSummary();
+}
+function updateSummary(){
+  const C = COMP; if(!C) return;
+  const val = s => C[s].map(id => findCard(s, id)).filter(Boolean).reduce((a,c) => a + RARITIES[rarityIdx(c)].pts, 0);
+  const set = (id, t) => { const e = $(id); if(e) e.textContent = t; };
+  set("#cn-give", `${C.give.length} of 5 selected`); set("#cn-get", `${C.get.length} of 5 selected`); set("#cgN", C.give.length); set("#ctN", C.get.length);
+  $("#cSummary").innerHTML = `Value you give <b>${val("give")}</b> &middot; you get <b>${val("get")}</b>`;
+  const b = $("#cSend"); b.disabled = !C.give.length; b.textContent = C.get.length ? "Send offer" : (C.give.length ? "Send as a gift" : "Send offer");
+}
+function applyCTab(){ if(!COMP) return; $(".comp-cols").dataset.tab = COMP.tab; $$("[data-ctab]").forEach(b => b.classList.toggle("on", b.dataset.ctab === COMP.tab)); }
+async function sendOffer(){
+  const C = COMP; if(!C || !C.give.length) return;
+  const btn = $("#cSend"); btn.disabled = true; btn.textContent = "Sending…";
+  const offer = C.give.map(id => findCard("give", id)).filter(Boolean).map(tradeCard), want = C.get.map(id => findCard("get", id)).filter(Boolean).map(tradeCard);
+  await cloudSaveNow();
+  const tref = DB.collection("trades").doc(), me = AUTH_USER.uid, now = Date.now();
+  try{
+    const d = await DB.runTransaction(async tx => {
+      const ud = await tx.get(uref()), d = invOf(ud.exists ? ud.data() : {});
+      if(!offer.every(c => ownsCard(d, c))) throw { code:"not-owned" };
+      offer.forEach(c => removeCard(d, c));
+      tx.set(tref, { from:me, fromHandle:HANDLE, to:C.uid, toHandle:C.handle, parts:[me, C.uid], offer, want, status:"pending", created:now, updated:now });
+      tx.set(uref(), { lost:d.lost, extras:d.extras }, { merge:true });
+      return d;
+    });
+    mirror(d); closeComposer(); TSUB = "out"; toast(`Offer sent to ${C.handle}.`); cloudSave(); refreshViews();
+  }catch(e){ toast(tradeErrText(e)); updateSummary(); }
+}
+
+/* ----- clicks routed from the main handler ----- */
+function tradeClick(e){
+  const t = e.target; let el;
+  if((el = t.closest("[data-tsub]"))){ TSUB = el.dataset.tsub; renderTrade(true); if(TSUB === "find") loadTraders(TQ); return true; }
+  if((el = t.closest("[data-trade]"))){ openComposer(el.dataset.trade); return true; }
+  if((el = t.closest("[data-pick]"))){ togglePick(el.dataset.pick, el.dataset.cid); return true; }
+  if((el = t.closest("[data-ctab]"))){ if(COMP){ COMP.tab = el.dataset.ctab; applyCTab(); } return true; }
+  if((el = t.closest("[data-prev]"))){ const c = PREV.get(el.dataset.prev); if(c) openCard(c); return true; }
+  if((el = t.closest("[data-accept]"))){ el.disabled = true; acceptTrade(el.dataset.accept); return true; }
+  if((el = t.closest("[data-decline]"))){ el.disabled = true; declineTrade(el.dataset.decline); return true; }
+  if((el = t.closest("[data-cancel]"))){ el.disabled = true; cancelTrade(el.dataset.cancel); return true; }
+  return false;
+}
+document.addEventListener("input", e => {
+  const id = e.target.id;
+  if(id === "tq"){ TQ = e.target.value.trim(); clearTimeout(tqT); tqT = setTimeout(() => loadTraders(TQ), 320); }
+  else if(id === "cqG" && COMP){ COMP.q.give = e.target.value; paintCol("give"); }
+  else if(id === "cqT" && COMP){ COMP.q.get = e.target.value; paintCol("get"); }
+});
+document.addEventListener("submit", e => {
+  if(e.target.id !== "wizForm") return; e.preventDefault();
+  const v = $("#wUser").value.trim().replace(/^@/, ""); if(!v){ wizMsg("Enter your Last.fm username to continue."); return; } wizBuild(v);
+});
+
 
 /* ================= boot ================= */
 FX.init(); paintSound(); renderFan(); renderLedger();
 $("#lfm").value = ls.get("lfm", "");
 const saved = ls.get("cards", null);
 if(saved && saved.length){ CARDS = saved; USER = ls.get("userid", "me"); UNAME = ls.get("uname", ""); showApp(); }
-if(!$("#luser").value) $("#luser").value = ls.get("lfmuser", "");
+renderTabs();
 initCloud();
 </script>
 </body>
