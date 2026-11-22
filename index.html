@@ -183,6 +183,30 @@ footer a{color:var(--muted)}
 .packdots{display:flex;gap:7px}
 .packdots i{width:30px;height:42px;border-radius:6px;border:1.5px solid var(--line);background:rgba(255,255,255,.04)}
 .packdots i.on{background:var(--orange);border-color:transparent}
+.coin{display:inline-block;width:1em;height:1em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffd34d 45%,#c98a00);box-shadow:inset 0 0 0 .12em rgba(120,70,0,.45);vertical-align:-.14em;margin-right:.35em;flex:none}
+.coin.lg{width:36px;height:36px;margin-right:14px}
+.coinchip{display:flex;align-items:center;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--ink2);font-weight:800;font-size:15px}
+.coinchip.glow{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(255,225,74,.25)}
+.m-head{display:grid;grid-template-columns:1fr 1.5fr;gap:16px}
+.bal{display:flex;align-items:center;font-size:clamp(38px,6vw,56px);font-weight:900;font-stretch:112%;letter-spacing:-.03em;line-height:1;margin:10px 0 18px}
+.m-claim{display:grid;gap:8px;justify-items:start}
+.howlist{margin:0 0 14px;padding-left:18px;color:var(--muted);display:grid;gap:4px;font-size:15px}.howlist b{color:var(--paper)}
+.ptiers{display:flex;flex-wrap:wrap;gap:8px}
+.ptier{display:inline-flex;align-items:center;padding:5px 12px;border-radius:99px;border:1.5px solid var(--c1);font-size:13px;font-weight:700}
+.mlist{display:grid;gap:10px}
+.mrow{display:grid;grid-template-columns:auto 56px minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 14px 10px 10px;background:var(--ink2);border:1.5px solid var(--line);border-radius:14px}
+.mart{width:56px;height:56px;border-radius:9px;object-fit:cover;background:var(--ink)}
+.mplay{width:40px;height:40px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;flex:none}
+.mplay svg{width:16px;height:16px;fill:currentColor}.mplay:disabled{opacity:.3;cursor:default}
+.minfo{min-width:0}.minfo b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.minfo span{color:var(--muted);font-size:14px}
+.mright{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+.mright small{color:var(--muted);font-size:13px}
+.btn.cant{opacity:.55}
+.mnote{color:var(--muted);margin:0 0 12px;font-size:15px}
+@media (max-width:900px){.m-head{grid-template-columns:1fr}}
+@media (max-width:640px){.mrow{grid-template-columns:auto 48px minmax(0,1fr)}.mart{width:48px;height:48px}.mright{grid-column:1/-1;justify-content:space-between}}
+.pack.taste{background:radial-gradient(110% 70% at 20% 0%,rgba(255,255,255,.45),transparent 55%),conic-gradient(from 200deg at 50% 62%,#0b2a4a,#1fb6c9,#6bffb0,#2230d8,#0b2a4a);box-shadow:0 30px 70px -20px rgba(31,182,201,.6),0 0 0 2px rgba(255,255,255,.3) inset}
+.packdots i.on.mine{background:#62c8ff}
 .pp-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
 .sp{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 16px;border-radius:14px;color:var(--ink);background:linear-gradient(115deg,#ffd34d,#ff7ad9 55%,#a98bff)}
 .sp-t{font-weight:850;font-size:18px;letter-spacing:-.01em}.sp-s{font-size:14px;font-weight:600;opacity:.8}
@@ -396,6 +420,7 @@ footer a{color:var(--muted)}
     <button class="btn ghost sm authbtn out" id="authBtn" data-act="auth"><span class="al">Sign in with Google</span></button>
     <button class="icon-btn" id="sndBtn" data-act="sound" aria-label="Toggle sound"></button>
     <div id="navApp" class="nav-right hidden">
+      <button class="coinchip hidden" id="coinChip" data-act="tab-market" aria-label="Your coins. Open the marketplace"><span class="coin"></span><b id="coinN">0</b></button>
       <button class="btn sm" id="navPack" data-act="open-pack">Open pack</button>
       <details class="menu" id="menu"><summary class="icon-btn" aria-label="Menu">&#8943;</summary>
         <div class="menu-pop">
@@ -470,7 +495,8 @@ footer a{color:var(--muted)}
       <details><summary>Is my data safe?</summary><p>Your cards are saved to your private account, and your Last.fm username is only used to fetch your public top songs. To make trading possible, your in-game name and the cards you own are visible to other signed-in players. Your Google name and email are never shown. A Spotify export is read on your device and never uploaded.</p></details>
       <details><summary>Why Last.fm and not a Spotify login?</summary><p>Spotify limits new apps to a handful of approved users, so a public game can't log everyone in. Last.fm is open, free, and works with a username.</p></details>
       <details><summary>How is rarity decided?</summary><p>By how many people have listened to the song on Last.fm. Fewer listeners means a rarer card. Songs Last.fm can't find count as the most obscure.</p></details>
-      <details><summary>How often can I open packs?</summary><p>You get three daily packs of five cards from your own listening, refreshed every midnight. Once a week (Monday) you also get a Weekly Special pack with ten real songs picked at random from across Last.fm, from Uncommon all the way up to Mythic. Specials are new to you every time and can be traded like any other card.</p></details>
+      <details><summary>How often can I open packs?</summary><p>Each day you get three packs of five cards. The first is Your Listens, drawn from your own top songs. The other two are Discovery packs: real songs from across Last.fm, picked to match the genres and kind of music you play most. Packs refresh at midnight. Once a week (Monday) you also get a Weekly Special with ten random real songs, from Uncommon up to Mythic.</p></details>
+      <details><summary>What are coins and the marketplace?</summary><p>Coins let you buy any song in the marketplace. Search for it, check how rare it is, and buy it. The rarer the song, the more it costs, from about 10 coins for a chart-topper to nearly 2,000 for a true underground find. You earn coins from a daily bonus (it grows with your streak), a welcome gift, and by selling songs you got from packs, trades or the market for a quarter of their price. Coins are free and can't be bought with money.</p></details>
       <details><summary>How does trading work?</summary><p>Browse other collectors, pick up to five cards each way, and send an offer. Your cards are held safely while the offer is open. If they accept, the swap happens instantly. If they decline or you cancel, your cards come straight back. It's all free.</p></details>
       <details><summary>Is this connected to Spotify?</summary><p>No. Streamdex is a fan project and isn't affiliated with, or endorsed by, Spotify or Last.fm.</p></details>
     </div>
@@ -496,6 +522,12 @@ footer a{color:var(--muted)}
   <div id="tradeHead"></div>
   <div class="seg" id="tradeSeg"></div>
   <div id="tpane"></div>
+</div></main>
+
+<main id="market" class="app hidden"><div class="wrap">
+  <div class="tabbar" id="tabsM"></div>
+  <div id="mHead"></div>
+  <div id="mBody"></div>
 </div></main>
 
 <footer><div class="wrap"><span>Streamdex is a fan project, not affiliated with Spotify or Last.fm.</span><span>Music data from <a href="https://www.last.fm" target="_blank" rel="noopener">Last.fm</a></span></div>
@@ -530,7 +562,7 @@ footer a{color:var(--muted)}
 <div id="stage" class="stage hidden" role="dialog" aria-modal="true" aria-label="Open a pack">
   <button class="x" data-act="stage-close" aria-label="Close">&times;</button>
   <div id="packStep">
-    <button class="pack" id="packBtn" data-act="tear" aria-label="Tear open the pack"><span class="shine"></span><span class="pk"><span class="pk-disc"></span><span class="pk-name" id="pkName">Streamdex</span><span class="pk-sub" id="pkSub">Daily pack, 5 cards</span></span></button>
+    <button class="pack" id="packBtn" data-act="tear" aria-label="Tear open the pack"><span class="shine"></span><span class="pk"><span class="pk-disc"></span><span class="pk-name" id="pkName">Streamdex</span><span class="pk-sub" id="pkSub">5 cards from your top songs</span></span></button>
     <p class="stage-hint" id="packHint">Tap the pack to open it</p>
   </div>
   <div id="dealStep" class="hidden">
@@ -593,6 +625,11 @@ const RARITIES = [
 ];
 const rarityIdx = c => RARITIES.findIndex(r => c.niche < r.max);
 const rarityFor = s => RARITIES.find(r => s < r.max);
+/* ----- coins ----- */
+const SELL_RATE = 0.25, DAILY_BONUS = { base:25, step:5, max:50 }, WELCOME_COINS = 100;
+const priceFor = niche => Math.max(10, Math.round(10 * Math.exp(0.052 * (100 - niche)) / 5) * 5); // 10 coins for a chart-topper, ~1,800 for the rarest
+const sellValue = c => Math.max(1, Math.round(priceFor(c.niche) * SELL_RATE));
+let COINS = +ls.get("coins", 0) || 0;
 const RANKS = [[0,"Casual listener"],[20,"Playlist regular"],[80,"Crate digger"],[200,"Deep cut hunter"],[500,"Vinyl oracle"],[1200,"Underground legend"]];
 const TYPES = [
   [/metal|punk|hardcore/, "Dark"], [/hip hop|hip-hop|rap|trap|drill/, "Street"],
@@ -710,6 +747,7 @@ async function buildCards(list0, key, onp){
 }
 
 /* ================= card component ================= */
+const srcLabel = c => c.traded ? "Traded" : c.src === "market" ? "Market" : c.src === "discovery" ? "Discovery" : c.special ? "Weekly" : "";
 function cardHTML(c, total){
   const r = rarityFor(c.niche), rs = 100 - c.niche;
   const hp = Math.min(220, 40 + Math.round(c.affPct*1.8));
@@ -719,7 +757,7 @@ function cardHTML(c, total){
     <div class="shade"></div>
     <div class="top"><span class="pill">${r.stars} ${r.name}</span><span class="hp">HP <b>${hp}</b></span></div>
     <div class="info">
-      <div class="type"><span><i></i>${esc(c.type)}</span><em>${c.traded ? "Traded" : c.special ? "Weekly" : "#" + String(c.no).padStart(3,"0") + "/" + total}</em></div>
+      <div class="type"><span><i></i>${esc(c.type)}</span><em>${srcLabel(c) || "#" + String(c.no).padStart(3,"0") + "/" + total}</em></div>
       <div class="nm">${esc(c.name)}</div>
       <div class="ar">${esc(c.artist)}</div>
       <div class="stats"><div><b>${c.plays || "–"}</b><span>plays</span></div><div><b>${l}</b><span>listeners</span></div><div><b>${rs}</b><span>rarity</span></div></div>
@@ -788,6 +826,7 @@ const weekStart = () => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d
 const weekKey = () => dayKey(weekStart().getTime());
 const nextMidnight = () => { const d = new Date(); d.setHours(24,0,0,0); return d.getTime(); };
 const nextMonday = () => { const d = weekStart(); d.setDate(d.getDate()+7); return d.getTime(); };
+const dailyType = () => (USER !== "demo" && !isInfinite() && packState().u === 0 && CARDS.length - revealed().size > 0) || (USER === "demo" || isInfinite()) ? "normal" : "taste";
 const normPacks = p => { p = p || {}; const d = dayKey(), w = weekKey(); return { d, u: p.d === d ? (p.u||0) : 0, w, s: p.w === w ? (p.s||0) : 0 }; };
 const packState = () => normPacks(ls.get(packKey(), null));
 function mergePacks(a, b){
@@ -807,19 +846,20 @@ function spendPack(){
 }
 function updatePacks(){
   if($("#navApp").classList.contains("hidden")) return;
-  const s = packs(), inf = isInfinite(), demo = USER === "demo", left = CARDS.length - revealed().size;
-  const normalOK = left > 0 && (inf || s.n > 0), spOK = !demo && (inf || s.sp);
+  const s = packs(), inf = isInfinite(), demo = USER === "demo", left = CARDS.length - revealed().size, type = dailyType();
+  const normalOK = (inf || s.n > 0) && (type === "normal" ? left > 0 : !demo), spOK = !demo && (inf || s.sp);
   const nb = $("#navPack");
   if(nb){
     nb.dataset.act = !normalOK && spOK ? "open-special" : "open-pack";
-    nb.textContent = normalOK ? (inf ? "Open pack" : `Open pack (${s.n})`) : spOK ? "Open weekly pack" : left <= 0 ? "Collection complete" : `Packs in ${fmtLong(s.next)}`;
+    nb.textContent = normalOK ? (inf ? "Open pack" : `Open pack (${s.n})`) : spOK ? "Open weekly pack" : left <= 0 && type === "normal" ? "Collection complete" : `Packs in ${fmtLong(s.next)}`;
     nb.disabled = !normalOK && !spOK;
   }
   const n = $("#pkN"); if(!n) return;
+  const mineFirst = !demo && !inf && left > 0;
   n.innerHTML = inf ? "&infin;" : `${s.n}<small> / ${DAILY_PACKS}</small>`;
-  $("#pkDots").innerHTML = Array.from({length:DAILY_PACKS}, (_,i) => `<i class="${i < s.n || inf ? "on" : ""}"></i>`).join("");
-  $("#pkTimer").textContent = left <= 0 ? "You've discovered every card." : inf ? "Unlimited packs." : s.n > 0 ? `${s.n === DAILY_PACKS ? "Fresh today. " : ""}New packs in ${fmtLong(s.next)}` : `Out for today. New packs in ${fmtLong(s.next)}`;
-  const b = $("#pkOpen"); b.textContent = left <= 0 ? "Collection complete" : "Open a pack"; b.disabled = !normalOK;
+  $("#pkDots").innerHTML = Array.from({length:DAILY_PACKS}, (_,i) => `<i class="${i < s.n || inf ? "on" : ""}${i === 0 && mineFirst ? " mine" : ""}"></i>`).join("");
+  $("#pkTimer").textContent = inf ? "Unlimited packs." : s.n > 0 ? `Next: ${type === "normal" ? "Your Listens" : "Discovery"}. New packs in ${fmtLong(s.next)}` : `Out for today. New packs in ${fmtLong(s.next)}`;
+  const b = $("#pkOpen"); b.textContent = !normalOK && left <= 0 && type === "normal" ? "Collection complete" : type === "normal" ? "Open Your Listens pack" : "Open Discovery pack"; b.disabled = !normalOK;
   const sc = $("#spCard"); if(sc){
     sc.classList.toggle("used", !spOK);
     $("#spSub").textContent = demo ? "Create an account to unlock it." : spOK ? "10 real songs, Uncommon to Mythic" : `Claimed. Next one in ${fmtLong(s.spNext)}`;
@@ -901,9 +941,9 @@ function renderGrid(){
 function renderAll(){ renderProfile(); renderChips(); renderGrid(); }
 
 /* ----- views ----- */
-function showApp(){ $("#landing").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "app"; window.scrollTo(0,0); renderTabs(); renderAll(); }
-function showTrade(){ $("#landing").classList.add("hidden"); $("#app").classList.add("hidden"); $("#trade").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "trade"; window.scrollTo(0,0); renderTrade(true); if(TSUB === "find") loadTraders(TQ); }
-function showLanding(){ $("#app").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#landing").classList.remove("hidden"); $("#navLand").classList.remove("hidden"); $("#navApp").classList.add("hidden"); document.body.classList.remove("inapp"); VIEW = "landing"; window.scrollTo(0,0); }
+function showApp(){ stopRow(); $("#landing").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "app"; window.scrollTo(0,0); renderTabs(); renderAll(); }
+function showTrade(){ stopRow(); $("#landing").classList.add("hidden"); $("#app").classList.add("hidden"); $("#market").classList.add("hidden"); $("#trade").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "trade"; window.scrollTo(0,0); renderTrade(true); if(TSUB === "find") loadTraders(TQ); }
+function showLanding(){ stopRow(); $("#app").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.add("hidden"); $("#landing").classList.remove("hidden"); $("#navLand").classList.remove("hidden"); $("#navApp").classList.add("hidden"); document.body.classList.remove("inapp"); VIEW = "landing"; window.scrollTo(0,0); }
 function startGame(id, name){
   USER = id; UNAME = name || ""; FILTER = "all"; QUERY = ""; $("#q").value = "";
   ls.set("cards", CARDS); ls.set("userid", id); ls.set("uname", UNAME);
@@ -966,7 +1006,7 @@ function paintDetail(){
     : c.niche < 45 ? `Only about ${fmtN(c.pop)} people have listened to this on Last.fm. You found a deep cut.`
     : c.niche < 75 ? `Around ${fmtN(c.pop)} listeners on Last.fm. Known, but not everywhere.`
     : `${fmtN(c.pop)} listeners on Last.fm. A crowd favourite.`;
-  const story = (c.special && !c.traded ? "Dug up in a weekly special pack. " : "") + story0;
+  const story = (c.traded ? "" : c.src === "market" ? "Bought in the marketplace. " : c.src === "discovery" ? "Found in a Discovery pack picked for your taste. " : c.special ? "Dug up in a weekly special pack. " : "") + story0;
   const q = encodeURIComponent(c.artist + " " + c.name);
   $("#dInfo").style.setProperty("--c1", r.c1);
   $("#dInfo").innerHTML = `<span class="d-tag">${r.stars} ${r.name}</span>
@@ -974,7 +1014,7 @@ function paintDetail(){
     <p>${esc(story)}${c.tag ? ` Tagged ${esc(c.tag)}.` : ""}</p>
     <div class="d-facts"><div><b>${c.plays || "–"}</b><span>plays${c.hours ? ` (${c.hours} h)` : ""}</span></div><div><b>${100-c.niche}</b><span>rarity score</span></div><div><b>${esc(c.type)}</b><span>card type</span></div></div>
     <div class="player"><button class="pbtn" id="pBtn" type="button" data-act="preview" aria-label="Play preview"></button><div class="pmid"><div class="pt" id="pTitle"></div><div class="pbar"><i id="pFill"></i></div><div class="pcred">Preview via Apple Music</div></div><span class="ptime" id="pTime"></span></div>
-    <div class="d-actions"><button class="btn sm" data-act="save">Save image</button>${navigator.share ? '<button class="btn sm ghost" data-act="share">Share card</button>' : ""}
+    <div class="d-actions"><button class="btn sm" data-act="save">Save image</button>${AUTH_USER && USER !== "demo" && extrasList().some(e => e.id === c.id) ? `<button class="btn sm ghost" data-sell="${esc(c.id)}">Sell for <span class="coin" style="margin:0 .3em 0 .35em"></span>${sellValue(c)}</button>` : ""}${navigator.share ? '<button class="btn sm ghost" data-act="share">Share card</button>' : ""}
     <a class="btn sm ghost" href="https://open.spotify.com/search/${q}" target="_blank" rel="noopener">Find on Spotify</a></div>`;
   $$(".nav-arrow").forEach(b => b.classList.toggle("hidden", DLIST.length < 2));
   prepPreview(c);
@@ -997,7 +1037,7 @@ async function cardCanvas(c){
   const pill = `${r.stars} ${r.name}`; g.font = `750 24px ${F}`; const pw = g.measureText(pill).width + 44;
   rr(g,46,46,pw,48,24); g.fillStyle = "rgba(10,12,38,.7)"; g.fill(); g.lineWidth = 3; g.strokeStyle = r.c1; g.stroke(); g.fillStyle = "#fff"; g.textBaseline = "middle"; g.fillText(pill, 68, 71);
   g.textBaseline = "alphabetic"; g.fillStyle = r.c1; g.font = `650 26px ${F}`; g.fillText(c.type, 54, 700);
-  g.fillStyle = "rgba(255,255,255,.6)"; g.textAlign = "right"; g.fillText(c.traded ? "TRADED" : c.special ? "WEEKLY" : `#${String(c.no).padStart(3,"0")}/${CARDS.length}`, W-54, 700); g.textAlign = "left";
+  g.fillStyle = "rgba(255,255,255,.6)"; g.textAlign = "right"; g.fillText(srcLabel(c) ? srcLabel(c).toUpperCase() : `#${String(c.no).padStart(3,"0")}/${CARDS.length}`, W-54, 700); g.textAlign = "left";
   g.fillStyle = "#fff"; g.font = `850 62px ${F}`;
   const words = c.name.split(" "), lines = []; let cur = "";
   for(const w of words){ const t = cur ? cur+" "+w : w; if(g.measureText(t).width > W-108 && cur){ lines.push(cur); cur = w; } else cur = t; }
@@ -1042,31 +1082,31 @@ function rollPack(){
   return picks.sort((a,b) => b.niche - a.niche); // rarest revealed last
 }
 function setPackFace(mode){
-  $("#packBtn").className = "pack" + (mode === "special" ? " special" : "");
-  $("#pkName").textContent = mode === "special" ? "Weekly Special" : "Streamdex";
-  $("#pkSub").textContent = mode === "special" ? "10 real songs, Uncommon to Mythic" : "Daily pack, 5 cards";
+  $("#packBtn").className = "pack" + (mode === "special" ? " special" : mode === "taste" ? " taste" : "");
+  $("#pkName").textContent = mode === "special" ? "Weekly Special" : mode === "taste" ? "Discovery" : "Your Listens";
+  $("#pkSub").textContent = mode === "special" ? "10 real songs, Uncommon to Mythic" : mode === "taste" ? "5 songs picked for your taste" : "5 cards from your top songs";
   $("#packHint").textContent = "Tap the pack to open it";
 }
 function openStage(mode){
-  mode = mode === "special" ? "special" : "normal";
+  if(mode !== "special") mode = dailyType();
   if(!CARDS.length) return;
   const s = packs();
-  if(mode === "normal"){
-    if(revealed().size >= CARDS.length){ toast("You've discovered every card."); return; }
-    if(s.n < 1){ toast(`Your next daily packs arrive in ${fmtLong(s.next)}.`); return; }
-  } else {
+  if(mode === "special"){
     if(USER === "demo"){ toast("Create an account to unlock the weekly special pack."); return; }
     if(!s.sp){ toast(`Your next weekly pack arrives in ${fmtLong(s.spNext)}.`); return; }
+  } else {
+    if(mode === "normal" && revealed().size >= CARDS.length){ toast("You've discovered every card."); return; }
+    if(s.n < 1){ toast(`Your next daily packs arrive in ${fmtLong(s.next)}.`); return; }
   }
   PACK_MODE = mode; PACK = null; PACK_BUSY = false; setPackFace(mode);
-  $("#stage").style.setProperty("--stage-glow", mode === "special" ? "rgba(255,122,217,.45)" : "rgba(34,48,216,.5)");
+  $("#stage").style.setProperty("--stage-glow", mode === "special" ? "rgba(255,122,217,.45)" : mode === "taste" ? "rgba(31,182,201,.45)" : "rgba(34,48,216,.5)");
   $("#stage").classList.remove("hidden"); document.body.classList.add("noscroll"); showStep("pack"); $("#packBtn").focus();
 }
 function showStep(s){ $("#packStep").classList.toggle("hidden", s !== "pack"); $("#dealStep").classList.toggle("hidden", s !== "deal"); $("#sumStep").classList.toggle("hidden", s !== "sum"); }
 function closeStage(){ STAGE_ID++; $("#stage").classList.add("hidden"); document.body.classList.remove("noscroll"); PACK = null; renderAll(); }
 async function tearPack(){
   if(PACK_BUSY) return; PACK_BUSY = true;
-  if(PACK_MODE === "special") return tearSpecial();
+  if(PACK_MODE === "special" || PACK_MODE === "taste") return tearDig(PACK_MODE);
   if(!spendPack()){ PACK_BUSY = false; toast("No packs left right now."); return; }
   const cards = rollPack();
   if(!cards.length){ PACK_BUSY = false; toast("You've discovered every card."); return; }
@@ -1077,7 +1117,7 @@ async function tearPack(){
 }
 /* ----- weekly special pack: real songs picked at random from Last.fm tags ----- */
 const SPECIAL_MIX = [["mythic",1],["legendary",2],["epic",2],["rare",3],["uncommon",2]];
-const SPECIAL_PAGES = { uncommon:[1,10], rare:[5,40], epic:[20,120], legendary:[50,300], mythic:[120,700] };
+const SPECIAL_PAGES = { common:[1,8], uncommon:[1,10], rare:[5,40], epic:[20,120], legendary:[50,300], mythic:[120,700] };
 const TAG_POOL = ["rock","indie","pop","electronic","jazz","hip-hop","folk","metal","ambient","soul","rnb","punk","country","blues","classical","reggae","dance","house","techno","synthpop","shoegaze","post-punk","lo-fi","funk","disco","latin","k-pop","j-pop","trap","dream pop","indie folk","singer-songwriter","alternative","hardcore","psychedelic","trip-hop","drum and bass","dubstep","gospel","bossa nova","afrobeat","ska","emo","grunge","new wave","soundtrack","chillout","experimental","math rock","city pop","vaporwave","indie rock","indie pop","electropop","hip hop","soft rock","progressive rock","garage rock","downtempo","acoustic","instrumental","french","brazilian","afropop","bedroom pop","art pop","noise","funk soul"];
 const pickOne = a => a[Math.floor(Math.random() * a.length)];
 const shuffle = a => { a = [...a]; for(let i = a.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -1118,43 +1158,121 @@ async function digSpecial(onp){
   if(picks.length < 6) throw new Error("Couldn't dig up enough songs right now. Your weekly pack wasn't used, so try again in a moment.");
   const cards = picks.map(({ x, info }) => { const niche = nicheScore(info.listeners);
     return { id:"x:" + x.raw + "#" + Math.random().toString(36).slice(2,8), raw:x.raw, name:x.track, artist:x.artist, art:info.art || "", pop:info.listeners, miss:false, niche,
-      type:typeFor(info.tags), tag:info.tags[0] || "", plays:0, hours:0, affPct:Math.round(45 + (100 - niche)/2), special:true }; });
+      type:typeFor(info.tags), tag:info.tags[0] || "", plays:0, hours:0, affPct:Math.round(45 + (100 - niche)/2), special:true, src:"weekly" }; });
   await Promise.race([Promise.all(cards.map(async c => { try{ const m = await lookupPreview(c); if(m && m.a && !c.art) c.art = m.a; }catch{} })), sleep(6000)]);
   ls.set("spseen", [...seen, ...picks.map(p => p.x.raw)].slice(-500));
   return cards.sort((a,b) => b.niche - a.niche);
 }
-async function grantSpecial(cards){
+async function grantPack(cards, kind){
+  const bump = mp => {
+    if(kind === "special"){ if(mp.s) throw { code:"special-used" }; mp.s = 1; }
+    else { if(mp.u >= DAILY_PACKS) throw { code:"daily-used" }; mp.u++; }
+  };
   if(isInfinite()){ ls.set("extras", [...extrasList(), ...cards]); return; }
   if(cloudReady() && AUTH_USER){
     const r = await DB.runTransaction(async tx => {
       const ud = await tx.get(uref()), data = ud.exists ? ud.data() : {}, d = invOf(data);
       const mp = normPacks(mergePacks(data.packs, ls.get(packKey(), null)));
-      if(mp.s) throw { code:"special-used" };
-      mp.s = 1; d.extras.push(...cards);
+      bump(mp); d.extras.push(...cards);
       tx.set(uref(), { extras:d.extras, packs:mp }, { merge:true });
       return { d, mp };
     });
     mirror(r.d); ls.set(packKey(), r.mp);
   } else {
-    const p = packState(); if(p.s) throw { code:"special-used" };
-    p.s = 1; ls.set(packKey(), p); ls.set("extras", [...extrasList(), ...cards]);
+    const p = packState(); bump(p); ls.set(packKey(), p); ls.set("extras", [...extrasList(), ...cards]);
   }
 }
-async function tearSpecial(){
-  const id = STAGE_ID, pk = $("#packBtn"), hint = $("#packHint");
+async function tearDig(kind){
+  const id = STAGE_ID, pk = $("#packBtn"), hint = $("#packHint"), sp = kind === "special", verb = sp ? "Digging through the crates" : "Finding songs for you";
   const reset = msg => { pk.classList.remove("digging"); hint.textContent = "Tap the pack to open it"; PACK_BUSY = false; if(msg) toast(msg); };
-  if(!isInfinite() && !packs().sp){ reset("You already opened this week's special pack."); return; }
-  pk.classList.add("digging"); hint.textContent = "Digging through the crates…";
+  const s = packs();
+  if(!isInfinite() && (sp ? !s.sp : s.n < 1)){ reset(sp ? "You already opened this week's special pack." : "You're out of daily packs."); return; }
+  pk.classList.add("digging"); hint.textContent = verb + "…";
   let cards;
-  try{ cards = await digSpecial((n,t) => { if(id === STAGE_ID) hint.textContent = `Digging through the crates… ${n} of ${t} found`; }); }
+  try{ cards = await (sp ? digSpecial : digTaste)((n,t) => { if(id === STAGE_ID) hint.textContent = `${verb}… ${n} of ${t} found`; }); }
   catch(e){ if(id === STAGE_ID) reset(e.message || "Couldn't reach the song crates. Try again."); else PACK_BUSY = false; return; }
   if(id !== STAGE_ID){ PACK_BUSY = false; return; }
-  try{ await grantSpecial(cards); }
-  catch(e){ reset(e && e.code === "special-used" ? "You already opened this week's special pack." : tradeErrText(e)); updatePacks(); return; }
+  try{ await grantPack(cards, kind); }
+  catch(e){ reset(e && e.code === "special-used" ? "You already opened this week's special pack." : e && e.code === "daily-used" ? "You're out of daily packs." : tradeErrText(e)); updatePacks(); return; }
   pk.classList.remove("digging"); hint.textContent = ""; cloudSave();
   Snd.rip(); pk.classList.add("shake"); await sleep(REDUCED ? 60 : 650);
   pk.classList.remove("shake"); pk.classList.add("burst"); await sleep(REDUCED ? 60 : 380);
   buildDeal(cards); PACK_BUSY = false; updatePacks();
+}
+
+/* ----- Discovery pack: random real songs tailored to your taste ----- */
+const BAD_TAGS = new Set(["seen live","favorites","favourites","favorite","favourite","albums i own","american","british","male vocalists","female vocalists","male vocalist","female vocalist","under 2000 listeners","00s","90s","80s","70s","60s","10s","usa","uk","english","love","awesome","good","cool","beautiful","classic","spotify","all","fav","love at first listen"]);
+function tasteProfile(){
+  const own = ownedCards(), tags = new Map(), arts = new Map(), wt = c => Math.sqrt(Math.max(1, c.plays || 0));
+  own.forEach(c => { const t = (c.tag || "").toLowerCase().trim(), w = wt(c);
+    if(t && !BAD_TAGS.has(t)) tags.set(t, (tags.get(t)||0) + w); if(c.artist) arts.set(c.artist, (arts.get(c.artist)||0) + w); });
+  const top = m => [...m.entries()].sort((a,b) => b[1]-a[1]).map(e => e[0]);
+  const ns = own.map(c => ({ n:c.niche, w:wt(c) })).sort((a,b) => a.n - b.n), tot = ns.reduce((a,x) => a + x.w, 0);
+  let acc = 0, med = 50; for(const x of ns){ acc += x.w; if(acc >= tot/2){ med = x.n; break; } }
+  return { tags:top(tags).slice(0, 6), artists:top(arts).slice(0, 12), med };
+}
+async function similarArtists(name, key){
+  const ck = "sim:" + name.toLowerCase(), hit = ls.get(ck, null); if(hit) return hit;
+  const j = await lfmCall({ method:"artist.getsimilar", artist:name, limit:"25", autocorrect:"1", api_key:key });
+  const a = j.similarartists?.artist, out = (Array.isArray(a) ? a : a ? [a] : []).map(x => x.name).filter(Boolean);
+  ls.set(ck, out); return out;
+}
+async function artistTracks(artist, page, key){
+  const j = await lfmCall({ method:"artist.gettoptracks", artist, page:String(page), limit:"25", autocorrect:"1", api_key:key });
+  const t = j.toptracks?.track; return Array.isArray(t) ? t : (t ? [t] : []);
+}
+async function digTaste(onp){
+  const key = lfmKey(); if(!key) throw new Error("This site needs a Last.fm API key. The owner can add one.");
+  const prof = tasteProfile(), med = prof.med, mine = new Set(prof.artists.map(a => a.toLowerCase()));
+  const have = new Set([...CARDS.map(c => c.id.slice(2)), ...extrasList().map(c => c.raw || "")]);
+  const seen = new Set(ls.get("spseen", [])), used = new Set(), spare = [], got = { near:[], reach:[] }, need = { near:4, reach:1 };
+  const tier = rarityFor(med).key, [plo, phi] = SPECIAL_PAGES[tier] || [1,10];
+  const total = () => got.near.length + got.reach.length;
+  const consider = (x, info) => {
+    const niche = nicheScore(info.listeners);
+    if(got.reach.length < need.reach && niche <= med - 12) got.reach.push({ x, info });
+    else if(got.near.length < need.near && Math.abs(niche - med) <= 24) got.near.push({ x, info });
+    else spare.push({ x, info, niche });
+    onp(Math.min(total(), 5), 5);
+  };
+  const t0 = Date.now(); let rounds = 0, netFail = 0;
+  while(total() < 5 && Date.now() - t0 < 35000 && rounds++ < 30){
+    let cands = [];
+    try{
+      if(prof.artists.length && Math.random() < 0.6){
+        const sims = (await similarArtists(pickOne(prof.artists.slice(0, 8)), key)).filter(a => !mine.has(a.toLowerCase()));
+        if(!sims.length) continue;
+        const art = pickOne(sims.slice(0, 20)); let page = 1 + Math.floor(Math.random() * (med < 35 ? 4 : 2)), list = [];
+        for(let a = 0; a < 3 && !list.length; a++){ list = await artistTracks(art, page, key); if(!list.length) page = Math.max(1, Math.floor(page/2)); }
+        cands = shuffle(list).slice(0, 6).map(t => ({ artist:t.artist?.name || art, track:t.name, listeners:+t.listeners || 0 }));
+      } else {
+        const tag = prof.tags.length && Math.random() < 0.75 ? pickOne(prof.tags) : pickOne(TAG_POOL);
+        let page = plo + Math.floor(Math.random() * (phi - plo + 1)), list = [];
+        for(let a = 0; a < 4 && !list.length; a++){ list = await tagTracks(tag, page, key); if(!list.length) page = Math.max(1, Math.floor(page/2)); }
+        cands = shuffle(list).slice(0, 8).map(t => ({ artist:t.artist?.name || t.artist || "", track:t.name || "", listeners:0 }));
+      }
+    }catch(e){ if(++netFail >= 3) throw e; continue; }
+    cands = cands.map(x => ({ ...x, raw:(x.artist + "|" + x.track).toLowerCase() })).filter(x => x.artist && x.track && !used.has(x.raw) && !have.has(x.raw) && !seen.has(x.raw));
+    for(let i = 0; i < cands.length && total() < 5; i += 4){
+      await Promise.all(cands.slice(i, i+4).map(async x => {
+        used.add(x.raw);
+        if(x.listeners > 0){ consider(x, { listeners:x.listeners, miss:false, art:"", tags:[] }); return; }
+        let info; try{ info = await lastfmOne({ id:"t:" + x.raw, artist:x.artist, track:x.track }, key); }catch{ return; }
+        if(info && !info.miss) consider(x, info);
+      }));
+    }
+  }
+  let picks = [...got.near, ...got.reach];
+  if(picks.length < 5) picks = picks.concat(spare.sort((a,b) => Math.abs(a.niche - med) - Math.abs(b.niche - med)).slice(0, 5 - picks.length));
+  if(picks.length < 3) throw new Error("Couldn't find enough songs for you right now. Your pack wasn't used, so try again in a moment.");
+  await Promise.all(picks.map(async p => { if(p.info.tags.length) return;
+    try{ const i = await lastfmOne({ id:"t:" + p.x.raw, artist:p.x.artist, track:p.x.track }, key); if(!i.miss) p.info = { ...i, listeners:p.info.listeners || i.listeners }; }catch{} }));
+  const cards = picks.map(({ x, info }) => { const niche = nicheScore(info.listeners);
+    return { id:"x:" + x.raw + "#" + Math.random().toString(36).slice(2,8), raw:x.raw, name:x.track, artist:x.artist, art:info.art || "", pop:info.listeners, miss:false, niche,
+      type:typeFor(info.tags), tag:info.tags[0] || "", plays:0, hours:0, affPct:Math.round(45 + (100 - niche)/2), src:"discovery" }; });
+  await Promise.race([Promise.all(cards.map(async c => { try{ const m = await lookupPreview(c); if(m && m.a && !c.art) c.art = m.a; }catch{} })), sleep(6000)]);
+  ls.set("spseen", [...seen, ...picks.map(p => p.x.raw)].slice(-500));
+  return cards.sort((a,b) => b.niche - a.niche);
 }
 
 /* ----- 30-second song previews (Apple's free iTunes Search API) ----- */
@@ -1249,13 +1367,13 @@ function revealFx(c, el){
   if(i <= 2){ const b = el.getBoundingClientRect(); FX.burst(b.left + b.width/2, b.top + b.height/2, [r.c1, r.c2, "#ffffff"], [180,100,50][i]); }
 }
 function showSummary(){
-  const best = PACK.cards.reduce((a,b) => a.niche <= b.niche ? a : b), r = rarityFor(best.niche), sp = PACK_MODE === "special";
-  $("#sumTitle").textContent = rarityIdx(best) <= 3 ? `You pulled a ${r.name}` : (sp ? "Weekly Special opened" : "Pack opened");
-  $("#sumSub").textContent = (sp ? "10 real songs, all new to you. " : "") + `Best card: ${best.name} by ${best.artist}`;
+  const best = PACK.cards.reduce((a,b) => a.niche <= b.niche ? a : b), r = rarityFor(best.niche), m = PACK_MODE;
+  $("#sumTitle").textContent = rarityIdx(best) <= 3 ? `You pulled a ${r.name}` : m === "special" ? "Weekly Special opened" : m === "taste" ? "Discovery pack opened" : "Pack opened";
+  $("#sumSub").textContent = (m === "special" ? "10 real songs, all new to you. " : m === "taste" ? "Picked from the music you love. " : "") + `Best card: ${best.name} by ${best.artist}`;
   $("#sumGrid").innerHTML = PACK.cards.map(c => cardHTML(c, CARDS.length)).join("");
-  const s = packs(), left = CARDS.length - revealed().size, a = $("#again");
-  a.textContent = left <= 0 ? "Collection complete" : isInfinite() ? "Open another pack" : s.n > 0 ? `Open a daily pack (${s.n} left)` : `Next daily packs in ${fmtLong(s.next)}`;
-  a.disabled = left <= 0 || (!isInfinite() && s.n < 1);
+  const s = packs(), a = $("#again"), t = dailyType(), left = CARDS.length - revealed().size, can = isInfinite() ? true : s.n > 0 && (t === "taste" || left > 0);
+  a.textContent = can ? (isInfinite() ? "Open another pack" : `Open another pack (${s.n} left)`) : s.n < 1 ? `Next daily packs in ${fmtLong(s.next)}` : "Collection complete";
+  a.disabled = !can;
   showStep("sum"); $("#stage").style.setProperty("--stage-glow", "rgba(34,48,216,.5)");
 }
 
@@ -1270,14 +1388,14 @@ const actions = {
     try{ await navigator.clipboard.writeText(url); toast("Link copied. Send it to a friend."); }catch{ toast(url); } },
   "reset": async () => { $("#menu")?.removeAttribute("open");
     if(TRADES.some(t => t.status === "pending")){ toast("Finish or cancel your open trades first."); return; }
-    if(!confirm("Reset your collection? Your cards, progress and traded cards are cleared and you start fresh. Your in-game name stays. This can't be undone.")) return;
+    if(!confirm("Reset your collection? Your cards, progress, bought and traded songs are cleared and you start fresh. Your in-game name and coins stay. This can't be undone.")) return;
     const name = lfmName(); ["revealed:"+USER, "lost", "extras"].forEach(k => ls.del(k));
     if(cloudReady() && AUTH_USER){ try{ await uref().set({ revealed:[], lost:[], extras:[], cards:[] }, { merge:true }); }catch{} }
     if(name) handleUser(name); else { CARDS = []; USER = "me"; showLanding(); } },
   "auth": () => { AUTH_USER ? signOutGoogle() : signInGoogle(); },
   "signout": () => { $("#menu")?.removeAttribute("open"); signOutGoogle(); },
   "start": () => { AUTH_USER ? cloudPull() : signInGoogle(); },
-  "tab-col": showApp, "tab-trade": showTrade,
+  "tab-col": showApp, "tab-trade": showTrade, "tab-market": showMarket, "claim-daily": () => claimDaily(),
   "trade-refresh": () => loadTraders(TQ),
   "composer-close": closeComposer, "send-offer": sendOffer,
   "wiz-roll": () => { WIZ.handle = genHandle(); const h = $("#hName"); if(h) h.textContent = WIZ.handle; },
@@ -1287,7 +1405,7 @@ const actions = {
   "refresh": () => { $("#menu")?.removeAttribute("open"); const n = lfmName(); if(!n){ toast("Link your Last.fm first."); return; } handleUser(n); },
   "open-pack": openStage,
   "tear": tearPack,
-  "again": () => { PACK = null; openStage("normal"); },
+  "again": () => { PACK = null; openStage(); },
   "open-special": () => openStage("special"),
   "preview": togglePreview,
   "stage-close": closeStage,
@@ -1299,7 +1417,7 @@ document.addEventListener("click", e => {
   const a = e.target.closest("[data-act]");
   if(a){ const f = actions[a.dataset.act]; if(f){ if(a.tagName === "A") e.preventDefault(); f(a, e); return; } }
   const fl = e.target.closest("[data-filter]"); if(fl){ FILTER = fl.dataset.filter; renderChips(); renderGrid(); return; }
-  if(tradeClick(e)) return;
+  if(tradeClick(e) || marketClick(e)) return;
   const op = e.target.closest("[data-open]"); if(op){ openDetail(op.dataset.open); return; }
   if(e.target.closest("[data-gone]")){ toast("You traded this card away."); return; }
   if(e.target.closest("[data-locked]")){ toast("Open packs to discover this card."); return; }
@@ -1328,7 +1446,7 @@ const pref = () => DB.collection("profiles").doc(AUTH_USER.uid);
 const iref = () => DB.collection("inventories").doc(AUTH_USER.uid);
 const lostSet = () => USER === "demo" ? new Set() : new Set(ls.get("lost", []));
 const extrasList = () => USER === "demo" ? [] : ls.get("extras", []);
-function ownedPred(){ const rev = revealed(), lost = lostSet(); return c => !!c.traded || !!c.special || (rev.has(c.id) && !lost.has(c.id)); }
+function ownedPred(){ const rev = revealed(), lost = lostSet(); return c => c.id.startsWith("x:") || (rev.has(c.id) && !lost.has(c.id)); }
 function ownedCards(){ const rev = revealed(), lost = lostSet(); return [...CARDS.filter(c => rev.has(c.id) && !lost.has(c.id)), ...extrasList()]; }
 const hueOf = s => [...String(s)].reduce((a,c) => (a*31 + c.charCodeAt(0)) % 360, 7);
 const ago = ms => { const s = Math.floor((Date.now()-ms)/1000); if(s < 60) return "just now"; const m = Math.floor(s/60); if(m < 60) return m+"m ago"; const h = Math.floor(m/60); return h < 24 ? h+"h ago" : Math.floor(h/24)+"d ago"; };
@@ -1347,7 +1465,7 @@ function addIncoming(d, c){
 const tradeCard = c => ({ ...c, raw: c.raw || c.id.replace(/^t:/, "") });
 /*END INV*/
 function mirror(d){ ls.set("lost", d.lost); ls.set("extras", d.extras); ls.set("applied", d.applied); }
-function refreshViews(){ if(VIEW === "app") renderAll(); else if(VIEW === "trade") renderTrade(true); }
+function refreshViews(){ if(VIEW === "app") renderAll(); else if(VIEW === "trade") renderTrade(true); else if(VIEW === "market") renderMarket(true); paintCoins(); }
 
 /* ----- messages ----- */
 function setSync(t, ok){ const el = $("#syncMsg"); if(!el) return; el.textContent = t; el.classList.toggle("ok", !!ok); }
@@ -1362,6 +1480,9 @@ function cloudErrText(e){
 }
 function tradeErrText(e){
   const c = e && e.code;
+  if(c === "no-coins") return "You don't have enough coins for that.";
+  if(c === "already-owned") return "You already own this song.";
+  if(c === "claimed") return "You already claimed today's bonus.";
   if(c === "not-owned") return "You don't have one of those cards any more.";
   if(c === "trade-gone") return "That offer isn't available any more.";
   return cloudErrText(e);
@@ -1384,7 +1505,7 @@ function initCloud(){
     firebase.initializeApp(cfg); AUTH = firebase.auth(); DB = firebase.firestore();
     try{ DB.settings({ experimentalAutoDetectLongPolling:true, merge:true }); }catch{}
     AUTH.getRedirectResult().catch(e => { if(e && e.code !== "auth/no-auth-event") toast("Sign-in failed. Try again."); });
-    AUTH.onAuthStateChanged(async u => { AUTH_USER = u; if(u) ls.set("uid", u.uid); paintAuth(); CLOUD_META = null; stopTrades(); if(u) await cloudPull(); else { setBanner(null); renderTabs(); if(VIEW === "trade") renderTrade(true); } });
+    AUTH.onAuthStateChanged(async u => { AUTH_USER = u; if(u) ls.set("uid", u.uid); paintAuth(); paintCoins(); CLOUD_META = null; stopTrades(); if(u) await cloudPull(); else { setBanner(null); renderTabs(); if(VIEW === "trade") renderTrade(true); } });
   }catch{ AUTH = DB = null; }
 }
 async function signInGoogle(){
@@ -1397,14 +1518,14 @@ async function signInGoogle(){
     else if(e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast("Sign-in failed. Try again.");
   }
 }
-function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|uid|lfmuser|handle|lost|extras|applied|revealed:|packs:|spseen)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
+function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|uid|lfmuser|handle|lost|extras|applied|coins|claim|revealed:|packs:|spseen)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
 async function signOutGoogle(){
   if(!cloudReady()) return;
   clearTimeout(saveT);
   const ok = await cloudSaveNow();
   if(!ok && !confirm("We couldn't back up your latest changes. Signing out will remove this device's copy. Sign out anyway?")) return;
   try{ await AUTH.signOut(); }catch{ toast("Couldn't sign out. Try again."); return; }
-  wipeLocal(); CARDS = []; USER = "me"; UNAME = ""; HANDLE = ""; closeWizard(); closeComposer(); setBanner(null); showLanding(); toast("Signed out.");
+  wipeLocal(); COINS = 0; stopRow(); CARDS = []; USER = "me"; UNAME = ""; HANDLE = ""; closeWizard(); closeComposer(); setBanner(null); showLanding(); toast("Signed out.");
 }
 
 /* ----- cloud save ----- */
@@ -1439,7 +1560,10 @@ async function cloudPull(){
   CLOUD_META = { userid:d.userid, n:(d.revealed || []).length };
   if(d.lfm) ls.set("lfmuser", d.lfm);
   ls.set("lost", d.lost || []); ls.set("extras", d.extras || []); ls.set("applied", d.applied || []);
-  HANDLE = d.handle || ""; ls.set("handle", HANDLE);
+  HANDLE = d.handle || ""; ls.set("handle", HANDLE); ls.set("claim", d.claim || null);
+  if(typeof d.coins === "number") setCoins(d.coins);
+  else if(HANDLE){ setCoins(WELCOME_COINS); uref().set({ coins:WELCOME_COINS }, { merge:true }).catch(() => {}); toast(`Welcome gift: ${WELCOME_COINS} coins for the marketplace.`); }
+  else setCoins(0);
   if(Array.isArray(d.cards) && d.cards.length){
     const localUser = ls.get("userid", "me"), merged = new Set(d.revealed || []);
     if(localUser === d.userid) ls.get("revealed:" + localUser, []).forEach(id => merged.add(id));
@@ -1497,11 +1621,14 @@ function finishRegistration(){
 }
 async function claimHandle(h){
   const lower = h.toLowerCase(), hr = DB.collection("handles").doc(lower);
-  await DB.runTransaction(async tx => {
-    if((await tx.get(hr)).exists) throw { code:"handle-taken" };
+  return DB.runTransaction(async tx => {
+    const taken = await tx.get(hr), ud = await tx.get(uref());
+    if(taken.exists) throw { code:"handle-taken" };
+    const coins = ud.exists && typeof ud.data().coins === "number" ? ud.data().coins : WELCOME_COINS;
     tx.set(hr, { uid:AUTH_USER.uid, handle:h, created:Date.now() });
-    tx.set(uref(), { handle:h, lfm:lfmName() }, { merge:true });
+    tx.set(uref(), { handle:h, lfm:lfmName(), coins }, { merge:true });
     tx.set(pref(), { handle:h, handleLower:lower, owned:0, power:0, rarest:null, updated:Date.now() }, { merge:true });
+    return coins;
   });
 }
 async function wizClaim(){
@@ -1509,7 +1636,7 @@ async function wizClaim(){
   const go = $("#wizGo"); if(go){ go.disabled = true; go.textContent = "Creating…"; }
   let ok = false;
   for(let i = 0; i < 6 && !ok; i++){
-    try{ await claimHandle(WIZ.handle); ok = true; }
+    try{ setCoins(await claimHandle(WIZ.handle)); ok = true; }
     catch(e){
       if(e && e.code === "handle-taken"){ WIZ.handle = genHandle(); continue; }
       WIZ.busy = false; if(go){ go.disabled = false; go.textContent = "Create my account"; } wizMsg(cloudErrText(e)); return;
@@ -1591,7 +1718,7 @@ async function cancelTrade(id){
 const incomingN = () => AUTH_USER ? TRADES.filter(t => t.to === AUTH_USER.uid && t.status === "pending").length : 0;
 function renderTabs(){
   const n = incomingN();
-  const h = `<button class="tab ${VIEW === "app" ? "on" : ""}" data-act="tab-col">Collection</button><button class="tab ${VIEW === "trade" ? "on" : ""}" data-act="tab-trade">Trade${n ? `<b class="badge">${n}</b>` : ""}</button>`;
+  const h = `<button class="tab ${VIEW === "app" ? "on" : ""}" data-act="tab-col">Collection</button><button class="tab ${VIEW === "trade" ? "on" : ""}" data-act="tab-trade">Trade${n ? `<b class="badge">${n}</b>` : ""}</button><button class="tab ${VIEW === "market" ? "on" : ""}" data-act="tab-market">Market</button>`;
   $$(".tabbar").forEach(e => e.innerHTML = h);
 }
 function thumbs(cards){
@@ -1741,6 +1868,189 @@ document.addEventListener("submit", e => {
   const v = $("#wUser").value.trim().replace(/^@/, ""); if(!v){ wizMsg("Enter your Last.fm username to continue."); return; } wizBuild(v);
 });
 
+
+
+/* ================= coins + marketplace ================= */
+let MKT = { q:"", items:[], busy:false, label:"", tok:0, buying:false };
+const MV = { a:null, i:-1 };
+const MGENRES = ["indie","hip-hop","electronic","jazz","rock","pop","lo-fi","r&b","folk","metal","house","soul"];
+const coinHTML = n => `<span class="coin"></span>${Number(n).toLocaleString()}`;
+const marketOK = () => !!(cloudReady() && AUTH_USER && HANDLE && USER !== "demo");
+const canClaim = () => marketOK() && (ls.get("claim", null) || {}).d !== dayKey();
+const streakNow = () => { const c = ls.get("claim", null) || {}; return c.d === dayKey() ? (c.st || 1) : c.d === dayKey(Date.now() - 864e5) ? (c.st || 0) : 0; };
+const bonusFor = st => Math.min(DAILY_BONUS.max, DAILY_BONUS.base + DAILY_BONUS.step * Math.max(0, st - 1));
+function setCoins(n){ COINS = Math.max(0, Math.round(+n || 0)); ls.set("coins", COINS); paintCoins(); }
+function paintCoins(){
+  const chip = $("#coinChip"); if(!chip) return;
+  chip.classList.toggle("hidden", !marketOK());
+  $("#coinN").textContent = COINS.toLocaleString();
+  chip.classList.toggle("glow", canClaim());
+}
+function ownedRaws(){
+  const out = new Set(extrasList().map(c => c.raw || "")), isO = ownedPred(); CARDS.forEach(c => { if(isO(c)) out.add(c.id.slice(2)); }); return out;
+}
+async function claimDaily(){
+  if(!canClaim()) return;
+  try{
+    const r = await DB.runTransaction(async tx => {
+      const ud = await tx.get(uref()), data = ud.exists ? ud.data() : {}, today = dayKey(), c = data.claim || {};
+      if(c.d === today) throw { code:"claimed" };
+      const st = c.d === dayKey(Date.now() - 864e5) ? (c.st || 1) + 1 : 1, amt = bonusFor(st);
+      const coins = (typeof data.coins === "number" ? data.coins : 0) + amt;
+      tx.set(uref(), { coins, claim:{ d:today, st } }, { merge:true });
+      return { coins, claim:{ d:today, st }, amt };
+    });
+    ls.set("claim", r.claim); setCoins(r.coins); toast(`+${r.amt} coins. ${r.claim.st > 1 ? "Day " + r.claim.st + " streak." : "See you tomorrow."}`);
+    FX.burst(innerWidth/2, 180, ["#ffd34d","#fff3b0","#ffffff"], 70); if(VIEW === "market") renderMarket(true);
+  }catch(e){ if(e && e.code === "claimed"){ ls.set("claim", { d:dayKey(), st:streakNow() || 1 }); paintCoins(); if(VIEW === "market") renderMarket(true); } toast(tradeErrText(e)); }
+}
+function showMarket(){
+  stopRow(); $("#landing").classList.add("hidden"); $("#app").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.remove("hidden");
+  $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "market"; window.scrollTo(0,0);
+  renderMarket(true); if(marketOK() && !MKT.items.length && !MKT.q) loadFeed();
+}
+function renderMarket(force){
+  renderTabs(); paintCoins();
+  const head = $("#mHead"), body = $("#mBody"); if(!head) return;
+  const gate = (t, p, btn, act) => { head.innerHTML = `<div class="panel gate"><h2>${t}</h2><p class="muted">${p}</p>${btn ? `<button class="btn lg" data-act="${act}">${btn}</button>` : ""}</div>`; body.innerHTML = ""; };
+  if(USER === "demo") return gate("The market is for real collections", "The demo is just for looking around. Create an account to earn coins and buy any song you like.", "Create my account", "start");
+  if(!AUTH_USER) return gate("Sign in to shop", "Coins and the marketplace belong to your account. It takes about a minute to set up.", "Continue with Google", "start");
+  if(!HANDLE) return gate("One more step", "Finish setting up your account to get your welcome coins.", "Finish setup", "wiz-open");
+  const tiers = [["mythic",7],["legendary",22],["epic",37],["rare",52],["uncommon",67],["common",87]].map(([k,n]) => { const r = RARITIES.find(x => x.key === k); return `<span class="ptier" style="--c1:${r.c1}">${r.name} &middot; <span class="coin" style="margin:0 .3em 0 .45em"></span>~${priceFor(n).toLocaleString()}</span>`; }).join("");
+  const claim = canClaim() ? `<button class="btn" data-act="claim-daily">Claim daily bonus +${bonusFor(streakNow() + 1)}</button>` : `<span class="muted">Daily bonus claimed${streakNow() > 1 ? " (" + streakNow() + " day streak)" : ""}. Come back tomorrow for +${bonusFor(streakNow() + 1)}.</span>`;
+  head.innerHTML = `<section class="m-head"><div class="panel"><div class="muted">Your coins</div><div class="bal"><span class="coin lg"></span>${COINS.toLocaleString()}</div><div class="m-claim">${claim}</div></div>
+    <div class="panel"><h3 class="ph">How coins work</h3><ul class="howlist"><li><b>Earn</b> a daily bonus (${DAILY_BONUS.base} coins, growing to ${DAILY_BONUS.max} with a streak).</li><li><b>Earn</b> by selling songs from packs, trades or the market for a quarter of their price. Open any of those cards and hit Sell.</li><li><b>Spend</b> on any song in the world. The rarer it is, the more it costs.</li></ul><div class="ptiers">${tiers}</div></div></section>`;
+  if(force || !$("#mq")){
+    body.innerHTML = `<form id="mForm" class="tools" autocomplete="off"><label class="sr" for="mq">Search songs</label><input id="mq" type="search" placeholder="Search any song or artist, e.g. “Creep by Radiohead”" value="${esc(MKT.q)}"><button class="btn" type="submit">Search</button></form>
+      <div class="seg" id="mGenres" style="margin:0 0 18px"><button class="chip" data-genre="__pop">Popular now</button>${MGENRES.map(g => `<button class="chip" data-genre="${esc(g)}">${esc(g)}</button>`).join("")}<button class="chip" data-genre="__rand">Surprise me</button></div>
+      <p class="mnote" id="mNote"></p><div class="mlist" id="mList"></div>`;
+  }
+  paintList();
+}
+function paintList(){
+  const list = $("#mList"); if(!list) return;
+  $("#mNote").textContent = MKT.busy ? "Searching…" : MKT.label;
+  if(MKT.busy){ list.innerHTML = '<div class="empty">Looking through the crates…</div>'; return; }
+  const own = ownedRaws();
+  list.innerHTML = MKT.items.length ? MKT.items.map((it, i) => {
+    const niche = nicheScore(it.listeners), r = rarityFor(niche), price = priceFor(niche), owned = own.has(it.raw), afford = COINS >= price;
+    const art = it.art || genArt("t:" + it.raw);
+    return `<div class="mrow" data-i="${i}"><button class="mplay" data-mplay="${i}" ${it.prev === null ? "disabled" : ""} aria-label="Play 30-second preview of ${esc(it.track)}">${MV.i === i && MV.a && !MV.a.paused ? IC_PAUSE : IC_PLAY}</button>
+      <img class="mart" alt="" loading="lazy" src="${esc(art)}" data-seed="${esc("t:" + it.raw)}"><div class="minfo"><b>${esc(it.track)}</b><span>${esc(it.artist)}</span></div>
+      <div class="mright"><span class="ptier" style="--c1:${r.c1}">${r.stars} ${r.name}</span><small>${it.listeners >= 100 ? fmtN(it.listeners) + " listeners" : "under 100 listeners"}</small>
+      ${owned ? '<button class="btn sm ghost" disabled>Owned</button>' : `<button class="btn sm ${afford ? "" : "cant"}" data-buy="${i}" aria-label="Buy ${esc(it.track)} for ${price} coins">Buy ${coinHTML(price)}</button>`}</div></div>`; }).join("")
+    : `<div class="empty">${MKT.q ? "No songs found. Try the song title with the artist, like “Creep by Radiohead”." : "Nothing to show yet."}</div>`;
+}
+const dedupeItems = a => { const seen = new Set(); return a.filter(x => x.artist && x.track && !seen.has(x.raw) && seen.add(x.raw)); };
+const mkItem = (artist, track, listeners) => ({ artist, track, listeners:+listeners || 0, raw:(artist + "|" + track).toLowerCase() });
+async function setItems(label, task){
+  const tok = ++MKT.tok; stopRow(); MKT.busy = true; MKT.label = label; paintList();
+  let items = [];
+  try{ items = dedupeItems(await task()); }catch(e){ toast(e.message || "Couldn't reach Last.fm. Try again."); }
+  if(tok !== MKT.tok) return;
+  MKT.items = items; MKT.busy = false; paintList(); fillArt(tok);
+}
+function runSearch(q){
+  q = String(q || "").trim(); MKT.q = q;
+  if(q.length < 2){ toast("Type at least 2 letters."); return; }
+  const m = q.match(/^(.*?)\s+(?:by|-)\s+(.+)$/i), key = lfmKey();
+  return setItems(`Results for “${q}”`, async () => {
+    const j = await lfmCall({ method:"track.search", track:m ? m[1] : q, ...(m ? { artist:m[2] } : {}), limit:"24", api_key:key });
+    const t = j.results?.trackmatches?.track, arr = Array.isArray(t) ? t : (t ? [t] : []);
+    return arr.map(x => mkItem(x.artist, x.name, x.listeners)).filter(x => x.listeners > 0);
+  });
+}
+function loadFeed(){
+  MKT.q = ""; const key = lfmKey();
+  return setItems("Popular right now", async () => {
+    const j = await lfmCall({ method:"chart.gettoptracks", page:String(1 + Math.floor(Math.random() * 3)), limit:"24", api_key:key });
+    const t = j.tracks?.track, arr = Array.isArray(t) ? t : (t ? [t] : []);
+    return arr.map(x => mkItem(x.artist?.name || "", x.name, x.listeners));
+  });
+}
+function loadGenre(g){
+  if(g === "__pop") return loadFeed();
+  const tag = g === "__rand" ? pickOne(TAG_POOL) : g, key = lfmKey(); MKT.q = ""; const mq = $("#mq"); if(mq) mq.value = "";
+  return setItems(g === "__rand" ? `Surprise picks from ${tag}` : `Deep cuts in ${tag}`, async () => {
+    let page = 1 + Math.floor(Math.random() * 60), list = [];
+    for(let a = 0; a < 4 && !list.length; a++){ list = await tagTracks(tag, page, key); if(!list.length) page = Math.max(1, Math.floor(page/2)); }
+    const pool = shuffle(list).slice(0, 12).map(x => ({ artist:x.artist?.name || x.artist || "", track:x.name || "" })).filter(x => x.artist && x.track), out = [];
+    for(let i = 0; i < pool.length; i += 4){
+      await Promise.all(pool.slice(i, i+4).map(async x => { try{ const info = await lastfmOne({ id:"t:" + (x.artist + "|" + x.track).toLowerCase(), artist:x.artist, track:x.track }, key);
+        if(info && !info.miss) out.push({ ...mkItem(x.artist, x.track, info.listeners), art:info.art || "" }); }catch{} }));
+    }
+    return out.sort((a,b) => a.listeners - b.listeners);
+  });
+}
+async function fillArt(tok){
+  const items = MKT.items.slice(0, 16); let i = 0;
+  const worker = async () => { while(i < items.length){ const it = items[i++];
+    try{ const m = await lookupPreview({ artist:it.artist, name:it.track }); if(tok !== MKT.tok) return; it.prev = m && m.u ? m.u : null; if(m && m.a && !it.art) it.art = m.a; }catch{ if(tok !== MKT.tok) return; }
+    if(tok !== MKT.tok) return; const row = $(`.mrow[data-i="${MKT.items.indexOf(it)}"]`); if(!row) continue;
+    const pb = row.querySelector(".mplay"); if(pb && it.prev === null) pb.disabled = true; const im = row.querySelector(".mart"); if(im && it.art){ im.dataset.fb = ""; im.src = it.art; } } };
+  await Promise.all([worker(), worker(), worker()]);
+}
+function stopRow(){ if(MV.a){ const a = MV.a; MV.a = null; a.pause(); a.removeAttribute("src"); try{ a.load(); }catch{} } MV.i = -1; $$(".mplay").forEach(b => { b.innerHTML = IC_PLAY; }); }
+async function playRow(i){
+  const it = MKT.items[i]; if(!it) return;
+  if(MV.a && MV.i === i){ if(MV.a.paused){ MV.a.play().catch(() => {}); setRowBtn(i, true); } else { MV.a.pause(); setRowBtn(i, false); } return; }
+  stopRow();
+  if(it.prev === undefined){ try{ const m = await lookupPreview({ artist:it.artist, name:it.track }); it.prev = m && m.u ? m.u : null; if(m && m.a && !it.art) it.art = m.a; }catch{ toast("Couldn't reach the music service."); return; } }
+  if(!it.prev){ toast("No preview available for this song."); const b = $(`.mplay[data-mplay="${i}"]`); if(b) b.disabled = true; return; }
+  const a = new Audio(it.prev); MV.a = a; MV.i = i;
+  a.addEventListener("ended", () => { if(MV.a === a){ stopRow(); } });
+  a.addEventListener("error", () => { if(MV.a === a){ stopRow(); toast("Couldn't play this preview."); } });
+  setRowBtn(i, true); a.play().catch(() => { if(MV.a === a){ stopRow(); toast("Your browser blocked playback. Tap play again."); } });
+}
+function setRowBtn(i, playing){ const b = $(`.mplay[data-mplay="${i}"]`); if(b) b.innerHTML = playing ? IC_PAUSE : IC_PLAY; }
+async function buyItem(i){
+  const it = MKT.items[i]; if(!it || MKT.buying || !marketOK()) return;
+  const niche = nicheScore(it.listeners), price = priceFor(niche);
+  if(ownedRaws().has(it.raw)){ toast("You already own this song."); return; }
+  if(COINS < price){ toast(`You need ${(price - COINS).toLocaleString()} more coins. Claim your daily bonus or sell a song.`); return; }
+  if(!confirm(`Buy “${it.track}” by ${it.artist} for ${price.toLocaleString()} coins?`)) return;
+  MKT.buying = true; stopRow();
+  try{
+    let info = null; try{ info = await lastfmOne({ id:"t:" + it.raw, artist:it.artist, track:it.track }, lfmKey()); }catch{}
+    let art = (info && info.art) || it.art || ""; if(!art){ try{ const m = await lookupPreview({ artist:it.artist, name:it.track }); art = (m && m.a) || ""; }catch{} }
+    const card = { id:"x:" + it.raw + "#" + Math.random().toString(36).slice(2,8), raw:it.raw, name:it.track, artist:it.artist, art, pop:it.listeners, miss:it.listeners < 100, niche,
+      type:typeFor(info ? info.tags : []), tag:(info && info.tags[0]) || "", plays:0, hours:0, affPct:Math.round(45 + (100 - niche)/2), src:"market" };
+    const r = await DB.runTransaction(async tx => {
+      const ud = await tx.get(uref()), data = ud.exists ? ud.data() : {}, d = invOf(data), coins = typeof data.coins === "number" ? data.coins : 0;
+      if(coins < price) throw { code:"no-coins" };
+      if(d.extras.some(e => e.raw === it.raw) || ownsCard(d, { id:"t:" + it.raw })) throw { code:"already-owned" };
+      d.extras.push(card); tx.set(uref(), { extras:d.extras, coins:coins - price }, { merge:true });
+      return { d, coins:coins - price };
+    });
+    mirror(r.d); setCoins(r.coins); cloudSave(); toast(`Bought ${it.track}. It's in your collection.`); flashBanner(rarityFor(niche).name, rarityFor(niche).c1);
+    FX.burst(innerWidth/2, innerHeight/2, [rarityFor(niche).c1, "#ffd34d", "#ffffff"], 90);
+  }catch(e){ toast(tradeErrText(e)); }
+  MKT.buying = false; renderMarket(false);
+}
+async function sellCard(id){
+  const c = extrasList().find(e => e.id === id); if(!c || !marketOK()) return;
+  const v = sellValue(c);
+  if(!confirm(`Sell “${c.name}” for ${v.toLocaleString()} coins? You could buy it back from the market for ${priceFor(c.niche).toLocaleString()}.`)) return;
+  try{
+    const r = await DB.runTransaction(async tx => {
+      const ud = await tx.get(uref()), data = ud.exists ? ud.data() : {}, d = invOf(data);
+      if(!ownsCard(d, c)) throw { code:"not-owned" };
+      removeCard(d, c); const coins = (typeof data.coins === "number" ? data.coins : 0) + v;
+      tx.set(uref(), { lost:d.lost, extras:d.extras, coins }, { merge:true }); return { d, coins };
+    });
+    mirror(r.d); setCoins(r.coins); closeDetail(); toast(`Sold for ${v.toLocaleString()} coins.`); cloudSave(); refreshViews();
+  }catch(e){ toast(tradeErrText(e)); }
+}
+function marketClick(e){
+  const t = e.target; let el;
+  if((el = t.closest("[data-buy]"))){ buyItem(+el.dataset.buy); return true; }
+  if((el = t.closest("[data-mplay]"))){ playRow(+el.dataset.mplay); return true; }
+  if((el = t.closest("[data-genre]"))){ loadGenre(el.dataset.genre); return true; }
+  if((el = t.closest("[data-sell]"))){ sellCard(el.dataset.sell); return true; }
+  return false;
+}
+document.addEventListener("submit", e => { if(e.target.id === "mForm"){ e.preventDefault(); runSearch($("#mq").value); } });
+document.addEventListener("input", e => { if(e.target.id === "mq") MKT.q = e.target.value; });
 
 /* ================= boot ================= */
 FX.init(); paintSound(); renderFan(); renderLedger();
