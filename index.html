@@ -183,6 +183,22 @@ footer a{color:var(--muted)}
 .packdots{display:flex;gap:7px}
 .packdots i{width:30px;height:42px;border-radius:6px;border:1.5px solid var(--line);background:rgba(255,255,255,.04)}
 .packdots i.on{background:var(--orange);border-color:transparent}
+.pp-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.sp{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 16px;border-radius:14px;color:var(--ink);background:linear-gradient(115deg,#ffd34d,#ff7ad9 55%,#a98bff)}
+.sp-t{font-weight:850;font-size:18px;letter-spacing:-.01em}.sp-s{font-size:14px;font-weight:600;opacity:.8}
+.sp .btn{background:var(--ink);color:var(--paper);box-shadow:none}
+.sp.used{background:var(--ink);color:var(--paper);border:1.5px dashed var(--line)}.sp.used .btn{background:transparent;color:var(--muted);border:1.5px solid var(--line)}
+.pack.special{background:radial-gradient(110% 70% at 20% 0%,rgba(255,255,255,.55),transparent 55%),conic-gradient(from 200deg at 50% 62%,#2a1068,#ff7ad9,#ffd34d,#6bffb0,#6bc5ff,#2a1068);box-shadow:0 30px 70px -20px rgba(255,122,217,.65),0 0 0 2px rgba(255,255,255,.35) inset}
+.pack.digging{animation:shake .6s linear infinite}
+.player{display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px;margin:0 0 18px;border-radius:14px;background:var(--ink);border:1.5px solid var(--line)}
+.pbtn{width:48px;height:48px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;flex:none;transition:transform .15s}
+.pbtn:hover:not(:disabled){transform:scale(1.07)}.pbtn:disabled{opacity:.35;cursor:default}
+.pbtn svg{width:20px;height:20px;fill:currentColor}
+.pmid{flex:1;min-width:0}.pt{font-size:15px;font-weight:700;line-height:1.2}
+.pbar{height:6px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:9px}
+.pbar i{display:block;height:100%;width:0;background:var(--c1,var(--yellow));border-radius:9px}
+.ptime{font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted);white-space:nowrap}
+.pcred{font-size:12px;color:var(--dim);margin-top:6px}
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:30px 0 14px}
 .tools input[type=search],.tools select{background:var(--ink2);border:1.5px solid var(--line);color:var(--paper);font:inherit;font-size:15px;padding:10px 16px;border-radius:999px;outline:none}
 .tools input[type=search]{flex:1;min-width:170px;max-width:340px}
@@ -454,7 +470,7 @@ footer a{color:var(--muted)}
       <details><summary>Is my data safe?</summary><p>Your cards are saved to your private account, and your Last.fm username is only used to fetch your public top songs. To make trading possible, your in-game name and the cards you own are visible to other signed-in players. Your Google name and email are never shown. A Spotify export is read on your device and never uploaded.</p></details>
       <details><summary>Why Last.fm and not a Spotify login?</summary><p>Spotify limits new apps to a handful of approved users, so a public game can't log everyone in. Last.fm is open, free, and works with a username.</p></details>
       <details><summary>How is rarity decided?</summary><p>By how many people have listened to the song on Last.fm. Fewer listeners means a rarer card. Songs Last.fm can't find count as the most obscure.</p></details>
-      <details><summary>How often can I open packs?</summary><p>You start with five packs, and one more arrives every 20 minutes up to five. Cards you discover are yours to keep.</p></details>
+      <details><summary>How often can I open packs?</summary><p>You get three daily packs of five cards from your own listening, refreshed every midnight. Once a week (Monday) you also get a Weekly Special pack with ten real songs picked at random from across Last.fm, from Uncommon all the way up to Mythic. Specials are new to you every time and can be traded like any other card.</p></details>
       <details><summary>How does trading work?</summary><p>Browse other collectors, pick up to five cards each way, and send an offer. Your cards are held safely while the offer is open. If they accept, the swap happens instantly. If they decline or you cancel, your cards come straight back. It's all free.</p></details>
       <details><summary>Is this connected to Spotify?</summary><p>No. Streamdex is a fan project and isn't affiliated with, or endorsed by, Spotify or Last.fm.</p></details>
     </div>
@@ -514,8 +530,8 @@ footer a{color:var(--muted)}
 <div id="stage" class="stage hidden" role="dialog" aria-modal="true" aria-label="Open a pack">
   <button class="x" data-act="stage-close" aria-label="Close">&times;</button>
   <div id="packStep">
-    <button class="pack" id="packBtn" data-act="tear" aria-label="Tear open the pack"><span class="shine"></span><span class="pk"><span class="pk-disc"></span><span class="pk-name">Streamdex</span><span class="pk-sub">Collector pack, 5 cards</span></span></button>
-    <p class="stage-hint">Tap the pack to open it</p>
+    <button class="pack" id="packBtn" data-act="tear" aria-label="Tear open the pack"><span class="shine"></span><span class="pk"><span class="pk-disc"></span><span class="pk-name" id="pkName">Streamdex</span><span class="pk-sub" id="pkSub">Daily pack, 5 cards</span></span></button>
+    <p class="stage-hint" id="packHint">Tap the pack to open it</p>
   </div>
   <div id="dealStep" class="hidden">
     <div class="stack" id="stack"></div>
@@ -542,7 +558,7 @@ footer a{color:var(--muted)}
 <script>
 "use strict";
 /* ================= config ================= */
-const MAX_CARDS = 250, PACK_SIZE = 5, PACK_MAX = 5, PACK_REGEN_MS = 20*60*1000;
+const MAX_CARDS = 250, PACK_SIZE = 5, DAILY_PACKS = 3; // daily normal packs per player (resets at local midnight); 1 weekly special pack (resets Monday)
 // Free Last.fm API key shared by all players (it only reads public data). Replace it with your own anytime.
 const CONFIG = { LASTFM_KEY: "38717e32e731a41324cea37c39d5f320",
   // Google sign-in + cloud save (free Firebase Spark plan). Paste your Firebase web app config here.
@@ -560,6 +576,7 @@ const ls = { get(k, d){ try{ const v = localStorage.getItem(k); return v==null?d
              del(k){ try{ localStorage.removeItem(k); }catch{} } };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const fmtN = n => n>=1e6 ? (n/1e6).toFixed(1).replace(/\.0$/,"")+"M" : n>=1e3 ? Math.round(n/1e3)+"K" : String(n);
+const fmtLong = ms => { const m = Math.max(0, Math.ceil(ms/60000)), d = Math.floor(m/1440), h = Math.floor(m%1440/60), mi = m%60; return d ? `${d}d ${h}h` : h ? `${h}h ${mi}m` : `${Math.max(1,mi)}m`; };
 const fmtTime = ms => { const s = Math.max(0, Math.ceil(ms/1000)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
 let toastT;
 function toast(t){ const el = $("#toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove("show"), 2800); }
@@ -702,10 +719,10 @@ function cardHTML(c, total){
     <div class="shade"></div>
     <div class="top"><span class="pill">${r.stars} ${r.name}</span><span class="hp">HP <b>${hp}</b></span></div>
     <div class="info">
-      <div class="type"><span><i></i>${esc(c.type)}</span><em>${c.traded ? "Traded" : "#" + String(c.no).padStart(3,"0") + "/" + total}</em></div>
+      <div class="type"><span><i></i>${esc(c.type)}</span><em>${c.traded ? "Traded" : c.special ? "Weekly" : "#" + String(c.no).padStart(3,"0") + "/" + total}</em></div>
       <div class="nm">${esc(c.name)}</div>
       <div class="ar">${esc(c.artist)}</div>
-      <div class="stats"><div><b>${c.plays}</b><span>plays</span></div><div><b>${l}</b><span>listeners</span></div><div><b>${rs}</b><span>rarity</span></div></div>
+      <div class="stats"><div><b>${c.plays || "–"}</b><span>plays</span></div><div><b>${l}</b><span>listeners</span></div><div><b>${rs}</b><span>rarity</span></div></div>
     </div>
     <div class="foil"></div><div class="glare"></div>
   </div></div></div>`;
@@ -765,33 +782,49 @@ const revealed = () => new Set(ls.get(revKey(), []));
 const isInfinite = () => DEV || USER === "demo";
 
 /* ----- packs ----- */
+const packKey = () => "packs:" + ((typeof AUTH_USER !== "undefined" && AUTH_USER && AUTH_USER.uid) || ls.get("uid", "") || USER);
+const dayKey = t => { const d = new Date(t || Date.now()); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
+const weekStart = () => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay()+6)%7)); return d; };
+const weekKey = () => dayKey(weekStart().getTime());
+const nextMidnight = () => { const d = new Date(); d.setHours(24,0,0,0); return d.getTime(); };
+const nextMonday = () => { const d = weekStart(); d.setDate(d.getDate()+7); return d.getTime(); };
+const normPacks = p => { p = p || {}; const d = dayKey(), w = weekKey(); return { d, u: p.d === d ? (p.u||0) : 0, w, s: p.w === w ? (p.s||0) : 0 }; };
+const packState = () => normPacks(ls.get(packKey(), null));
+function mergePacks(a, b){
+  a = a || {}; b = b || {};
+  const dd = (a.d||"") >= (b.d||"") ? a : b, ww = (a.w||"") >= (b.w||"") ? a : b;
+  return { d:dd.d, u:[a,b].filter(x => x.d === dd.d).reduce((m,x) => Math.max(m, x.u||0), 0), w:ww.w, s:[a,b].filter(x => x.w === ww.w).reduce((m,x) => Math.max(m, x.s||0), 0) };
+}
 function packs(){
-  if(isInfinite()) return { n:99, next:0 };
-  const now = Date.now(); let p = ls.get("packs:"+USER, null) || { n:PACK_MAX, t:now };
-  if(p.n < PACK_MAX){
-    const gain = Math.floor((now - p.t)/PACK_REGEN_MS);
-    if(gain > 0){ p.n = Math.min(PACK_MAX, p.n + gain); p.t += gain*PACK_REGEN_MS; }
-    if(p.n >= PACK_MAX) p.t = now;
-  } else p.t = now;
-  ls.set("packs:"+USER, p);
-  return { n:p.n, next: p.n < PACK_MAX ? p.t + PACK_REGEN_MS - now : 0 };
+  if(isInfinite()) return { n:99, next:0, sp:true, spNext:0 };
+  const p = packState(), now = Date.now(); ls.set(packKey(), p);
+  return { n:Math.max(0, DAILY_PACKS - p.u), next:nextMidnight() - now, sp:!p.s, spNext:nextMonday() - now };
 }
 function spendPack(){
   if(isInfinite()) return true;
-  const s = packs(); if(s.n < 1) return false;
-  const p = ls.get("packs:"+USER); if(p.n >= PACK_MAX) p.t = Date.now();
-  p.n -= 1; ls.set("packs:"+USER, p); return true;
+  const p = packState(); if(p.u >= DAILY_PACKS) return false;
+  p.u++; ls.set(packKey(), p); return true;
 }
 function updatePacks(){
   if($("#navApp").classList.contains("hidden")) return;
-  const s = packs(), inf = isInfinite(), left = CARDS.length - revealed().size;
-  const label = left <= 0 ? "Collection complete" : inf ? "Open pack" : s.n > 0 ? `Open pack (${s.n})` : `Next pack in ${fmtTime(s.next)}`;
-  const nb = $("#navPack"); if(nb){ nb.textContent = label; nb.disabled = left <= 0 || (!inf && s.n < 1); }
+  const s = packs(), inf = isInfinite(), demo = USER === "demo", left = CARDS.length - revealed().size;
+  const normalOK = left > 0 && (inf || s.n > 0), spOK = !demo && (inf || s.sp);
+  const nb = $("#navPack");
+  if(nb){
+    nb.dataset.act = !normalOK && spOK ? "open-special" : "open-pack";
+    nb.textContent = normalOK ? (inf ? "Open pack" : `Open pack (${s.n})`) : spOK ? "Open weekly pack" : left <= 0 ? "Collection complete" : `Packs in ${fmtLong(s.next)}`;
+    nb.disabled = !normalOK && !spOK;
+  }
   const n = $("#pkN"); if(!n) return;
-  n.innerHTML = inf ? "&infin;" : `${s.n}<small> / ${PACK_MAX}</small>`;
-  $("#pkDots").innerHTML = Array.from({length:PACK_MAX}, (_,i) => `<i class="${i < s.n || inf ? "on" : ""}"></i>`).join("");
-  $("#pkTimer").textContent = left <= 0 ? "You've discovered every card." : inf ? "Unlimited packs." : s.n >= PACK_MAX ? "Packs are full." : `Next pack in ${fmtTime(s.next)}`;
-  const b = $("#pkOpen"); b.textContent = left <= 0 ? "Collection complete" : "Open a pack"; b.disabled = left <= 0 || (!inf && s.n < 1);
+  n.innerHTML = inf ? "&infin;" : `${s.n}<small> / ${DAILY_PACKS}</small>`;
+  $("#pkDots").innerHTML = Array.from({length:DAILY_PACKS}, (_,i) => `<i class="${i < s.n || inf ? "on" : ""}"></i>`).join("");
+  $("#pkTimer").textContent = left <= 0 ? "You've discovered every card." : inf ? "Unlimited packs." : s.n > 0 ? `${s.n === DAILY_PACKS ? "Fresh today. " : ""}New packs in ${fmtLong(s.next)}` : `Out for today. New packs in ${fmtLong(s.next)}`;
+  const b = $("#pkOpen"); b.textContent = left <= 0 ? "Collection complete" : "Open a pack"; b.disabled = !normalOK;
+  const sc = $("#spCard"); if(sc){
+    sc.classList.toggle("used", !spOK);
+    $("#spSub").textContent = demo ? "Create an account to unlock it." : spOK ? "10 real songs, Uncommon to Mythic" : `Claimed. Next one in ${fmtLong(s.spNext)}`;
+    const sb = $("#spBtn"); sb.disabled = !spOK; sb.textContent = spOK ? "Open weekly pack" : "Claimed";
+  }
 }
 setInterval(updatePacks, 1000);
 
@@ -845,9 +878,9 @@ function renderProfile(){
      <div class="prog" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Collection progress"><i style="width:${pct}%"></i></div>
    </div>
    <div class="panel packpanel">
-     <div><div class="muted">Packs ready</div><div class="packs-n num" id="pkN"></div><div class="muted" id="pkTimer" style="margin-top:6px"></div></div>
-     <div class="packdots" id="pkDots"></div>
+     <div class="pp-top"><div><div class="muted">Daily packs</div><div class="packs-n num" id="pkN"></div><div class="muted" id="pkTimer" style="margin-top:6px"></div></div><div class="packdots" id="pkDots"></div></div>
      <button class="btn lg" id="pkOpen" data-act="open-pack">Open a pack</button>
+     <div class="sp" id="spCard"><div><div class="sp-t">&#10022; Weekly Special</div><div class="sp-s" id="spSub"></div></div><button class="btn sm" id="spBtn" data-act="open-special">Open weekly pack</button></div>
      <div class="sync" id="syncMsg">${AUTH_USER ? "Saved to your account" : (cloudReady() ? "Sign in with Google to save across devices and trade" : "")}</div>
    </div>`;
   updatePacks();
@@ -929,21 +962,24 @@ function openDetail(id){
 function paintDetail(){
   const c = DLIST[DI], r = rarityFor(c.niche);
   $("#dCard").innerHTML = cardHTML(c, CARDS.length);
-  const story = c.miss ? "Last.fm has barely heard of this track. That makes it a true underground find."
+  const story0 = c.miss ? "Last.fm has barely heard of this track. That makes it a true underground find."
     : c.niche < 45 ? `Only about ${fmtN(c.pop)} people have listened to this on Last.fm. You found a deep cut.`
     : c.niche < 75 ? `Around ${fmtN(c.pop)} listeners on Last.fm. Known, but not everywhere.`
     : `${fmtN(c.pop)} listeners on Last.fm. A crowd favourite.`;
+  const story = (c.special && !c.traded ? "Dug up in a weekly special pack. " : "") + story0;
   const q = encodeURIComponent(c.artist + " " + c.name);
   $("#dInfo").style.setProperty("--c1", r.c1);
   $("#dInfo").innerHTML = `<span class="d-tag">${r.stars} ${r.name}</span>
     <h3 style="margin-top:14px">${esc(c.name)}</h3><div class="art-name">${esc(c.artist)}</div>
     <p>${esc(story)}${c.tag ? ` Tagged ${esc(c.tag)}.` : ""}</p>
-    <div class="d-facts"><div><b>${c.plays}</b><span>plays${c.hours ? ` (${c.hours} h)` : ""}</span></div><div><b>${100-c.niche}</b><span>rarity score</span></div><div><b>${esc(c.type)}</b><span>card type</span></div></div>
+    <div class="d-facts"><div><b>${c.plays || "–"}</b><span>plays${c.hours ? ` (${c.hours} h)` : ""}</span></div><div><b>${100-c.niche}</b><span>rarity score</span></div><div><b>${esc(c.type)}</b><span>card type</span></div></div>
+    <div class="player"><button class="pbtn" id="pBtn" type="button" data-act="preview" aria-label="Play preview"></button><div class="pmid"><div class="pt" id="pTitle"></div><div class="pbar"><i id="pFill"></i></div><div class="pcred">Preview via Apple Music</div></div><span class="ptime" id="pTime"></span></div>
     <div class="d-actions"><button class="btn sm" data-act="save">Save image</button>${navigator.share ? '<button class="btn sm ghost" data-act="share">Share card</button>' : ""}
     <a class="btn sm ghost" href="https://open.spotify.com/search/${q}" target="_blank" rel="noopener">Find on Spotify</a></div>`;
   $$(".nav-arrow").forEach(b => b.classList.toggle("hidden", DLIST.length < 2));
+  prepPreview(c);
 }
-function closeDetail(){ $("#detail").classList.add("hidden"); document.body.classList.remove("noscroll"); }
+function closeDetail(){ stopPreview(); $("#detail").classList.add("hidden"); document.body.classList.remove("noscroll"); }
 function stepDetail(d){ if(DLIST.length < 2) return; DI = (DI + d + DLIST.length) % DLIST.length; paintDetail(); }
 
 /* ----- share image ----- */
@@ -961,14 +997,14 @@ async function cardCanvas(c){
   const pill = `${r.stars} ${r.name}`; g.font = `750 24px ${F}`; const pw = g.measureText(pill).width + 44;
   rr(g,46,46,pw,48,24); g.fillStyle = "rgba(10,12,38,.7)"; g.fill(); g.lineWidth = 3; g.strokeStyle = r.c1; g.stroke(); g.fillStyle = "#fff"; g.textBaseline = "middle"; g.fillText(pill, 68, 71);
   g.textBaseline = "alphabetic"; g.fillStyle = r.c1; g.font = `650 26px ${F}`; g.fillText(c.type, 54, 700);
-  g.fillStyle = "rgba(255,255,255,.6)"; g.textAlign = "right"; g.fillText(c.traded ? "TRADED" : `#${String(c.no).padStart(3,"0")}/${CARDS.length}`, W-54, 700); g.textAlign = "left";
+  g.fillStyle = "rgba(255,255,255,.6)"; g.textAlign = "right"; g.fillText(c.traded ? "TRADED" : c.special ? "WEEKLY" : `#${String(c.no).padStart(3,"0")}/${CARDS.length}`, W-54, 700); g.textAlign = "left";
   g.fillStyle = "#fff"; g.font = `850 62px ${F}`;
   const words = c.name.split(" "), lines = []; let cur = "";
   for(const w of words){ const t = cur ? cur+" "+w : w; if(g.measureText(t).width > W-108 && cur){ lines.push(cur); cur = w; } else cur = t; }
   lines.push(cur); const L = lines.slice(0,2); if(lines.length > 2) L[1] = L[1].replace(/.{0,2}$/,"…");
   L.forEach((t,i) => g.fillText(t, 54, 765 + i*66));
   const ay = 765 + L.length*66 + 6; g.fillStyle = "rgba(255,255,255,.72)"; g.font = `450 32px ${F}`; g.fillText(c.artist.length > 38 ? c.artist.slice(0,37)+"…" : c.artist, 54, ay);
-  const stats = [[String(c.plays),"plays"],[c.miss ? "<100" : fmtN(c.pop),"listeners"],[String(100-c.niche),"rarity"]];
+  const stats = [[c.plays ? String(c.plays) : "–","plays"],[c.miss ? "<100" : fmtN(c.pop),"listeners"],[String(100-c.niche),"rarity"]];
   stats.forEach((s,i) => { const x = 54 + i*214, y = 905; rr(g,x,y,198,104,18); g.fillStyle = "rgba(255,255,255,.08)"; g.fill();
     g.fillStyle = "#fff"; g.font = `800 40px ${F}`; g.textAlign = "center"; g.fillText(s[0], x+99, y+50); g.fillStyle = "rgba(255,255,255,.6)"; g.font = `450 22px ${F}`; g.fillText(s[1], x+99, y+84); g.textAlign = "left"; });
   g.fillStyle = "rgba(255,255,255,.45)"; g.font = `700 20px ${F}`; g.textAlign = "center"; g.fillText("STREAMDEX", W/2, H-28); g.textAlign = "left";
@@ -987,7 +1023,7 @@ async function shareCard(save){
 }
 
 /* ================= pack opening ================= */
-let PACK = null, PACK_BUSY = false;
+let PACK = null, PACK_BUSY = false, PACK_MODE = "normal", STAGE_ID = 0;
 function rollPack(){
   const rev = revealed(), byR = {};
   CARDS.filter(c => !rev.has(c.id)).forEach(c => (byR[rarityFor(c.niche).key] ||= []).push(c));
@@ -1005,18 +1041,32 @@ function rollPack(){
   }
   return picks.sort((a,b) => b.niche - a.niche); // rarest revealed last
 }
-function openStage(){
+function setPackFace(mode){
+  $("#packBtn").className = "pack" + (mode === "special" ? " special" : "");
+  $("#pkName").textContent = mode === "special" ? "Weekly Special" : "Streamdex";
+  $("#pkSub").textContent = mode === "special" ? "10 real songs, Uncommon to Mythic" : "Daily pack, 5 cards";
+  $("#packHint").textContent = "Tap the pack to open it";
+}
+function openStage(mode){
+  mode = mode === "special" ? "special" : "normal";
   if(!CARDS.length) return;
-  if(revealed().size >= CARDS.length){ toast("You've discovered every card."); return; }
-  const s = packs(); if(s.n < 1){ toast(`Next pack in ${fmtTime(s.next)}.`); return; }
-  $("#stage").style.setProperty("--stage-glow", "rgba(34,48,216,.5)");
-  $("#stage").classList.remove("hidden"); document.body.classList.add("noscroll"); showStep("pack");
-  $("#packBtn").className = "pack"; $("#packBtn").focus(); PACK_BUSY = false;
+  const s = packs();
+  if(mode === "normal"){
+    if(revealed().size >= CARDS.length){ toast("You've discovered every card."); return; }
+    if(s.n < 1){ toast(`Your next daily packs arrive in ${fmtLong(s.next)}.`); return; }
+  } else {
+    if(USER === "demo"){ toast("Create an account to unlock the weekly special pack."); return; }
+    if(!s.sp){ toast(`Your next weekly pack arrives in ${fmtLong(s.spNext)}.`); return; }
+  }
+  PACK_MODE = mode; PACK = null; PACK_BUSY = false; setPackFace(mode);
+  $("#stage").style.setProperty("--stage-glow", mode === "special" ? "rgba(255,122,217,.45)" : "rgba(34,48,216,.5)");
+  $("#stage").classList.remove("hidden"); document.body.classList.add("noscroll"); showStep("pack"); $("#packBtn").focus();
 }
 function showStep(s){ $("#packStep").classList.toggle("hidden", s !== "pack"); $("#dealStep").classList.toggle("hidden", s !== "deal"); $("#sumStep").classList.toggle("hidden", s !== "sum"); }
-function closeStage(){ $("#stage").classList.add("hidden"); document.body.classList.remove("noscroll"); PACK = null; renderAll(); }
+function closeStage(){ STAGE_ID++; $("#stage").classList.add("hidden"); document.body.classList.remove("noscroll"); PACK = null; renderAll(); }
 async function tearPack(){
   if(PACK_BUSY) return; PACK_BUSY = true;
+  if(PACK_MODE === "special") return tearSpecial();
   if(!spendPack()){ PACK_BUSY = false; toast("No packs left right now."); return; }
   const cards = rollPack();
   if(!cards.length){ PACK_BUSY = false; toast("You've discovered every card."); return; }
@@ -1025,6 +1075,147 @@ async function tearPack(){
   pk.classList.remove("shake"); pk.classList.add("burst"); await sleep(REDUCED ? 60 : 380);
   buildDeal(cards); PACK_BUSY = false;
 }
+/* ----- weekly special pack: real songs picked at random from Last.fm tags ----- */
+const SPECIAL_MIX = [["mythic",1],["legendary",2],["epic",2],["rare",3],["uncommon",2]];
+const SPECIAL_PAGES = { uncommon:[1,10], rare:[5,40], epic:[20,120], legendary:[50,300], mythic:[120,700] };
+const TAG_POOL = ["rock","indie","pop","electronic","jazz","hip-hop","folk","metal","ambient","soul","rnb","punk","country","blues","classical","reggae","dance","house","techno","synthpop","shoegaze","post-punk","lo-fi","funk","disco","latin","k-pop","j-pop","trap","dream pop","indie folk","singer-songwriter","alternative","hardcore","psychedelic","trip-hop","drum and bass","dubstep","gospel","bossa nova","afrobeat","ska","emo","grunge","new wave","soundtrack","chillout","experimental","math rock","city pop","vaporwave","indie rock","indie pop","electropop","hip hop","soft rock","progressive rock","garage rock","downtempo","acoustic","instrumental","french","brazilian","afropop","bedroom pop","art pop","noise","funk soul"];
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = [...a]; for(let i = a.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+async function tagTracks(tag, page, key){
+  const j = await lfmCall({ method:"tag.gettoptracks", tag, page:String(page), limit:"50", api_key:key });
+  const t = j.tracks?.track; return Array.isArray(t) ? t : (t ? [t] : []);
+}
+async function digSpecial(onp){
+  const key = lfmKey(); if(!key) throw new Error("This site needs a Last.fm API key. The owner can add one.");
+  const got = {}, need = {}; SPECIAL_MIX.forEach(([k,n]) => { got[k] = []; need[k] = n; });
+  const have = new Set([...CARDS.map(c => c.id.slice(2)), ...extrasList().map(c => c.raw || "")]);
+  const seen = new Set(ls.get("spseen", [])), used = new Set(), spare = [];
+  const total = () => SPECIAL_MIX.reduce((n,[k]) => n + got[k].length, 0), open = () => SPECIAL_MIX.filter(([k,n]) => got[k].length < n);
+  const t0 = Date.now(); let rounds = 0, netFail = 0;
+  while(open().length && Date.now() - t0 < 40000 && rounds++ < 45){
+    const [want] = pickOne(open()), [lo, hi] = SPECIAL_PAGES[want];
+    let page = lo + Math.floor(Math.random() * (hi - lo + 1)), list = []; const tag = pickOne(TAG_POOL);
+    for(let a = 0; a < 4 && !list.length; a++){
+      try{ list = await tagTracks(tag, page, key); }catch(e){ if(++netFail >= 3) throw e; break; }
+      if(!list.length) page = Math.max(1, Math.floor(page/2));
+    }
+    const pool = shuffle(list).map(x => { const artist = x.artist?.name || x.artist || "", track = x.name || ""; return { artist, track, raw:(artist + "|" + track).toLowerCase() }; })
+      .filter(x => x.artist && x.track && !used.has(x.raw) && !have.has(x.raw) && !seen.has(x.raw)).slice(0, 8);
+    for(let i = 0; i < pool.length; i += 4){
+      await Promise.all(pool.slice(i, i+4).map(async x => {
+        used.add(x.raw);
+        let info; try{ info = await lastfmOne({ id:"t:" + x.raw, artist:x.artist, track:x.track }, key); }catch{ return; }
+        if(!info || info.miss) return;
+        const rk = rarityFor(nicheScore(info.listeners)).key;
+        if(got[rk] && got[rk].length < need[rk]) got[rk].push({ x, info }); else if(rk !== "common") spare.push({ x, info });
+        onp(Math.min(total(), 10), 10);
+      }));
+      if(!open().length) break;
+    }
+  }
+  let picks = SPECIAL_MIX.flatMap(([k]) => got[k]);
+  if(picks.length < 10) picks = picks.concat(shuffle(spare).slice(0, 10 - picks.length));
+  if(picks.length < 6) throw new Error("Couldn't dig up enough songs right now. Your weekly pack wasn't used, so try again in a moment.");
+  const cards = picks.map(({ x, info }) => { const niche = nicheScore(info.listeners);
+    return { id:"x:" + x.raw + "#" + Math.random().toString(36).slice(2,8), raw:x.raw, name:x.track, artist:x.artist, art:info.art || "", pop:info.listeners, miss:false, niche,
+      type:typeFor(info.tags), tag:info.tags[0] || "", plays:0, hours:0, affPct:Math.round(45 + (100 - niche)/2), special:true }; });
+  await Promise.race([Promise.all(cards.map(async c => { try{ const m = await lookupPreview(c); if(m && m.a && !c.art) c.art = m.a; }catch{} })), sleep(6000)]);
+  ls.set("spseen", [...seen, ...picks.map(p => p.x.raw)].slice(-500));
+  return cards.sort((a,b) => b.niche - a.niche);
+}
+async function grantSpecial(cards){
+  if(isInfinite()){ ls.set("extras", [...extrasList(), ...cards]); return; }
+  if(cloudReady() && AUTH_USER){
+    const r = await DB.runTransaction(async tx => {
+      const ud = await tx.get(uref()), data = ud.exists ? ud.data() : {}, d = invOf(data);
+      const mp = normPacks(mergePacks(data.packs, ls.get(packKey(), null)));
+      if(mp.s) throw { code:"special-used" };
+      mp.s = 1; d.extras.push(...cards);
+      tx.set(uref(), { extras:d.extras, packs:mp }, { merge:true });
+      return { d, mp };
+    });
+    mirror(r.d); ls.set(packKey(), r.mp);
+  } else {
+    const p = packState(); if(p.s) throw { code:"special-used" };
+    p.s = 1; ls.set(packKey(), p); ls.set("extras", [...extrasList(), ...cards]);
+  }
+}
+async function tearSpecial(){
+  const id = STAGE_ID, pk = $("#packBtn"), hint = $("#packHint");
+  const reset = msg => { pk.classList.remove("digging"); hint.textContent = "Tap the pack to open it"; PACK_BUSY = false; if(msg) toast(msg); };
+  if(!isInfinite() && !packs().sp){ reset("You already opened this week's special pack."); return; }
+  pk.classList.add("digging"); hint.textContent = "Digging through the crates…";
+  let cards;
+  try{ cards = await digSpecial((n,t) => { if(id === STAGE_ID) hint.textContent = `Digging through the crates… ${n} of ${t} found`; }); }
+  catch(e){ if(id === STAGE_ID) reset(e.message || "Couldn't reach the song crates. Try again."); else PACK_BUSY = false; return; }
+  if(id !== STAGE_ID){ PACK_BUSY = false; return; }
+  try{ await grantSpecial(cards); }
+  catch(e){ reset(e && e.code === "special-used" ? "You already opened this week's special pack." : tradeErrText(e)); updatePacks(); return; }
+  pk.classList.remove("digging"); hint.textContent = ""; cloudSave();
+  Snd.rip(); pk.classList.add("shake"); await sleep(REDUCED ? 60 : 650);
+  pk.classList.remove("shake"); pk.classList.add("burst"); await sleep(REDUCED ? 60 : 380);
+  buildDeal(cards); PACK_BUSY = false; updatePacks();
+}
+
+/* ----- 30-second song previews (Apple's free iTunes Search API) ----- */
+const normT = x => String(x || "").toLowerCase().replace(/\s*[\(\[].*?[\)\]]/g,"").replace(/\s-\s.*$/,"").replace(/[^a-z0-9]+/g," ").trim();
+function jsonp(url, ms = 8000){
+  return new Promise((res, rej) => {
+    const cb = "_it" + Math.random().toString(36).slice(2), sc = document.createElement("script");
+    const done = (v, e) => { clearTimeout(t); delete window[cb]; sc.remove(); e ? rej(e) : res(v); };
+    const t = setTimeout(() => done(null, new Error("timeout")), ms);
+    window[cb] = v => done(v); sc.onerror = () => done(null, new Error("net")); sc.src = url + "&callback=" + cb; document.head.appendChild(sc);
+  });
+}
+async function itunesSearch(term){
+  const u = "https://itunes.apple.com/search?" + new URLSearchParams({ term, media:"music", entity:"song", limit:"10" });
+  try{ const r = await fetch(u); if(r.ok) return (await r.json()).results || []; }catch{}
+  try{ return (await jsonp(u)).results || []; }catch{ throw new Error("net"); }
+}
+async function lookupPreview(c){
+  const k = "prv:" + normT(c.artist) + "|" + normT(c.name), hit = ls.get(k, null);
+  if(hit && (hit.u || Date.now() - hit.t < 2.6e8)) return hit;
+  const clean = String(c.name).replace(/\s*[\(\[].*?[\)\]]/g,"").replace(/\s-\s.*$/,"").trim() || c.name;
+  const res = await itunesSearch(c.artist + " " + clean), A = normT(c.artist), T = normT(c.name);
+  const ok = res.filter(r => { if(!r.previewUrl) return false; const ra = normT(r.artistName), rt = normT(r.trackName);
+    return ra.length > 1 && (ra === A || ra.includes(A) || A.includes(ra)) && (rt === T || rt.startsWith(T) || T.startsWith(rt)); });
+  const best = ok.find(r => normT(r.trackName) === T) || ok[0];
+  const out = best ? { u:best.previewUrl, a:(best.artworkUrl100 || "").replace("100x100bb","400x400bb"), t:Date.now() } : { t:Date.now() };
+  ls.set(k, out); return out;
+}
+const PV = { a:null, id:null, meta:null };
+const mmss = n => Math.floor(n/60) + ":" + String(Math.floor(n%60)).padStart(2,"0");
+const IC_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>', IC_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+function setPlayer(state, msg){
+  const b = $("#pBtn"); if(!b) return;
+  const m = { load:["Finding a preview…", true, IC_PLAY], ready:["Play 30-second preview", false, IC_PLAY], play:["Playing preview", false, IC_PAUSE], pause:["Paused", false, IC_PLAY],
+    none:["No preview available for this song", true, IC_PLAY], err:[msg || "Couldn't load the preview. Tap to retry.", false, IC_PLAY] }[state];
+  b.innerHTML = m[2]; b.disabled = m[1]; b.setAttribute("aria-label", m[0]); $("#pTitle").textContent = m[0];
+  if(state !== "play" && state !== "pause"){ $("#pFill").style.width = "0"; $("#pTime").textContent = state === "ready" ? "0:30" : ""; }
+}
+function stopPreview(){
+  if(PV.a){ const a = PV.a; PV.a = null; a.pause(); a.removeAttribute("src"); try{ a.load(); }catch{} }
+  PV.id = null; PV.meta = null;
+}
+function prepPreview(c){
+  stopPreview(); setPlayer("load"); const id = c.id; PV.id = id;
+  lookupPreview(c).then(m => { if(PV.id !== id) return; PV.meta = m; setPlayer(m && m.u ? "ready" : "none"); })
+    .catch(() => { if(PV.id !== id) return; setPlayer("err", "Couldn't reach the music service. Tap to retry."); });
+}
+function togglePreview(){
+  const c = DLIST[DI]; if(!c) return;
+  if(PV.a){ if(PV.a.paused){ PV.a.play().catch(() => {}); setPlayer("play"); } else { PV.a.pause(); setPlayer("pause"); } return; }
+  if(!PV.meta){ prepPreview(c); return; }
+  if(!PV.meta.u) return;
+  const a = new Audio(PV.meta.u); PV.a = a;
+  a.addEventListener("timeupdate", () => { if(PV.a !== a || !$("#pFill")) return; const d = Math.min(a.duration || 30, 30); $("#pFill").style.width = Math.min(100, a.currentTime / d * 100) + "%"; $("#pTime").textContent = mmss(a.currentTime) + " / " + mmss(d); });
+  a.addEventListener("ended", () => { if(PV.a !== a) return; PV.a = null; setPlayer("ready"); });
+  a.addEventListener("error", () => { if(PV.a !== a) return; PV.a = null; setPlayer("err", "Couldn't play this preview. Tap to retry."); });
+  setPlayer("play");
+  a.play().catch(() => { if(PV.a !== a) return; PV.a = null; setPlayer("err", "Your browser blocked playback. Tap to try again."); });
+}
+document.addEventListener("visibilitychange", () => { if(document.hidden && PV.a && !PV.a.paused){ PV.a.pause(); setPlayer("pause"); } });
+
 function buildDeal(cards){
   PACK = { cards, idx:0, lock:false };
   $("#stack").innerHTML = cards.map((c,i) => `<div class="flipcard" style="--i:${i}"><div class="fc-inner"><div class="fc-back"><div class="cback"><span>Streamdex</span></div></div><div class="fc-front">${cardHTML(c, CARDS.length)}</div></div></div>`).join("");
@@ -1058,12 +1249,12 @@ function revealFx(c, el){
   if(i <= 2){ const b = el.getBoundingClientRect(); FX.burst(b.left + b.width/2, b.top + b.height/2, [r.c1, r.c2, "#ffffff"], [180,100,50][i]); }
 }
 function showSummary(){
-  const best = PACK.cards.reduce((a,b) => a.niche <= b.niche ? a : b), r = rarityFor(best.niche);
-  $("#sumTitle").textContent = rarityIdx(best) <= 3 ? `You pulled a ${r.name}` : "Pack opened";
-  $("#sumSub").textContent = `Best card: ${best.name} by ${best.artist}`;
+  const best = PACK.cards.reduce((a,b) => a.niche <= b.niche ? a : b), r = rarityFor(best.niche), sp = PACK_MODE === "special";
+  $("#sumTitle").textContent = rarityIdx(best) <= 3 ? `You pulled a ${r.name}` : (sp ? "Weekly Special opened" : "Pack opened");
+  $("#sumSub").textContent = (sp ? "10 real songs, all new to you. " : "") + `Best card: ${best.name} by ${best.artist}`;
   $("#sumGrid").innerHTML = PACK.cards.map(c => cardHTML(c, CARDS.length)).join("");
   const s = packs(), left = CARDS.length - revealed().size, a = $("#again");
-  a.textContent = left <= 0 ? "Collection complete" : isInfinite() ? "Open another pack" : s.n > 0 ? `Open another pack (${s.n} left)` : `Next pack in ${fmtTime(s.next)}`;
+  a.textContent = left <= 0 ? "Collection complete" : isInfinite() ? "Open another pack" : s.n > 0 ? `Open a daily pack (${s.n} left)` : `Next daily packs in ${fmtLong(s.next)}`;
   a.disabled = left <= 0 || (!isInfinite() && s.n < 1);
   showStep("sum"); $("#stage").style.setProperty("--stage-glow", "rgba(34,48,216,.5)");
 }
@@ -1080,8 +1271,8 @@ const actions = {
   "reset": async () => { $("#menu")?.removeAttribute("open");
     if(TRADES.some(t => t.status === "pending")){ toast("Finish or cancel your open trades first."); return; }
     if(!confirm("Reset your collection? Your cards, progress and traded cards are cleared and you start fresh. Your in-game name stays. This can't be undone.")) return;
-    const name = lfmName(); ["revealed:"+USER, "packs:"+USER, "lost", "extras"].forEach(k => ls.del(k));
-    if(cloudReady() && AUTH_USER){ try{ await uref().set({ revealed:[], packs:null, lost:[], extras:[], cards:[] }, { merge:true }); }catch{} }
+    const name = lfmName(); ["revealed:"+USER, "lost", "extras"].forEach(k => ls.del(k));
+    if(cloudReady() && AUTH_USER){ try{ await uref().set({ revealed:[], lost:[], extras:[], cards:[] }, { merge:true }); }catch{} }
     if(name) handleUser(name); else { CARDS = []; USER = "me"; showLanding(); } },
   "auth": () => { AUTH_USER ? signOutGoogle() : signInGoogle(); },
   "signout": () => { $("#menu")?.removeAttribute("open"); signOutGoogle(); },
@@ -1096,7 +1287,9 @@ const actions = {
   "refresh": () => { $("#menu")?.removeAttribute("open"); const n = lfmName(); if(!n){ toast("Link your Last.fm first."); return; } handleUser(n); },
   "open-pack": openStage,
   "tear": tearPack,
-  "again": () => { const s = packs(); if(!isInfinite() && s.n < 1) return; showStep("pack"); $("#packBtn").className = "pack"; PACK_BUSY = false; PACK = null; $("#packBtn").focus(); },
+  "again": () => { PACK = null; openStage("normal"); },
+  "open-special": () => openStage("special"),
+  "preview": togglePreview,
   "stage-close": closeStage,
   "modal-close": closeDetail, "prev": () => stepDetail(-1), "next": () => stepDetail(1),
   "save": () => shareCard(true), "share": () => shareCard(false),
@@ -1135,7 +1328,7 @@ const pref = () => DB.collection("profiles").doc(AUTH_USER.uid);
 const iref = () => DB.collection("inventories").doc(AUTH_USER.uid);
 const lostSet = () => USER === "demo" ? new Set() : new Set(ls.get("lost", []));
 const extrasList = () => USER === "demo" ? [] : ls.get("extras", []);
-function ownedPred(){ const rev = revealed(), lost = lostSet(); return c => !!c.traded || (rev.has(c.id) && !lost.has(c.id)); }
+function ownedPred(){ const rev = revealed(), lost = lostSet(); return c => !!c.traded || !!c.special || (rev.has(c.id) && !lost.has(c.id)); }
 function ownedCards(){ const rev = revealed(), lost = lostSet(); return [...CARDS.filter(c => rev.has(c.id) && !lost.has(c.id)), ...extrasList()]; }
 const hueOf = s => [...String(s)].reduce((a,c) => (a*31 + c.charCodeAt(0)) % 360, 7);
 const ago = ms => { const s = Math.floor((Date.now()-ms)/1000); if(s < 60) return "just now"; const m = Math.floor(s/60); if(m < 60) return m+"m ago"; const h = Math.floor(m/60); return h < 24 ? h+"h ago" : Math.floor(h/24)+"d ago"; };
@@ -1191,7 +1384,7 @@ function initCloud(){
     firebase.initializeApp(cfg); AUTH = firebase.auth(); DB = firebase.firestore();
     try{ DB.settings({ experimentalAutoDetectLongPolling:true, merge:true }); }catch{}
     AUTH.getRedirectResult().catch(e => { if(e && e.code !== "auth/no-auth-event") toast("Sign-in failed. Try again."); });
-    AUTH.onAuthStateChanged(async u => { AUTH_USER = u; paintAuth(); CLOUD_META = null; stopTrades(); if(u) await cloudPull(); else { setBanner(null); renderTabs(); if(VIEW === "trade") renderTrade(true); } });
+    AUTH.onAuthStateChanged(async u => { AUTH_USER = u; if(u) ls.set("uid", u.uid); paintAuth(); CLOUD_META = null; stopTrades(); if(u) await cloudPull(); else { setBanner(null); renderTabs(); if(VIEW === "trade") renderTrade(true); } });
   }catch{ AUTH = DB = null; }
 }
 async function signInGoogle(){
@@ -1204,7 +1397,7 @@ async function signInGoogle(){
     else if(e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast("Sign-in failed. Try again.");
   }
 }
-function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|lfmuser|handle|lost|extras|applied|revealed:|packs:)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
+function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|uid|lfmuser|handle|lost|extras|applied|revealed:|packs:|spseen)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
 async function signOutGoogle(){
   if(!cloudReady()) return;
   clearTimeout(saveT);
@@ -1216,7 +1409,7 @@ async function signOutGoogle(){
 
 /* ----- cloud save ----- */
 function snapshot(){
-  const s = { lfm:lfmName(), cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get("packs:"+USER, null), updated:Date.now() };
+  const s = { lfm:lfmName(), cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get(packKey(), null), updated:Date.now() };
   if(HANDLE) s.handle = HANDLE; return s;
 }
 function profileDocs(){
@@ -1252,7 +1445,7 @@ async function cloudPull(){
     if(localUser === d.userid) ls.get("revealed:" + localUser, []).forEach(id => merged.add(id));
     CARDS = d.cards; USER = d.userid; UNAME = d.uname || "";
     ls.set("cards", CARDS); ls.set("userid", USER); ls.set("uname", UNAME); ls.set("revealed:" + USER, [...merged]);
-    if(d.packs && !(localUser === d.userid && ls.get("packs:" + USER, null))) ls.set("packs:" + USER, d.packs);
+    ls.set(packKey(), mergePacks(d.packs, ls.get(packKey(), null)));
     FILTER = "all"; QUERY = ""; $("#q").value = "";
     showApp();
     if(!HANDLE) openWizard(3);
@@ -1263,7 +1456,6 @@ async function cloudPull(){
 /* ----- registration wizard ----- */
 const H_ADJ = ["Neon","Velvet","Electric","Cosmic","Midnight","Golden","Crimson","Lunar","Analog","Hollow","Static","Mellow","Wild","Silver","Rusty","Fuzzy","Vivid","Gilded","Misty","Sunlit","Stormy","Dusty","Atomic","Jazzy","Moody","Quiet","Swift","Lucky","Dreamy","Funky"];
 const H_NOUN = ["Falcon","Vinyl","Cassette","Comet","Otter","Fox","Raven","Synth","Groove","Riff","Echo","Mixtape","Tiger","Lynx","Orbit","Harbor","Walrus","Drummer","Piano","Banjo","Moth","Sparrow","Ember","Tempo","Chorus","Needle","Reverb","Sonic","Badger","Heron"];
-const pickOne = a => a[Math.floor(Math.random() * a.length)];
 const genHandle = () => pickOne(H_ADJ) + pickOne(H_NOUN) + (10 + Math.floor(Math.random() * 990));
 function openWizard(step){ WIZ.step = step; WIZ.busy = false; if(step === 3 && !WIZ.handle) WIZ.handle = genHandle(); renderWizard(); $("#wizard").classList.remove("hidden"); document.body.classList.add("noscroll"); }
 function closeWizard(){ $("#wizard").classList.add("hidden"); if($("#detail").classList.contains("hidden") && $("#composer").classList.contains("hidden")) document.body.classList.remove("noscroll"); }
