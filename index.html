@@ -51,6 +51,7 @@ a{color:inherit}
 .authbtn.out{padding:8px 16px}
 .authbtn img,.authbtn .ai{width:28px;height:28px;border-radius:50%;object-fit:cover;display:grid;place-items:center;background:var(--holo);color:var(--ink);font-weight:900;font-size:14px}
 .authbtn .al{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.made{font-size:14px;color:var(--muted)}.heart{color:var(--orange);display:inline-block;transition:transform .2s}.made:hover .heart{transform:scale(1.35)}
 .sync{font-size:13px;color:var(--muted);margin-top:8px}
 .sync.ok{color:#9dffc4}
 @media (max-width:520px){.authbtn .al{display:none}.authbtn{padding:6px}.authbtn.out .al{display:inline}.authbtn.out{padding:8px 12px}}
@@ -306,6 +307,7 @@ footer a{color:var(--muted)}
       <details class="menu" id="menu"><summary class="icon-btn" aria-label="Menu">&#8943;</summary>
         <div class="menu-pop">
           <button data-act="home">Change username</button>
+          <button data-act="refresh">Refresh from Last.fm</button>
           <button data-act="pick">Load a Spotify export</button>
           <button data-act="invite">Invite a friend</button>
           <button data-act="reset">Reset my collection</button>
@@ -398,7 +400,8 @@ footer a{color:var(--muted)}
   <div class="grid" id="grid"></div>
 </div></main>
 
-<footer><div class="wrap"><span>Streamdex is a fan project, not affiliated with Spotify or Last.fm.</span><span>Music data from <a href="https://www.last.fm" target="_blank" rel="noopener">Last.fm</a></span></div></footer>
+<footer><div class="wrap"><span>Streamdex is a fan project, not affiliated with Spotify or Last.fm.</span><span>Music data from <a href="https://www.last.fm" target="_blank" rel="noopener">Last.fm</a></span></div>
+  <div class="wrap" style="justify-content:center;margin-top:18px"><span class="made">Made with <span class="heart" aria-label="love">&#9829;</span> from Seattle</span></div></footer>
 
 <div id="detail" class="modal hidden" role="dialog" aria-modal="true" aria-label="Card details">
   <div class="modal-bg" data-act="modal-close"></div>
@@ -411,6 +414,22 @@ footer a{color:var(--muted)}
   </div>
 </div>
 
+<div id="setup" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="setupT">
+  <div class="modal-bg"></div>
+  <div class="modal-box" style="grid-template-columns:1fr;max-width:540px">
+    <div>
+      <h3 id="setupT" style="font-size:30px;font-weight:850;letter-spacing:-.02em;line-height:1.1">One last step</h3>
+      <p class="muted" id="setupP" style="margin:12px 0 4px">Enter your Last.fm username once and we'll remember it with your account. You won't need to type it again.</p>
+      <form class="lookup" id="setupForm" autocomplete="off" style="margin-top:18px">
+        <label class="sr" for="suser">Last.fm username</label>
+        <input id="suser" type="text" placeholder="Your Last.fm username" autocapitalize="off" spellcheck="false">
+        <button class="btn lg" type="submit">Make my cards</button>
+      </form>
+      <p id="setupMsg" class="form-msg" role="status"></p>
+      <button class="link muted" type="button" data-act="setup-skip">Skip for now</button>
+    </div>
+  </div>
+</div>
 <div id="stage" class="stage hidden" role="dialog" aria-modal="true" aria-label="Open a pack">
   <button class="x" data-act="stage-close" aria-label="Close">&times;</button>
   <div id="packStep">
@@ -800,7 +819,7 @@ async function handleUser(){
   try{
     const { list, name: real } = await fromLastfm(name, key);
     CARDS = await buildCards(list, key, onProgress);
-    startGame("lfm:" + name.toLowerCase(), real);
+    ls.set("lfmuser", name); startGame("lfm:" + name.toLowerCase(), real);
   }catch(e){ fail(e); }
 }
 async function handleFiles(fileList){
@@ -976,6 +995,8 @@ const actions = {
   "reset": () => { $("#menu")?.removeAttribute("open"); if(!confirm(AUTH_USER ? "Clear this collection, on this device and in your saved account, and start over? This can't be undone." : "Clear this collection and start over? This can't be undone.")) return;
     cloudDelete(); ["cards","userid","uname","revealed:"+USER,"packs:"+USER].forEach(k => ls.del(k)); CARDS = []; USER = "me"; showLanding(); },
   "auth": () => { AUTH_USER ? signOutGoogle() : signInGoogle(); },
+  "refresh": () => { $("#menu")?.removeAttribute("open"); const n = lfmName(); if(!n){ toast("Enter your Last.fm username first."); showLanding(); return; } $("#luser").value = n; handleUser(); },
+  "setup-skip": closeSetup,
   "open-pack": openStage,
   "tear": tearPack,
   "again": () => { const s = packs(); if(!isInfinite() && s.n < 1) return; showStep("pack"); $("#packBtn").className = "pack"; PACK_BUSY = false; PACK = null; $("#packBtn").focus(); },
@@ -999,6 +1020,9 @@ document.addEventListener("keydown", e => {
   if(!$("#stage").classList.contains("hidden") && !$("#dealStep").classList.contains("hidden") && (e.key === " " || e.key === "Enter")){ e.preventDefault(); advance(); return; }
   if((e.key === "Enter" || e.key === " ") && e.target.matches?.(".cell")){ e.preventDefault(); openDetail(e.target.dataset.open); }
 });
+$("#setupForm").addEventListener("submit", e => { e.preventDefault(); const v = $("#suser").value.trim().replace(/^@/, "");
+  if(!v){ $("#setupMsg").textContent = "Enter your Last.fm username."; return; }
+  closeSetup(); $("#luser").value = v; handleUser(); });
 $("#lookup").addEventListener("submit", e => { e.preventDefault(); handleUser(); });
 $("#files").addEventListener("change", e => { if(e.target.files.length) handleFiles(e.target.files); e.target.value = ""; });
 $("#q").addEventListener("input", e => { QUERY = e.target.value; renderGrid(); });
@@ -1008,6 +1032,14 @@ $("#lfm").addEventListener("change", () => ls.set("lfm", $("#lfm").value.trim())
 /* ================= Google sign-in + cloud save (Firebase, free Spark plan) ================= */
 let AUTH = null, DB = null, AUTH_USER = null, CLOUD_META = null, saveT = null, syncWarned = false;
 const cloudReady = () => !!(AUTH && DB);
+const lfmName = () => ls.get("lfmuser", "") || (USER.startsWith("lfm:") ? USER.slice(4) : "");
+function openSetup(){
+  const f = (AUTH_USER?.displayName || "").split(" ")[0];
+  $("#setupT").textContent = f ? `Welcome, ${f}` : "One last step";
+  $("#suser").value = lfmName(); $("#setupMsg").textContent = "";
+  $("#setup").classList.remove("hidden"); document.body.classList.add("noscroll"); $("#suser").focus();
+}
+function closeSetup(){ $("#setup").classList.add("hidden"); document.body.classList.remove("noscroll"); }
 function setSync(t, ok){ let el = $("#syncMsg"); if(!el) return; el.textContent = t; el.classList.toggle("ok", !!ok); }
 function paintAuth(){
   const b = $("#authBtn"); if(!b) return;
@@ -1041,7 +1073,7 @@ async function signOutGoogle(){
   try{ clearTimeout(saveT); await cloudSaveNow(); await AUTH.signOut(); toast("Signed out. Your cards stay in this browser."); }catch{ toast("Couldn't sign out. Try again."); }
 }
 function snapshot(){
-  return { cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get("packs:"+USER, null), updated:Date.now() };
+  return { lfm:lfmName(), cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get("packs:"+USER, null), updated:Date.now() };
 }
 function cloudSave(){
   if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return;
@@ -1069,7 +1101,7 @@ async function cloudPull(){
     const hasLocal = !!(localCards && localCards.length), localN = hasLocal ? new Set(ls.get("revealed:"+localUser, [])).size : 0;
     if(snap.exists && Array.isArray(snap.data().cards) && snap.data().cards.length){
       const d = snap.data(), cloudN = (d.revealed || []).length;
-      CLOUD_META = { userid:d.userid, n:cloudN };
+      CLOUD_META = { userid:d.userid, n:cloudN }; if(d.lfm) ls.set("lfmuser", d.lfm);
       if(hasLocal && localUser !== d.userid && localN > 0){
         const useCloud = confirm(`Use the collection saved to your account (${cloudN} cards discovered)?\n\nOK loads your saved collection.\nCancel keeps the one on this device and replaces the saved one.`);
         if(!useCloud){ await cloudSaveNow(); return; }
@@ -1084,7 +1116,10 @@ async function cloudPull(){
       if(merged.size !== cloudN) cloudSave(); else setSync("Saved to your account", true);
     } else if(hasLocal && localUser !== "demo"){
       CARDS = localCards; USER = localUser; UNAME = ls.get("uname", ""); await cloudSaveNow(); toast("Your collection is now saved to your account.");
-    } else toast("Signed in. Your collection will save automatically.");
+    } else {
+      const n = lfmName();
+      if(n){ $("#luser").value = n; handleUser(); } else openSetup();
+    }
   }catch{ toast("Couldn't reach your saved collection. Your cards are still safe on this device."); }
 }
 
@@ -1093,6 +1128,7 @@ FX.init(); paintSound(); renderFan(); renderLedger();
 $("#lfm").value = ls.get("lfm", "");
 const saved = ls.get("cards", null);
 if(saved && saved.length){ CARDS = saved; USER = ls.get("userid", "me"); UNAME = ls.get("uname", ""); showApp(); }
+if(!$("#luser").value) $("#luser").value = ls.get("lfmuser", "");
 initCloud();
 </script>
 </body>
