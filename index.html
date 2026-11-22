@@ -46,6 +46,14 @@ a{color:inherit}
 .link{background:none;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line);cursor:pointer;font:inherit}
 .link:hover{text-decoration-color:var(--paper)}
 
+/* account */
+.authbtn{gap:8px;padding:6px 14px 6px 6px;font-size:14px}
+.authbtn.out{padding:8px 16px}
+.authbtn img,.authbtn .ai{width:28px;height:28px;border-radius:50%;object-fit:cover;display:grid;place-items:center;background:var(--holo);color:var(--ink);font-weight:900;font-size:14px}
+.authbtn .al{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync{font-size:13px;color:var(--muted);margin-top:8px}
+.sync.ok{color:#9dffc4}
+@media (max-width:520px){.authbtn .al{display:none}.authbtn{padding:6px}.authbtn.out .al{display:inline}.authbtn.out{padding:8px 12px}}
 /* nav */
 .nav{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px clamp(16px,4vw,44px);background:color-mix(in srgb,var(--blue) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1.5px solid var(--line)}
 body.inapp .nav{background:color-mix(in srgb,var(--ink) 88%,transparent)}
@@ -291,6 +299,7 @@ footer a{color:var(--muted)}
   <a class="logo" href="#top" data-act="home"><span class="logo-disc"></span>Streamdex</a>
   <nav class="nav-links" id="navLand" aria-label="Sections"><a href="#how">How it works</a><a href="#tiers">Rarities</a><a href="#connect">No Last.fm yet?</a><a href="#faq">FAQ</a></nav>
   <div class="nav-right">
+    <button class="btn ghost sm authbtn out" id="authBtn" data-act="auth"><span class="al">Sign in with Google</span></button>
     <button class="icon-btn" id="sndBtn" data-act="sound" aria-label="Toggle sound"></button>
     <div id="navApp" class="nav-right hidden">
       <button class="btn sm" id="navPack" data-act="open-pack">Open pack</button>
@@ -366,10 +375,11 @@ footer a{color:var(--muted)}
   <section class="block faq" id="faq"><div class="wrap">
     <h2 class="h2">Questions</h2>
     <div style="margin-top:30px">
-      <details><summary>Is my data safe?</summary><p>Your username goes to Last.fm to fetch your public top songs. Your cards and binder are saved in this browser only. A Spotify export is read on your device and never uploaded.</p></details>
+      <details><summary>Is my data safe?</summary><p>Your username goes to Last.fm to fetch your public top songs. Your cards and binder are saved in this browser. If you sign in with Google, they are also saved to your private account so they follow you to other devices; nobody else can read them. A Spotify export is read on your device and never uploaded.</p></details>
       <details><summary>Why Last.fm and not a Spotify login?</summary><p>Spotify limits new apps to a handful of approved users, so a public game can't log everyone in. Last.fm is open, free, and works with a username.</p></details>
       <details><summary>How is rarity decided?</summary><p>By how many people have listened to the song on Last.fm. Fewer listeners means a rarer card. Songs Last.fm can't find count as the most obscure.</p></details>
       <details><summary>How often can I open packs?</summary><p>You start with five packs, and one more arrives every 20 minutes up to five. Cards you discover are yours to keep.</p></details>
+      <details><summary>What does signing in with Google do?</summary><p>It saves your collection and pack timer to your account, so you can pick up on any device and never lose your cards if you clear your browser. We only use your Google account for sign-in. Songs and listening history are not shared with Google.</p></details>
       <details><summary>Is this connected to Spotify?</summary><p>No. Streamdex is a fan project and isn't affiliated with, or endorsed by, Spotify or Last.fm.</p></details>
     </div>
   </div></section>
@@ -426,12 +436,18 @@ footer a{color:var(--muted)}
 <noscript><p style="padding:20px">Streamdex needs JavaScript to run.</p></noscript>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 "use strict";
 /* ================= config ================= */
 const MAX_CARDS = 250, PACK_SIZE = 5, PACK_MAX = 5, PACK_REGEN_MS = 20*60*1000;
 // Free Last.fm API key shared by all players (it only reads public data). Replace it with your own anytime.
-const CONFIG = { LASTFM_KEY: "38717e32e731a41324cea37c39d5f320" };
+const CONFIG = { LASTFM_KEY: "38717e32e731a41324cea37c39d5f320",
+  // Google sign-in + cloud save (free Firebase Spark plan). Paste your Firebase web app config here.
+  // Firebase console > Project settings > Your apps > Web app > "firebaseConfig". These values are safe to publish.
+  FIREBASE: { apiKey:"AIzaSyDxuv7xf2RZ1_rXyQ2_d4BooG36N-nOnSo", authDomain:"streamdex-40c93.firebaseapp.com", projectId:"streamdex-40c93", storageBucket:"streamdex-40c93.firebasestorage.app", messagingSenderId:"813819190327", appId:"1:813819190327:web:e97625dfe3ac1ecb75f3b2" } };
 const DEV = /[?&]dev(=|&|$)/.test(location.search); // add ?dev to the address for unlimited packs while testing
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -729,6 +745,7 @@ function renderProfile(){
      <div><div class="muted">Packs ready</div><div class="packs-n num" id="pkN"></div><div class="muted" id="pkTimer" style="margin-top:6px"></div></div>
      <div class="packdots" id="pkDots"></div>
      <button class="btn lg" id="pkOpen" data-act="open-pack">Open a pack</button>
+     <div class="sync" id="syncMsg">${AUTH_USER ? "Saved to your account" : (cloudReady() ? "Sign in with Google to save across devices" : "")}</div>
    </div>`;
   updatePacks();
 }
@@ -753,7 +770,7 @@ function showLanding(){ $("#app").classList.add("hidden"); $("#landing").classLi
 function startGame(id, name){
   USER = id; UNAME = name || ""; FILTER = "all"; QUERY = ""; $("#q").value = "";
   ls.set("cards", CARDS); ls.set("userid", id); ls.set("uname", UNAME);
-  packs(); hideLoading(); showApp();
+  packs(); hideLoading(); showApp(); cloudSave();
   if(revealed().size === 0) setTimeout(openStage, 600);
 }
 
@@ -778,6 +795,7 @@ async function handleUser(){
   if(!name){ fm.textContent = "Enter your Last.fm username to start."; fm.classList.add("err"); $("#luser").focus(); return; }
   const key = lfmKey();
   if(!key){ fm.textContent = "This site needs a Last.fm API key. The owner can add one below."; fm.classList.add("err"); $("#keyBox").classList.remove("hidden"); return; }
+  if(!confirmReplace("lfm:" + name.toLowerCase())) return;
   showLoading();
   try{
     const { list, name: real } = await fromLastfm(name, key);
@@ -788,6 +806,7 @@ async function handleUser(){
 async function handleFiles(fileList){
   const key = lfmKey();
   if(!key){ toast("This site needs a Last.fm API key first."); $("#keyBox").classList.remove("hidden"); showLanding(); return; }
+  if(!confirmReplace("file")){ return; }
   showLoading();
   try{
     const rows = await readFiles(fileList);
@@ -897,7 +916,7 @@ async function tearPack(){
   if(!spendPack()){ PACK_BUSY = false; toast("No packs left right now."); return; }
   const cards = rollPack();
   if(!cards.length){ PACK_BUSY = false; toast("You've discovered every card."); return; }
-  const rev = revealed(); cards.forEach(c => rev.add(c.id)); ls.set(revKey(), [...rev]);
+  const rev = revealed(); cards.forEach(c => rev.add(c.id)); ls.set(revKey(), [...rev]); cloudSave();
   Snd.rip(); const pk = $("#packBtn"); pk.classList.add("shake"); await sleep(REDUCED ? 60 : 650);
   pk.classList.remove("shake"); pk.classList.add("burst"); await sleep(REDUCED ? 60 : 380);
   buildDeal(cards); PACK_BUSY = false;
@@ -954,8 +973,9 @@ const actions = {
   "invite": async () => { $("#menu")?.removeAttribute("open"); const url = location.origin + location.pathname;
     if(navigator.share){ try{ await navigator.share({ title:"Streamdex", text:"Turn your listening into rare trading cards.", url }); return; }catch{} }
     try{ await navigator.clipboard.writeText(url); toast("Link copied. Send it to a friend."); }catch{ toast(url); } },
-  "reset": () => { $("#menu")?.removeAttribute("open"); if(!confirm("Clear this collection and start over? This can't be undone.")) return;
-    ["cards","userid","uname","revealed:"+USER,"packs:"+USER].forEach(k => ls.del(k)); CARDS = []; USER = "me"; showLanding(); },
+  "reset": () => { $("#menu")?.removeAttribute("open"); if(!confirm(AUTH_USER ? "Clear this collection, on this device and in your saved account, and start over? This can't be undone." : "Clear this collection and start over? This can't be undone.")) return;
+    cloudDelete(); ["cards","userid","uname","revealed:"+USER,"packs:"+USER].forEach(k => ls.del(k)); CARDS = []; USER = "me"; showLanding(); },
+  "auth": () => { AUTH_USER ? signOutGoogle() : signInGoogle(); },
   "open-pack": openStage,
   "tear": tearPack,
   "again": () => { const s = packs(); if(!isInfinite() && s.n < 1) return; showStep("pack"); $("#packBtn").className = "pack"; PACK_BUSY = false; PACK = null; $("#packBtn").focus(); },
@@ -985,11 +1005,95 @@ $("#q").addEventListener("input", e => { QUERY = e.target.value; renderGrid(); }
 $("#sort").addEventListener("change", e => { SORT = e.target.value; renderGrid(); });
 $("#lfm").addEventListener("change", () => ls.set("lfm", $("#lfm").value.trim()));
 
+/* ================= Google sign-in + cloud save (Firebase, free Spark plan) ================= */
+let AUTH = null, DB = null, AUTH_USER = null, CLOUD_META = null, saveT = null, syncWarned = false;
+const cloudReady = () => !!(AUTH && DB);
+function setSync(t, ok){ let el = $("#syncMsg"); if(!el) return; el.textContent = t; el.classList.toggle("ok", !!ok); }
+function paintAuth(){
+  const b = $("#authBtn"); if(!b) return;
+  if(AUTH_USER){
+    const n = AUTH_USER.displayName || AUTH_USER.email || "Account", ini = esc(n[0].toUpperCase());
+    b.className = "btn ghost sm authbtn"; b.title = "Sign out";
+    b.innerHTML = (AUTH_USER.photoURL ? `<img alt="" referrerpolicy="no-referrer" src="${esc(AUTH_USER.photoURL)}">` : `<span class="ai">${ini}</span>`) + `<span class="al">Sign out</span>`;
+  } else { b.className = "btn ghost sm authbtn out"; b.title = ""; b.innerHTML = '<span class="al">Sign in with Google</span>'; }
+}
+function initCloud(){
+  const cfg = CONFIG.FIREBASE;
+  if(!window.firebase || !cfg || !cfg.apiKey || !cfg.projectId) return;
+  try{
+    firebase.initializeApp(cfg); AUTH = firebase.auth(); DB = firebase.firestore();
+    AUTH.getRedirectResult().catch(e => { if(e && e.code !== "auth/no-auth-event") toast("Sign-in failed. Try again."); });
+    AUTH.onAuthStateChanged(async u => { AUTH_USER = u; paintAuth(); CLOUD_META = null; if(u) await cloudPull(); });
+  }catch{ AUTH = DB = null; }
+}
+async function signInGoogle(){
+  if(!cloudReady()){ toast("Google sign-in isn't set up on this site yet."); return; }
+  const prov = new firebase.auth.GoogleAuthProvider();
+  try{ await AUTH.signInWithPopup(prov); }
+  catch(e){
+    if(e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment"){ try{ await AUTH.signInWithRedirect(prov); }catch{ toast("Sign-in failed. Try again."); } }
+    else if(e.code === "auth/unauthorized-domain") toast("This website's address isn't authorised in Firebase yet.");
+    else if(e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast("Sign-in failed. Try again.");
+  }
+}
+async function signOutGoogle(){
+  if(!cloudReady()) return;
+  try{ clearTimeout(saveT); await cloudSaveNow(); await AUTH.signOut(); toast("Signed out. Your cards stay in this browser."); }catch{ toast("Couldn't sign out. Try again."); }
+}
+function snapshot(){
+  return { cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get("packs:"+USER, null), updated:Date.now() };
+}
+function cloudSave(){
+  if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return;
+  clearTimeout(saveT); saveT = setTimeout(cloudSaveNow, 800);
+}
+async function cloudSaveNow(){
+  if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return;
+  const snap = snapshot();
+  try{ await DB.collection("users").doc(AUTH_USER.uid).set(snap); CLOUD_META = { userid:snap.userid, n:snap.revealed.length }; syncWarned = false; setSync("Saved to your account", true); }
+  catch{ if(!syncWarned){ syncWarned = true; toast("Couldn't save to your account. Your cards are still safe on this device."); } }
+}
+async function cloudDelete(){
+  if(!cloudReady() || !AUTH_USER) return;
+  try{ await DB.collection("users").doc(AUTH_USER.uid).delete(); CLOUD_META = null; }catch{}
+}
+// Ask before a new load replaces a different saved collection.
+function confirmReplace(newId){
+  if(!AUTH_USER || !CLOUD_META || !CLOUD_META.n || CLOUD_META.userid === newId) return true;
+  return confirm(`This will replace the collection saved to your account (${CLOUD_META.n} cards discovered). Continue?`);
+}
+async function cloudPull(){
+  try{
+    const snap = await DB.collection("users").doc(AUTH_USER.uid).get();
+    const localCards = ls.get("cards", null), localUser = ls.get("userid", "me");
+    const hasLocal = !!(localCards && localCards.length), localN = hasLocal ? new Set(ls.get("revealed:"+localUser, [])).size : 0;
+    if(snap.exists && Array.isArray(snap.data().cards) && snap.data().cards.length){
+      const d = snap.data(), cloudN = (d.revealed || []).length;
+      CLOUD_META = { userid:d.userid, n:cloudN };
+      if(hasLocal && localUser !== d.userid && localN > 0){
+        const useCloud = confirm(`Use the collection saved to your account (${cloudN} cards discovered)?\n\nOK loads your saved collection.\nCancel keeps the one on this device and replaces the saved one.`);
+        if(!useCloud){ await cloudSaveNow(); return; }
+      }
+      const merged = new Set(d.revealed || []);
+      if(hasLocal && localUser === d.userid) ls.get("revealed:"+localUser, []).forEach(id => merged.add(id));
+      CARDS = d.cards; USER = d.userid; UNAME = d.uname || "";
+      ls.set("cards", CARDS); ls.set("userid", USER); ls.set("uname", UNAME); ls.set("revealed:"+USER, [...merged]);
+      if(d.packs && !(hasLocal && localUser === d.userid && ls.get("packs:"+USER, null))) ls.set("packs:"+USER, d.packs);
+      FILTER = "all"; QUERY = ""; $("#q").value = "";
+      showApp(); toast("Welcome back. Your saved collection is loaded.");
+      if(merged.size !== cloudN) cloudSave(); else setSync("Saved to your account", true);
+    } else if(hasLocal && localUser !== "demo"){
+      CARDS = localCards; USER = localUser; UNAME = ls.get("uname", ""); await cloudSaveNow(); toast("Your collection is now saved to your account.");
+    } else toast("Signed in. Your collection will save automatically.");
+  }catch{ toast("Couldn't reach your saved collection. Your cards are still safe on this device."); }
+}
+
 /* ================= boot ================= */
 FX.init(); paintSound(); renderFan(); renderLedger();
 $("#lfm").value = ls.get("lfm", "");
 const saved = ls.get("cards", null);
 if(saved && saved.length){ CARDS = saved; USER = ls.get("userid", "me"); UNAME = ls.get("uname", ""); showApp(); }
+initCloud();
 </script>
 </body>
 </html>
