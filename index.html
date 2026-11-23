@@ -503,6 +503,26 @@ footer a{color:var(--muted)}
   .nrow{padding:10px 12px}
 }
 @media (prefers-reduced-motion:reduce){.mkc::after,.mk .mkc.hi,.medot,.bcard.got.t-prism .medal{animation:none}}
+
+/* ===== map v2: free tiles, mobile ===== */
+.osm-dark{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9) saturate(.65)}
+.mtop{position:absolute;top:10px;left:64px;right:64px;z-index:1000;display:flex;justify-content:center;pointer-events:none}
+.mchip{pointer-events:auto;padding:8px 16px;border-radius:999px;background:var(--ink2);border:1.5px solid var(--line);font-size:14px;font-weight:700;color:var(--paper);min-height:40px;display:flex;gap:6px;align-items:center}
+.mchip b{color:var(--yellow)}.mchip[aria-pressed="false"] b{color:var(--dim)}
+.mzoom{display:none;position:absolute;left:50%;bottom:34px;transform:translateX(-50%);z-index:1000;padding:9px 18px;background:var(--ink2);border:1.5px solid var(--line);border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap}
+.mapbox.far .mkcard{display:none}.mapbox.far .mzoom{display:block}
+.mpd summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.mpd summary::-webkit-details-marker{display:none}.mpd summary::after{content:"+";font-size:22px;color:var(--muted)}.mpd[open] summary::after{content:"\2212"}
+.mfab,.leaflet-bar a,.leaflet-bar a:hover{min-width:44px}
+@media (pointer:coarse){.mfab{width:44px;height:44px;top:104px}.leaflet-bar a,.leaflet-bar a:hover{width:44px!important;height:44px!important;line-height:44px!important}.mchip{min-height:44px}}
+@media (max-width:700px){
+  .mapbox{height:calc(100vh - 230px);height:calc(100dvh - 230px);min-height:420px;border-radius:14px}
+  .msheet{bottom:calc(30px + env(safe-area-inset-bottom,0px));left:8px;right:8px;padding:14px}
+  .mp-head{margin-bottom:12px}.mp-head .panel{padding:18px}.mh{font-size:26px}.mp-head p.muted{font-size:15px}
+  .mp-stats b{font-size:22px}
+  .nrow{min-height:60px}
+  .btn.lg{padding:15px 26px}
+}
 </style>
 </head>
 <body>
@@ -590,7 +610,7 @@ footer a{color:var(--muted)}
       <details><summary>How often can I open packs?</summary><p>Each day you get three packs of five cards. The first is Your Listens, drawn from your own top songs. The other two are Discovery packs: real songs from across Last.fm, picked to match the genres and kind of music you play most. Packs refresh at midnight. Once a week (Monday) you also get a Weekly Special with ten random real songs, from Uncommon up to Mythic.</p></details>
       <details><summary>What are coins and the marketplace?</summary><p>Coins let you buy any song in the marketplace. Search for it, check how rare it is, and buy it. The rarer the song, the more it costs, from about 10 coins for a chart-topper to nearly 2,000 for a true underground find. You earn coins from a daily bonus (it grows with your streak), a welcome gift, and by selling songs you got from packs, trades or the market for a quarter of their price. Coins are free and can't be bought with money.</p></details>
       <details><summary>How does trading work?</summary><p>Browse other collectors, pick up to five cards each way, and send an offer. Your cards are held safely while the offer is open. If they accept, the swap happens instantly. If they decline or you cancel, your cards come straight back. It's all free.</p></details>
-      <details><summary>How does the map work?</summary><p>Open the Map tab and allow your location. Mystery cards spawn in the real world around you, never closer than about 200 meters to each other, and each one is swapped for a new one within 24 hours. Walk to a card, get within 60 meters, and claim it to unwrap the song. Rarer cards are scarcer, using nearly the same odds as packs. Your location is only used while the page is open, and it is never saved or shared.</p></details>
+      <details><summary>How does the map work?</summary><p>Open the Map tab and allow your location. Mystery cards spawn in the real world within 100 miles of where you first opened the map, never closer than about 200 meters to each other and never on water. Each one is swapped for a new one every hour. Walk to a card and get within 60 meters to claim it, or stand right on it (about 10 feet) and it claims itself. If you travel more than 100 miles away, a brand-new batch spawns around you. Rarer cards are scarcer, using nearly the same odds as packs. Your location is only used while the page is open, and it is never saved or shared.</p></details>
       <details><summary>What are badges?</summary><p>Badges are milestones: collecting cards, pulling rare songs, daily streaks, trading, shopping, and exploring the map. Each one you earn pays out free coins straight away, and the Badges tab shows how close you are to the next ones.</p></details>
       <details><summary>Is this connected to Spotify?</summary><p>No. Streamdex is a fan project and isn't affiliated with, or endorsed by, Spotify or Last.fm.</p></details>
     </div>
@@ -1504,6 +1524,7 @@ const actions = {
   "tab-col": showApp, "tab-trade": showTrade, "tab-market": showMarket, "tab-map": showMap, "tab-badges": showBadges,
   "map-start": () => { MG.err = ""; startGeo(); },
   "map-locate": () => { if(MG.pos && MG.map){ MG.follow = true; $("#mLoc")?.classList.add("on"); MG.map.setView([MG.pos.lat, MG.pos.lon], Math.max(MG.map.getZoom(), 16)); } else startGeo(); },
+  "map-auto": () => { MG.auto = !MG.auto; ls.set("mapauto", MG.auto); const b = $("#mAuto"); if(b){ b.setAttribute("aria-pressed", String(MG.auto)); b.querySelector("b").textContent = MG.auto ? "On" : "Off"; } if(MG.auto){ MG.tried.clear(); maybeAuto(); } toast(MG.auto ? "Auto-claim on. Stand on a card to grab it." : "Auto-claim off."); },
   "map-close": () => { MG.sel = null; styleMarkers(); paintSheet(); },
   "map-dev": () => { MG.state = "dev"; paintGate(); toast("Dev mode: tap the map to move yourself."); }, "claim-daily": () => claimDaily(),
   "trade-refresh": () => loadTraders(TQ),
@@ -1628,7 +1649,7 @@ async function signInGoogle(){
     else if(e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast("Sign-in failed. Try again.");
   }
 }
-function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|uid|lfmuser|handle|lost|extras|applied|coins|claim|revealed:|packs:|spseen|pstats|badges|bdseen|mapclaimed)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
+function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|uid|lfmuser|handle|lost|extras|applied|coins|claim|revealed:|packs:|spseen|pstats|badges|bdseen|mapclaimed|mapanchor)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
 async function signOutGoogle(){
   if(!cloudReady()) return;
   clearTimeout(saveT);
@@ -1671,7 +1692,7 @@ async function cloudPull(){
   if(d.lfm) ls.set("lfmuser", d.lfm);
   ls.set("lost", d.lost || []); ls.set("extras", d.extras || []); ls.set("applied", d.applied || []);
   HANDLE = d.handle || ""; ls.set("handle", HANDLE); ls.set("claim", d.claim || null);
-  PS = mergeStats(d.stats, PS); savePS(); BADGES = d.badges || {}; ls.set("badges", BADGES); loadMC(d.mapClaimed || []); ls.set("mapclaimed", MCL);
+  PS = mergeStats(d.stats, PS); savePS(); BADGES = d.badges || {}; ls.set("badges", BADGES); loadMC(d.mapClaimed || []); ls.set("mapclaimed", MCL); if(d.mapAnchor) ls.set("mapanchor", d.mapAnchor);
   if(typeof d.coins === "number") setCoins(d.coins);
   else if(HANDLE){ setCoins(WELCOME_COINS); uref().set({ coins:WELCOME_COINS }, { merge:true }).catch(() => {}); toast(`Welcome gift: ${WELCOME_COINS} coins for the marketplace.`); }
   else setCoins(0);
@@ -2190,11 +2211,12 @@ async function syncStats(force){
 }
 
 /* ================= map: cards spawn around you ================= */
-// Spawns are generated from a fixed world grid plus a per-cell timer, so every player sees the same cards
-// and nothing needs a server. Each cell holds at most one card, kept inside its middle 60%, so neighbours
-// are always at least 200 m apart. Each cell re-rolls on its own 24 hour cycle.
-const MAP_CFG = { CELL_M:500, SPAWN_P:.5, VIEW_M:1600, CLAIM_M:60, MAX_ACC:100, DAY:864e5 };
-const MAP_ODDS = { mythic:.5, legendary:3, epic:9, rare:20, uncommon:30, common:37.5 }; // close to pack odds, a touch kinder to the top tiers' scarcity
+// Cards come from a fixed grid inside a 100 mile circle around an "anchor" (where you first opened the map).
+// Each grid square holds at most one card, kept in its middle 60%, so neighbours are always 200 m+ apart.
+// Every square re-rolls on its own 1 hour cycle. Travel more than 100 miles from the anchor and a new anchor,
+// and a brand-new batch of cards, is created where you stand. Cards on water are filtered out using the map tiles.
+const MAP_CFG = { CELL_M:500, SPAWN_P:.5, LIST_M:5000, REGION_M:160934, HOUR:36e5, CLAIM_M:60, AUTO_M:3.05, AUTO_ACC:15, MAX_ACC:100, MIN_ZOOM:12, MAX_MARKERS:250 };
+const MAP_ODDS = { mythic:.5, legendary:3, epic:9, rare:20, uncommon:30, common:37.5 };
 const DLAT = MAP_CFG.CELL_M / 111320;
 const h32 = s => { let h = 1779033703 ^ s.length; for(let i = 0; i < s.length; i++){ h = Math.imul(h ^ s.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return (h ^ h >>> 16) >>> 0; };
 const prng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
@@ -2202,28 +2224,61 @@ const rad = d => d * Math.PI / 180;
 const clampLat = l => Math.max(-85, Math.min(85, l));
 function distM(a, b){ const dLa = rad(b.lat - a.lat), dLo = rad(b.lon - a.lon), x = Math.sin(dLa/2)**2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLo/2)**2; return 12742000 * Math.asin(Math.sqrt(x)); }
 function compass(a, b){ const y = Math.sin(rad(b.lon - a.lon)) * Math.cos(rad(b.lat)), x = Math.cos(rad(a.lat)) * Math.sin(rad(b.lat)) - Math.sin(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(rad(b.lon - a.lon)); return ["N","NE","E","SE","S","SW","W","NW"][Math.round(((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360 / 45) % 8]; }
-const fmtDist = m => m < 100 ? Math.round(m) + " m" : m < 1000 ? Math.round(m/10) * 10 + " m" : (m/1000).toFixed(1) + " km";
+const fmtDist = m => m < 100 ? Math.round(m) + " m" : m < 1000 ? Math.round(m/10) * 10 + " m" : (m/1000).toFixed(m < 10000 ? 1 : 0) + " km";
 function mapRarity(r){ let x = r() * 100; for(const k of Object.keys(MAP_ODDS)){ x -= MAP_ODDS[k]; if(x < 0) return k; } return "common"; }
-function spawnAt(row, col, now){
+function getAnchor(pos){
+  let a = ls.get("mapanchor", null);
+  if(!a || !a.id || distM(a, pos) > MAP_CFG.REGION_M){
+    const fresh = !!(a && a.id); a = { lat:pos.lat, lon:pos.lon, id:Math.random().toString(36).slice(2, 8) }; ls.set("mapanchor", a);
+    if(marketOK()) uref().set({ mapAnchor:a }, { merge:true }).catch(() => {});
+    if(fresh) toast("New area! A fresh batch of cards just spawned around you.");
+  }
+  return a;
+}
+function spawnAt(row, col, now, A){
   const dlon = DLAT / Math.cos(rad(clampLat((row + .5) * DLAT)));
-  const off = h32("o|" + row + "|" + col) % MAP_CFG.DAY, cycle = Math.floor((now + off) / MAP_CFG.DAY);
-  const r = prng(h32("s|" + row + "|" + col + "|" + cycle));
+  if(distM(A, { lat:(row + .5) * DLAT, lon:(col + .5) * dlon }) > MAP_CFG.REGION_M) return null;
+  const off = h32("o|" + row + "|" + col) % MAP_CFG.HOUR, cycle = Math.floor((now + off) / MAP_CFG.HOUR);
+  const r = prng(h32("s|" + A.id + "|" + row + "|" + col + "|" + cycle));
   if(r() >= MAP_CFG.SPAWN_P) return null;
   const lat = (row + .2 + .6 * r()) * DLAT, lon = (col + .2 + .6 * r()) * dlon;
-  return { id:row + "." + col + "." + cycle, lat, lon, rarity:mapRarity(r), tag:TAG_POOL[Math.floor(r() * TAG_POOL.length)], exp:(cycle + 1) * MAP_CFG.DAY - off };
+  return { id:A.id + "." + row + "." + col + "." + cycle, lat, lon, rarity:mapRarity(r), tag:TAG_POOL[Math.floor(r() * TAG_POOL.length)], exp:(cycle + 1) * MAP_CFG.HOUR - off };
 }
-function spawnsNear(pos, now){
-  const R = MAP_CFG.VIEW_M, out = [], r0 = Math.floor((pos.lat - R/111320) / DLAT), r1 = Math.floor((pos.lat + R/111320) / DLAT);
+function spawnsIn(c, R, now, A){
+  const out = [], r0 = Math.floor((c.lat - R/111320) / DLAT), r1 = Math.floor((c.lat + R/111320) / DLAT);
   for(let row = r0; row <= r1; row++){
     const cl = clampLat((row + .5) * DLAT), dlon = DLAT / Math.cos(rad(cl)), dl = R / (111320 * Math.cos(rad(cl)));
-    for(let col = Math.floor((pos.lon - dl) / dlon), c1 = Math.floor((pos.lon + dl) / dlon); col <= c1; col++){
-      const s = spawnAt(row, col, now); if(s && !MCSET.has(s.id) && distM(pos, s) <= R) out.push(s);
+    for(let col = Math.floor((c.lon - dl) / dlon), c1 = Math.floor((c.lon + dl) / dlon); col <= c1; col++){
+      const s = spawnAt(row, col, now, A); if(s && !MCSET.has(s.id) && distM(c, s) <= R) out.push(s);
     }
   }
   return out;
 }
+/* ----- keep cards off the water: read the map tiles the player is already loading ----- */
+const TMASK = new Map(), LAND = new Map();
+const isWater = (r, g, b) => Math.abs(r - 170) <= 10 && Math.abs(g - 211) <= 10 && Math.abs(b - 223) <= 10; // OpenStreetMap's water blue
+function onTile(e){
+  try{
+    const t = e.coords, key = t.z + "/" + t.x + "/" + t.y; if(TMASK.has(key)) return;
+    const cv = document.createElement("canvas"); cv.width = cv.height = 256; const g = cv.getContext("2d", { willReadFrequently:true }); g.drawImage(e.tile, 0, 0, 256, 256);
+    const d = g.getImageData(0, 0, 256, 256).data, m = new Uint8Array(4096);
+    for(let by = 0; by < 64; by++) for(let bx = 0; bx < 64; bx++){ let w = 0;
+      for(let y = 0; y < 4; y++) for(let x = 0; x < 4; x++){ const i = ((by * 4 + y) * 256 + bx * 4 + x) * 4; if(isWater(d[i], d[i+1], d[i+2])) w++; }
+      if(w >= 4) m[by * 64 + bx] = 1; }
+    TMASK.set(key, m); if(TMASK.size > 500) TMASK.delete(TMASK.keys().next().value);
+  }catch{ MG.noMask = true; }
+  scheduleRefresh();
+}
+function landAt(s, z){ // true = land, false = water, null = tile not loaded yet
+  if(MG.noMask) return true;
+  z = Math.min(19, z); const n = 2 ** z, la = rad(s.lat), xf = (s.lon + 180) / 360 * n, yf = (1 - Math.log(Math.tan(la) + 1 / Math.cos(la)) / Math.PI) / 2 * n, tx = Math.floor(xf), ty = Math.floor(yf);
+  const m = TMASK.get(z + "/" + tx + "/" + ty); if(!m) return null;
+  const bx = Math.floor((xf - tx) * 64), by = Math.floor((yf - ty) * 64);
+  for(const [dx, dy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]){ const x = bx + dx, y = by + dy; if(x < 0 || y < 0 || x > 63 || y > 63) continue; if(m[y * 64 + x]) return false; }
+  return true;
+}
 
-const MG = { L:null, map:null, me:null, ring:null, acc:null, range:null, pos:null, watch:null, state:"idle", spawns:[], mk:new Map(), sel:null, busy:false, prog:"", tick:null, follow:true, first:false, statT:0, err:"" };
+const MG = { L:null, map:null, me:null, ring:null, acc:null, pos:null, watch:null, state:"idle", spawns:[], mk:new Map(), sel:null, busy:false, prog:"", tick:null, follow:true, first:false, statT:0, err:"", auto:ls.get("mapauto", true) !== false, tried:new Set(), wl:null, noMask:false, rT:null };
 let LEAF = null;
 function loadLeaflet(){
   if(window.L) return Promise.resolve(window.L);
@@ -2244,24 +2299,29 @@ const IC_LOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 function mapGateHead(t, p, btn, act){ $("#mapHead").innerHTML = `<div class="panel gate"><h2>${t}</h2><p class="muted">${p}</p>${btn ? `<button class="btn lg" data-act="${act}">${btn}</button>` : ""}</div>`; $("#mapBody").innerHTML = ""; }
 function renderMapShell(){
   renderTabs(); paintCoins();
-  if(MG.map){ try{ MG.map.remove(); }catch{} MG.map = MG.me = MG.ring = MG.acc = MG.range = null; MG.mk.clear(); }
-  MG.first = false; MG.follow = true; MG.sel = null; MG.busy = false; MG.spawns = [];
+  if(MG.map){ try{ MG.map.remove(); }catch{} MG.map = MG.me = MG.ring = MG.acc = null; MG.mk.clear(); }
+  MG.first = false; MG.follow = true; MG.sel = null; MG.busy = false; MG.spawns = []; MG.tried.clear();
   if(USER === "demo") return mapGateHead("The map is for real collections", "The demo is just for looking around. Create an account to hunt for cards in the real world.", "Create my account", "start");
   if(!AUTH_USER) return mapGateHead("Sign in to explore", "The map saves the cards you claim to your account. It takes about a minute to set up.", "Continue with Google", "start");
   if(!HANDLE) return mapGateHead("One more step", "Finish setting up your account to start claiming cards on the map.", "Finish setup", "wiz-open");
   const odds = Object.keys(MAP_ODDS).map(k => { const r = RARITIES.find(x => x.key === k); return `<span class="ptier" style="--c1:${r.c1}">${r.stars} ${r.name} &middot; ${MAP_ODDS[k]}%</span>`; }).join("");
-  $("#mapHead").innerHTML = `<section class="mp-head"><div class="panel"><h2 class="mh">Card Map</h2><p class="muted">Cards spawn in the real world around you. Walk to one, get within ${MAP_CFG.CLAIM_M} m, and claim it. Every card is a mystery until you unwrap it, and each one is replaced within 24 hours.</p><div class="mp-stats" id="mpStats"></div></div>
-    <div class="panel"><h3 class="ph">Spawn odds</h3><div class="ptiers">${odds}</div><p class="mp-note">Stay aware of your surroundings. Cards can appear anywhere, so never trespass or step into traffic. If one is somewhere you shouldn't go, skip it. A fresh one will be along tomorrow.</p></div></section>`;
-  $("#mapBody").innerHTML = `<div class="mapbox"><div id="mapEl"></div><button class="mfab" id="mLoc" data-act="map-locate" aria-label="Centre the map on me">${IC_LOC}</button><div id="mSheet" aria-live="polite"></div><div class="mgate" id="mGate"></div></div>
+  $("#mapHead").innerHTML = `<section class="mp-head"><div class="panel"><h2 class="mh">Card Map</h2><p class="muted">Mystery cards spawn in the real world within 100 miles of where you start. Get within ${MAP_CFG.CLAIM_M} m to claim one, or stand right on it (about 10 ft) and it claims itself. Cards are replaced every hour, and travel past 100 miles to spawn a brand-new batch.</p><div class="mp-stats" id="mpStats"></div></div>
+    <details class="panel mpd" ${innerWidth > 700 ? "open" : ""}><summary><h3 class="ph">Spawn odds and safety</h3></summary><div class="ptiers" style="margin-top:12px">${odds}</div><p class="mp-note">Stay aware of your surroundings. Cards can appear anywhere on land, so never trespass or step into traffic, and never use your phone while driving. If a card is somewhere you shouldn't go, skip it. A fresh one will be along within the hour.</p></details></section>`;
+  $("#mapBody").innerHTML = `<div class="mapbox"><div id="mapEl"></div>
+    <div class="mtop"><button class="mchip" id="mAuto" type="button" data-act="map-auto" aria-pressed="${MG.auto}">Auto-claim <b>${MG.auto ? "On" : "Off"}</b></button></div>
+    <button class="mfab" id="mLoc" data-act="map-locate" aria-label="Centre the map on me">${IC_LOC}</button><div class="mzoom" id="mZoom">Zoom in to see cards</div><div id="mSheet" aria-live="polite"></div><div class="mgate" id="mGate"></div></div>
     <h3 class="ph" style="margin:28px 0 12px">Nearby cards</h3><div class="nlist" id="nList"></div>`;
   paintStats(); paintList(); paintGate();
   loadLeaflet().then(L => { if(VIEW !== "map" || !$("#mapEl")) return; MG.L = L; initMap(); }).catch(e => { MG.state = "err"; MG.err = e.message; paintGate(); });
 }
+function scheduleRefresh(){ clearTimeout(MG.rT); MG.rT = setTimeout(refreshSpawns, 200); }
 function initMap(){
   const L = MG.L;
-  MG.map = L.map("mapEl", { minZoom:3, maxZoom:19, zoomControl:true, worldCopyJump:true }).setView(MG.pos ? [MG.pos.lat, MG.pos.lon] : [30, -40], MG.pos ? 16 : 3);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { subdomains:"abcd", maxZoom:20, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>' }).addTo(MG.map);
+  MG.map = L.map("mapEl", { minZoom:3, maxZoom:19, zoomControl:true, worldCopyJump:true, tapTolerance:18 }).setView(MG.pos ? [MG.pos.lat, MG.pos.lon] : [30, -40], MG.pos ? 16 : 3);
+  const tl = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19, crossOrigin:true, className:"osm-dark", attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' }).addTo(MG.map);
+  tl.on("tileload", onTile);
   MG.map.on("dragstart", () => { MG.follow = false; $("#mLoc")?.classList.remove("on"); });
+  MG.map.on("moveend zoomend", scheduleRefresh);
   if(DEV) MG.map.on("click", e => { MG.follow = false; onPos({ lat:e.latlng.lat, lon:e.latlng.lng, acc:5, t:Date.now() }, true); });
   setTimeout(() => MG.map && MG.map.invalidateSize(), 250);
   if(MG.pos){ paintMe(); refreshSpawns(); }
@@ -2272,20 +2332,24 @@ async function maybeAutoGeo(){
   if(!window.isSecureContext){ MG.state = "insecure"; paintGate(); return; }
   try{ const p = await navigator.permissions.query({ name:"geolocation" }); if(p.state === "granted") startGeo(); else if(p.state === "denied"){ MG.state = "denied"; paintGate(); } }catch{}
 }
+async function keepAwake(on){
+  try{ if(on){ if(navigator.wakeLock && !MG.wl){ MG.wl = await navigator.wakeLock.request("screen"); MG.wl.addEventListener("release", () => { MG.wl = null; }); } } else if(MG.wl){ await MG.wl.release(); MG.wl = null; } }catch{}
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && MG.watch != null) keepAwake(true); });
 function startGeo(){
   if(!navigator.geolocation){ MG.state = "nogeo"; paintGate(); return; }
   if(!window.isSecureContext){ MG.state = "insecure"; paintGate(); return; }
   if(MG.watch != null) return;
-  MG.state = "ask"; paintGate();
+  MG.state = "ask"; paintGate(); keepAwake(true);
   MG.watch = navigator.geolocation.watchPosition(
     p => onPos({ lat:p.coords.latitude, lon:p.coords.longitude, acc:p.coords.accuracy || 999, t:Date.now() }),
     e => { if(e.code === 3) return; stopGeo(); MG.state = e.code === 1 ? "denied" : "err"; MG.err = "We couldn't get a location fix. Check that location services are on, then try again."; paintGate(); },
-    { enableHighAccuracy:true, maximumAge:4000, timeout:25000 });
+    { enableHighAccuracy:true, maximumAge:2000, timeout:25000 });
 }
 function stopGeo(){
   const was = MG.watch != null || MG.tick != null;
   if(MG.watch != null){ navigator.geolocation.clearWatch(MG.watch); MG.watch = null; if(MG.state === "ask") MG.state = "idle"; }
-  clearInterval(MG.tick); MG.tick = null; if(was) syncStats(true);
+  clearInterval(MG.tick); MG.tick = null; keepAwake(false); if(was) syncStats(true);
 }
 function onPos(p, fake){
   const prev = MG.pos; MG.pos = p; MG.state = fake ? "dev" : "ok";
@@ -2302,27 +2366,46 @@ function onPos(p, fake){
 function paintMe(){
   const L = MG.L, p = MG.pos; if(!L || !MG.map || !p) return; const ll = [p.lat, p.lon];
   if(!MG.me){
-    MG.range = L.circle(ll, { radius:MAP_CFG.VIEW_M, color:"#f4f0e8", weight:1, opacity:.22, fill:false, dashArray:"2 8", interactive:false }).addTo(MG.map);
     MG.acc = L.circle(ll, { radius:Math.min(p.acc, 500), color:"#4aa3ff", weight:1, opacity:.45, fillOpacity:.07, interactive:false }).addTo(MG.map);
     MG.ring = L.circle(ll, { radius:MAP_CFG.CLAIM_M, color:"#ffe14a", weight:1.5, opacity:.85, fillColor:"#ffe14a", fillOpacity:.09, dashArray:"4 6", interactive:false }).addTo(MG.map);
     MG.me = L.marker(ll, { icon:L.divIcon({ className:"mk", html:'<div class="medot"></div>', iconSize:[20,20], iconAnchor:[10,10] }), interactive:false, keyboard:false, zIndexOffset:2000 }).addTo(MG.map);
-  } else { MG.me.setLatLng(ll); MG.ring.setLatLng(ll); MG.acc.setLatLng(ll); MG.range.setLatLng(ll); MG.acc.setRadius(Math.min(p.acc, 500)); }
+  } else { MG.me.setLatLng(ll); MG.ring.setLatLng(ll); MG.acc.setLatLng(ll); MG.acc.setRadius(Math.min(p.acc, 500)); }
 }
 const spawnRarity = s => RARITIES.find(r => r.key === s.rarity);
 const mkHTML = s => { const r = spawnRarity(s), hi = s.rarity === "mythic" || s.rarity === "legendary"; return `<div class="mkc${hi ? " hi" : ""}" style="--c1:${r.c1};--c2:${r.c2};--rgb:${r.rgb}">?</div>`; };
 function refreshSpawns(){
   if(!MG.pos || !MG.L || !MG.map){ paintStats(); paintList(); return; }
-  const now = Date.now();
-  MG.spawns = spawnsNear(MG.pos, now).map(s => ({ ...s, d:distM(MG.pos, s), dir:compass(MG.pos, s) })).sort((a, b) => a.d - b.d);
+  const now = Date.now(), A = getAnchor(MG.pos), z = MG.map.getZoom(), zi = Math.round(z), seen = new Map();
+  spawnsIn(MG.pos, MAP_CFG.LIST_M, now, A).forEach(s => seen.set(s.id, s));
+  if(z >= MAP_CFG.MIN_ZOOM){
+    const b = MG.map.getBounds(), c = b.getCenter(), cc = { lat:c.lat, lon:c.lng };
+    spawnsIn(cc, Math.min(15000, distM(cc, { lat:b.getNorth(), lon:b.getEast() })), now, A).forEach(s => seen.set(s.id, s));
+  }
+  if(LAND.size > 6000) LAND.clear();
+  const ok = [];
+  seen.forEach(s => {
+    const prev = LAND.get(s.id);
+    if(!prev || (prev.ok && zi > prev.z)){ const v = landAt(s, zi); if(v !== null) LAND.set(s.id, { ok:v, z:zi }); }
+    const cur = LAND.get(s.id); if(cur && cur.ok) ok.push(s);
+  });
+  MG.spawns = ok.map(s => ({ ...s, d:distM(MG.pos, s), dir:compass(MG.pos, s) })).sort((a, b) => a.d - b.d).slice(0, MAP_CFG.MAX_MARKERS);
   const ids = new Set(MG.spawns.map(s => s.id));
   for(const [id, m] of MG.mk){ if(!ids.has(id)){ m.remove(); MG.mk.delete(id); } }
   MG.spawns.forEach(s => {
     if(MG.mk.has(s.id)) return;
-    const m = MG.L.marker([s.lat, s.lon], { icon:MG.L.divIcon({ className:"mk", html:mkHTML(s), iconSize:[38,52], iconAnchor:[19,48] }), title:spawnRarity(s).name + " card", riseOnHover:true }).addTo(MG.map);
+    const m = MG.L.marker([s.lat, s.lon], { icon:MG.L.divIcon({ className:"mk mkcard", html:mkHTML(s), iconSize:[38,52], iconAnchor:[19,48] }), title:spawnRarity(s).name + " card", riseOnHover:true }).addTo(MG.map);
     m.on("click", () => selectSpawn(s.id)); MG.mk.set(s.id, m);
   });
   if(MG.sel && !ids.has(MG.sel)) MG.sel = null;
-  styleMarkers(); paintStats(); paintList(); paintSheet();
+  const box = $(".mapbox"); if(box) box.classList.toggle("far", z < MAP_CFG.MIN_ZOOM);
+  styleMarkers(); paintStats(); paintList(); paintSheet(); maybeAuto();
+}
+function maybeAuto(){
+  if(!MG.auto || MG.busy || !MG.pos || !marketOK()) return;
+  if(!$("#detail").classList.contains("hidden")) return;
+  if(MG.pos.acc > MAP_CFG.AUTO_ACC || Date.now() - MG.pos.t > 20000) return;
+  const s = MG.spawns.find(x => x.d <= MAP_CFG.AUTO_M && !MG.tried.has(x.id)); if(!s) return;
+  MG.tried.add(s.id); claimSpawn(s.id, true);
 }
 function styleMarkers(){
   MG.spawns.forEach(s => { const m = MG.mk.get(s.id), el = m && m.getElement(), c = el && el.firstElementChild; if(!c) return;
@@ -2334,21 +2417,22 @@ function selectSpawn(id, fly){
 }
 function paintStats(){
   const el = $("#mpStats"); if(!el) return; const dk = dayKey(), today = PS.today && PS.today.d === dk ? PS.today.n : 0;
-  el.innerHTML = `<div><span>Cards nearby</span><b class="num">${MG.pos ? MG.spawns.length : "–"}</b></div><div><span>Claimed today</span><b class="num">${today}</b></div><div><span>Claimed in total</span><b class="num">${(PS.claims || 0).toLocaleString()}</b></div><div><span>Distance walked</span><b class="num">${((PS.walkM || 0) / 1000).toFixed(1)} km</b></div>`;
+  el.innerHTML = `<div><span>Cards nearby</span><b class="num">${MG.pos ? MG.spawns.filter(s => s.d <= MAP_CFG.LIST_M).length : "–"}</b></div><div><span>Claimed today</span><b class="num">${today}</b></div><div><span>Claimed in total</span><b class="num">${(PS.claims || 0).toLocaleString()}</b></div><div><span>Distance walked</span><b class="num">${((PS.walkM || 0) / 1000).toFixed(1)} km</b></div>`;
 }
 const leftTxt = exp => fmtLong(exp - Date.now());
 function paintList(){
   const el = $("#nList"); if(!el) return;
   if(!MG.pos){ el.innerHTML = '<div class="panel empty" style="grid-column:auto">Turn on your location to see the cards around you.</div>'; return; }
-  if(!MG.spawns.length){ el.innerHTML = `<div class="panel empty" style="grid-column:auto">No cards within ${fmtDist(MAP_CFG.VIEW_M)} right now. Head somewhere new, or check back soon. Cards refresh every 24 hours.</div>`; return; }
-  el.innerHTML = MG.spawns.slice(0, 14).map(s => { const r = spawnRarity(s), inr = s.d <= MAP_CFG.CLAIM_M;
+  const list = MG.spawns.filter(s => s.d <= MAP_CFG.LIST_M);
+  if(!list.length){ el.innerHTML = `<div class="panel empty" style="grid-column:auto">${MG.noMask || TMASK.size ? "No cards within " + fmtDist(MAP_CFG.LIST_M) + " right now. Head somewhere new, or check back soon. Cards refresh every hour." : "Looking for cards…"}</div>`; return; }
+  el.innerHTML = list.slice(0, 14).map(s => { const r = spawnRarity(s), inr = s.d <= MAP_CFG.CLAIM_M;
     return `<button class="nrow${inr ? " in" : ""}" type="button" data-mnear="${esc(s.id)}" style="--c1:${r.c1};--c2:${r.c2}"><span class="nchip">?</span><span class="ninfo"><b>${r.stars} ${r.name}</b><small>${esc(s.tag)} vibes &middot; gone in ${leftTxt(s.exp)}</small></span><span class="ndist"><b>${fmtDist(s.d)}</b><small>${inr ? '<span class="inr">In range</span>' : s.dir}</small></span></button>`; }).join("");
 }
 function paintSheet(){
   const el = $("#mSheet"); if(!el) return;
   const s = MG.sel && MG.spawns.find(x => x.id === MG.sel); if(!s){ el.innerHTML = ""; return; }
   const r = spawnRarity(s), inr = s.d <= MAP_CFG.CLAIM_M, weak = MG.pos && MG.pos.acc > MAP_CFG.MAX_ACC, stale = MG.pos && Date.now() - MG.pos.t > 90000;
-  const note = MG.busy ? (MG.prog || "Unwrapping…") : weak ? `<span class="warn">Your GPS is only good to about ${Math.round(MG.pos.acc)} m. Step outside for a better signal.</span>` : stale ? '<span class="warn">Waiting for a fresh location…</span>' : inr ? "You're close enough. Claim it!" : `${fmtDist(s.d)} ${s.dir}. Get within ${MAP_CFG.CLAIM_M} m.`;
+  const note = MG.busy ? (MG.prog || "Unwrapping…") : weak ? `<span class="warn">Your GPS is only good to about ${Math.round(MG.pos.acc)} m. Step outside for a better signal.</span>` : stale ? '<span class="warn">Waiting for a fresh location…</span>' : inr ? (MG.auto ? "Close enough to claim. Step right onto it and it claims itself." : "You're close enough. Claim it!") : `${fmtDist(s.d)} ${s.dir}. Get within ${MAP_CFG.CLAIM_M} m.`;
   const can = inr && !weak && !stale && !MG.busy;
   el.innerHTML = `<div class="msheet" style="--c1:${r.c1};--c2:${r.c2};--rgb:${r.rgb}"><button class="msx" data-act="map-close" aria-label="Close">&times;</button><div class="mkc static">?</div>
     <div class="msi"><span class="ptier" style="--c1:${r.c1}">${r.stars} ${r.name}</span><b>Mystery card</b><small>${esc(s.tag)} vibes &middot; gone in ${leftTxt(s.exp)}</small><small>${note}</small></div>
@@ -2397,12 +2481,12 @@ async function digMapCard(rk, hint, onp){
   }
   throw new Error("Couldn't dig up the song for this card. It's still on the map, so try again.");
 }
-async function claimSpawn(id){
+async function claimSpawn(id, auto){
   const s = MG.spawns.find(x => x.id === id); if(!s || MG.busy) return;
-  if(!marketOK()){ toast("Sign in and finish setup to claim cards."); return; }
-  if(MCSET.has(s.id)){ toast("You already claimed this one."); return; }
-  if(!MG.pos || Date.now() - MG.pos.t > 90000 || MG.pos.acc > MAP_CFG.MAX_ACC || distM(MG.pos, s) > MAP_CFG.CLAIM_M){ toast(`Get within ${MAP_CFG.CLAIM_M} m with a good GPS signal to claim this card.`); return; }
-  MG.busy = true; MG.prog = "Unwrapping…"; paintSheet(); Snd.rip();
+  if(!marketOK()){ if(!auto) toast("Sign in and finish setup to claim cards."); return; }
+  if(MCSET.has(s.id)){ if(!auto) toast("You already claimed this one."); return; }
+  if(!MG.pos || Date.now() - MG.pos.t > 90000 || MG.pos.acc > MAP_CFG.MAX_ACC || distM(MG.pos, s) > MAP_CFG.CLAIM_M){ if(!auto) toast(`Get within ${MAP_CFG.CLAIM_M} m with a good GPS signal to claim this card.`); return; }
+  MG.busy = true; MG.prog = auto ? "You're standing on a card. Unwrapping…" : "Unwrapping…"; if(auto){ MG.sel = s.id; styleMarkers(); } paintSheet(); Snd.rip(); if(navigator.vibrate) navigator.vibrate(40);
   let card;
   try{ card = await digMapCard(s.rarity, s.tag, n => { MG.prog = "Finding the song" + ".".repeat(1 + n % 3); const sm = $(".msi small:last-child"); if(sm) sm.textContent = MG.prog; }); }
   catch(e){ MG.busy = false; MG.prog = ""; paintSheet(); toast(e.message || "Couldn't unwrap the card. Try again."); return; }
@@ -2419,9 +2503,10 @@ async function claimSpawn(id){
       return { d, list, st };
     });
     mirror(r.d); loadMC(r.list); ls.set("mapclaimed", MCL); PS = r.st; savePS();
-  }catch(e){ MG.busy = false; MG.prog = ""; if(e && e.code === "map-claimed"){ loadMC([...MCL, s.id + "~" + s.exp]); refreshSpawns(); toast("You already claimed this one."); } else { paintSheet(); toast(tradeErrText(e)); } return; }
+  }catch(e){ MG.busy = false; MG.prog = ""; if(e && e.code === "map-claimed"){ loadMC([...MCL, s.id + "~" + s.exp]); refreshSpawns(); if(!auto) toast("You already claimed this one."); } else { paintSheet(); toast(tradeErrText(e)); } return; }
   MG.busy = false; MG.prog = ""; MG.sel = null; cloudSave();
   const rr = rarityFor(card.niche), ri = rarityIdx(card);
+  if(navigator.vibrate) navigator.vibrate([60, 40, 90]);
   Snd.reveal(ri); flashBanner(rr.name, rr.c1); FX.burst(innerWidth / 2, innerHeight / 2, [rr.c1, rr.c2, "#ffffff"], [240, 170, 110, 80, 60, 40][ri]);
   refreshSpawns(); openCard(card); scheduleBadges();
 }
