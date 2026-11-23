@@ -410,6 +410,99 @@ footer a{color:var(--muted)}
 @media (max-width:520px){.tab{padding:9px 14px}.comp-f .btn{width:100%}.csearch{width:130px}}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* ===== map + badges ===== */
+.tabbar{overflow-x:auto;scrollbar-width:none}.tabbar::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap}
+.tab .badge.gold{background:var(--yellow)}
+.mp-head,.bd-head{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px}
+.mh{font-size:clamp(26px,4vw,36px);font-weight:850;letter-spacing:-.02em;line-height:1.1;margin-bottom:8px}
+.mp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:20px;border-top:1.5px solid var(--line)}
+.mp-stats div{padding:14px 12px 0 0}.mp-stats div+div{padding-left:14px;border-left:1.5px solid var(--line)}
+.mp-stats span{display:block;font-size:13px;color:var(--muted)}
+.mp-stats b{font-size:26px;font-weight:850;letter-spacing:-.02em;line-height:1.2;display:block}
+.mp-note{font-size:14px;color:var(--dim);margin-top:14px;line-height:1.45}
+.mapbox{position:relative;border-radius:16px;overflow:hidden;border:1.5px solid var(--line);background:#0d0f2b;height:min(68vh,640px);min-height:440px;isolation:isolate}
+#mapEl{position:absolute;inset:0;background:#0d0f2b;z-index:0}
+.leaflet-container{font-family:inherit;background:#0d0f2b;outline:0}
+.leaflet-control-attribution{background:rgba(11,13,42,.78)!important;color:var(--dim)!important;font-size:11px!important}
+.leaflet-control-attribution a{color:var(--muted)!important}
+.leaflet-bar{border:1.5px solid var(--line)!important;box-shadow:none!important;border-radius:12px!important;overflow:hidden}
+.leaflet-bar a,.leaflet-bar a:hover{background:var(--ink2)!important;color:var(--paper)!important;border-bottom:1px solid var(--line)!important;width:38px!important;height:38px!important;line-height:38px!important}
+.leaflet-bar a:hover{background:var(--ink3)!important}
+.mk{background:none!important;border:0!important}
+.mkc{position:relative;width:38px;height:52px;border-radius:7px;background:linear-gradient(155deg,var(--c1),var(--c2));border:2px solid rgba(255,255,255,.88);box-shadow:0 6px 14px rgba(0,0,0,.5);display:grid;place-items:center;transform:rotate(-6deg);transition:transform .2s,border-color .2s;color:#fff;font-weight:900;font-size:20px;text-shadow:0 1px 3px rgba(0,0,0,.45);cursor:pointer;overflow:hidden}
+.mkc::before{content:"";position:absolute;inset:4px;border-radius:4px;border:1.5px solid rgba(255,255,255,.35);pointer-events:none}
+.mkc::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.5) 48%,transparent 62%);background-size:250% 100%;animation:mkshine 3.4s linear infinite;pointer-events:none}
+.mk .mkc.hi{animation:mkpulse 2s ease-out infinite;overflow:visible}
+.mk .mkc.hi::after{border-radius:5px}
+.mk .mkc.in{transform:rotate(0) scale(1.18);border-color:var(--yellow)}
+.mk .mkc.sel{transform:rotate(0) scale(1.28);border-color:#fff}
+.mkc.static{width:46px;height:62px;font-size:24px;cursor:default;transform:rotate(-5deg);flex:none}
+.medot{width:20px;height:20px;border-radius:50%;background:#4aa3ff;border:3px solid #fff;box-shadow:0 0 0 0 rgba(74,163,255,.6);animation:mepulse 2s ease-out infinite}
+@keyframes mkshine{from{background-position:150% 0}to{background-position:-100% 0}}
+@keyframes mkpulse{0%{box-shadow:0 6px 14px rgba(0,0,0,.5),0 0 0 0 rgba(var(--rgb),.75)}100%{box-shadow:0 6px 14px rgba(0,0,0,.5),0 0 0 24px rgba(var(--rgb),0)}}
+@keyframes mepulse{0%{box-shadow:0 0 0 0 rgba(74,163,255,.65)}100%{box-shadow:0 0 0 22px rgba(74,163,255,0)}}
+.mgate{position:absolute;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:rgba(11,13,42,.76);backdrop-filter:blur(3px);text-align:center}
+.mgate>div{max-width:400px;display:grid;gap:12px;justify-items:center}
+.mgate h3{font-size:26px;font-weight:850;letter-spacing:-.02em;line-height:1.12}
+.mgate p{font-size:16px}
+.mgate .gicon{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--holo);color:var(--ink)}
+.mgate .gicon svg{width:30px;height:30px}
+.mgate .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.mfab{position:absolute;right:10px;top:96px;z-index:1000;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--ink2);border:1.5px solid var(--line);color:var(--paper)}
+.mfab:hover{background:var(--ink3)}.mfab svg{width:18px;height:18px}
+.mfab.on{color:var(--yellow)}
+.msheet{position:absolute;left:12px;right:12px;bottom:26px;z-index:1000;margin:0 auto;max-width:600px;background:var(--ink2);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 18px 50px rgba(0,0,0,.6);display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;animation:sheetin .25s ease both}
+@keyframes sheetin{from{transform:translateY(14px);opacity:0}}
+.msheet .msx{position:absolute;top:6px;right:10px;font-size:22px;line-height:1;color:var(--muted);width:28px;height:28px}
+.msi b{display:block;font-size:19px;font-weight:850;letter-spacing:-.01em;line-height:1.2;margin:6px 0 2px}
+.msi small{display:block;color:var(--muted);font-size:14px;line-height:1.4}
+.msi .warn{color:var(--yellow)}
+.msbtn{display:grid;gap:6px;justify-items:end;padding-top:14px}
+.msbtn .btn{white-space:normal;text-align:center}
+.nlist{display:grid;gap:10px}
+.nrow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 16px 10px 12px;background:var(--ink2);border:1.5px solid var(--line);border-radius:14px;text-align:left;width:100%;transition:border-color .2s,transform .15s}
+.nrow:hover{border-color:rgba(244,240,232,.45);transform:translateY(-1px)}
+.nrow.in{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(255,225,74,.15)}
+.nchip{width:30px;height:42px;border-radius:6px;background:linear-gradient(155deg,var(--c1),var(--c2));border:1.5px solid rgba(255,255,255,.8);display:grid;place-items:center;font-weight:900;font-size:15px;color:#fff;transform:rotate(-5deg)}
+.ninfo b{display:block;font-weight:750}.ninfo small,.ndist small{display:block;color:var(--muted);font-size:13.5px}
+.ndist{text-align:right}.ndist b{font-weight:800;font-variant-numeric:tabular-nums}
+.ndist .inr{color:var(--yellow);font-weight:700}
+/* badges */
+.bd-big{font-size:clamp(40px,6vw,60px);font-weight:900;font-stretch:125%;letter-spacing:-.03em;line-height:1}
+.bd-big small{font-size:.4em;font-weight:650;color:var(--muted);letter-spacing:0;font-stretch:100%;margin-left:6px}
+.bnext{display:grid;gap:12px;margin-top:6px}
+.bnext .bn2{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center}
+.bnext .bn2 .medal{width:44px;height:44px}
+.bnext b{font-weight:750;font-size:15px;display:block}
+.bnext small{color:var(--muted);font-size:13px}
+.bgh{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px;display:flex;align-items:center;gap:12px}
+.bgh::after{content:"";flex:1;height:1.5px;background:var(--line)}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.bcard{display:grid;grid-template-columns:68px minmax(0,1fr);gap:14px;padding:16px;background:var(--ink2);border:1.5px solid var(--line);border-radius:14px;align-items:start;position:relative}
+.bcard.got{border-color:rgba(244,240,232,.34)}
+.bcard.got.t-gold{border-color:rgba(255,211,77,.6)}.bcard.got.t-prism{border-color:rgba(176,107,255,.7)}
+.medal{width:68px;height:68px;display:block}
+.bcard.lock .medal{filter:grayscale(1) brightness(.55);opacity:.8}
+.bcard.got .medal{filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+.bcard.got.t-prism .medal{animation:medalspin 6s linear infinite}
+@keyframes medalspin{0%,100%{filter:drop-shadow(0 4px 10px rgba(0,0,0,.45)) hue-rotate(0)}50%{filter:drop-shadow(0 4px 12px rgba(176,107,255,.5)) hue-rotate(40deg)}}
+.bn{font-weight:800;font-size:16.5px;line-height:1.25;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bcard p{font-size:14.5px;color:var(--muted);margin:3px 0 10px;line-height:1.4}
+.bprog{height:6px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden;margin-bottom:6px}
+.bprog i{display:block;height:100%;background:var(--yellow);border-radius:9px}
+.bcard small{font-size:13px;color:var(--dim);display:block}
+.bcard small.bdone{color:#9dffc4}
+.newp{font-size:11px;font-weight:850;letter-spacing:.06em;text-transform:uppercase;background:var(--orange);color:var(--ink);border-radius:99px;padding:2px 8px}
+@media (max-width:900px){.mp-head,.bd-head{grid-template-columns:1fr}}
+@media (max-width:520px){
+  .mp-stats{grid-template-columns:1fr 1fr}.mp-stats div:nth-child(3){padding-left:0;border-left:0;margin-top:8px;border-top:1.5px solid var(--line)}.mp-stats div:nth-child(4){margin-top:8px;border-top:1.5px solid var(--line)}
+  .mapbox{height:72vh;min-height:420px}
+  .msheet{grid-template-columns:auto minmax(0,1fr);bottom:22px}.msbtn{grid-column:1/-1;justify-items:stretch;padding-top:0}.msbtn .btn{width:100%}
+  .nrow{padding:10px 12px}
+}
+@media (prefers-reduced-motion:reduce){.mkc::after,.mk .mkc.hi,.medot,.bcard.got.t-prism .medal{animation:none}}
 </style>
 </head>
 <body>
@@ -427,7 +520,6 @@ footer a{color:var(--muted)}
           <button data-act="refresh">Refresh from Last.fm</button>
           <button data-act="pick">Load a Spotify export</button>
           <button data-act="invite">Invite a friend</button>
-          <button data-act="reset">Reset my collection</button>
           <button data-act="signout">Sign out</button>
         </div>
       </details>
@@ -498,6 +590,8 @@ footer a{color:var(--muted)}
       <details><summary>How often can I open packs?</summary><p>Each day you get three packs of five cards. The first is Your Listens, drawn from your own top songs. The other two are Discovery packs: real songs from across Last.fm, picked to match the genres and kind of music you play most. Packs refresh at midnight. Once a week (Monday) you also get a Weekly Special with ten random real songs, from Uncommon up to Mythic.</p></details>
       <details><summary>What are coins and the marketplace?</summary><p>Coins let you buy any song in the marketplace. Search for it, check how rare it is, and buy it. The rarer the song, the more it costs, from about 10 coins for a chart-topper to nearly 2,000 for a true underground find. You earn coins from a daily bonus (it grows with your streak), a welcome gift, and by selling songs you got from packs, trades or the market for a quarter of their price. Coins are free and can't be bought with money.</p></details>
       <details><summary>How does trading work?</summary><p>Browse other collectors, pick up to five cards each way, and send an offer. Your cards are held safely while the offer is open. If they accept, the swap happens instantly. If they decline or you cancel, your cards come straight back. It's all free.</p></details>
+      <details><summary>How does the map work?</summary><p>Open the Map tab and allow your location. Mystery cards spawn in the real world around you, never closer than about 200 meters to each other, and each one is swapped for a new one within 24 hours. Walk to a card, get within 60 meters, and claim it to unwrap the song. Rarer cards are scarcer, using nearly the same odds as packs. Your location is only used while the page is open, and it is never saved or shared.</p></details>
+      <details><summary>What are badges?</summary><p>Badges are milestones: collecting cards, pulling rare songs, daily streaks, trading, shopping, and exploring the map. Each one you earn pays out free coins straight away, and the Badges tab shows how close you are to the next ones.</p></details>
       <details><summary>Is this connected to Spotify?</summary><p>No. Streamdex is a fan project and isn't affiliated with, or endorsed by, Spotify or Last.fm.</p></details>
     </div>
   </div></section>
@@ -529,6 +623,24 @@ footer a{color:var(--muted)}
   <div id="mHead"></div>
   <div id="mBody"></div>
 </div></main>
+
+<main id="mapv" class="app hidden"><div class="wrap">
+  <div class="tabbar"></div>
+  <div id="mapHead"></div>
+  <div id="mapBody"></div>
+</div></main>
+
+<main id="badgev" class="app hidden"><div class="wrap">
+  <div class="tabbar"></div>
+  <div id="bdHead"></div>
+  <div id="bdBody"></div>
+</div></main>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <linearGradient id="gbronze" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6c08a"/><stop offset="1" stop-color="#9a5522"/></linearGradient>
+  <linearGradient id="gsilver" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8ff"/><stop offset="1" stop-color="#7d89a6"/></linearGradient>
+  <linearGradient id="ggold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset="1" stop-color="#c98a00"/></linearGradient>
+  <linearGradient id="gprism" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5fa2"/><stop offset=".25" stop-color="#ffd36b"/><stop offset=".5" stop-color="#6bffb0"/><stop offset=".75" stop-color="#6bc5ff"/><stop offset="1" stop-color="#b06bff"/></linearGradient>
+</defs></svg>
 
 <footer><div class="wrap"><span>Streamdex is a fan project, not affiliated with Spotify or Last.fm.</span><span>Music data from <a href="https://www.last.fm" target="_blank" rel="noopener">Last.fm</a></span></div>
   <div class="wrap" style="justify-content:center;margin-top:18px"><span class="made">Made with <span class="heart" aria-label="love">&#9829;</span> from Seattle</span></div></footer>
@@ -747,7 +859,7 @@ async function buildCards(list0, key, onp){
 }
 
 /* ================= card component ================= */
-const srcLabel = c => c.traded ? "Traded" : c.src === "market" ? "Market" : c.src === "discovery" ? "Discovery" : c.special ? "Weekly" : "";
+const srcLabel = c => c.traded ? "Traded" : c.src === "market" ? "Market" : c.src === "map" ? "Map" : c.src === "discovery" ? "Discovery" : c.special ? "Weekly" : "";
 function cardHTML(c, total){
   const r = rarityFor(c.niche), rs = 100 - c.niche;
   const hp = Math.min(220, 40 + Math.round(c.affPct*1.8));
@@ -941,9 +1053,9 @@ function renderGrid(){
 function renderAll(){ renderProfile(); renderChips(); renderGrid(); }
 
 /* ----- views ----- */
-function showApp(){ stopRow(); $("#landing").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "app"; window.scrollTo(0,0); renderTabs(); renderAll(); }
-function showTrade(){ stopRow(); $("#landing").classList.add("hidden"); $("#app").classList.add("hidden"); $("#market").classList.add("hidden"); $("#trade").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "trade"; window.scrollTo(0,0); renderTrade(true); if(TSUB === "find") loadTraders(TQ); }
-function showLanding(){ stopRow(); $("#app").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.add("hidden"); $("#landing").classList.remove("hidden"); $("#navLand").classList.remove("hidden"); $("#navApp").classList.add("hidden"); document.body.classList.remove("inapp"); VIEW = "landing"; window.scrollTo(0,0); }
+function showApp(){ hideExtra(); stopRow(); $("#landing").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "app"; window.scrollTo(0,0); renderTabs(); renderAll(); }
+function showTrade(){ hideExtra(); stopRow(); $("#landing").classList.add("hidden"); $("#app").classList.add("hidden"); $("#market").classList.add("hidden"); $("#trade").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "trade"; window.scrollTo(0,0); renderTrade(true); if(TSUB === "find") loadTraders(TQ); }
+function showLanding(){ hideExtra(); stopRow(); $("#app").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.add("hidden"); $("#landing").classList.remove("hidden"); $("#navLand").classList.remove("hidden"); $("#navApp").classList.add("hidden"); document.body.classList.remove("inapp"); VIEW = "landing"; window.scrollTo(0,0); }
 function startGame(id, name){
   USER = id; UNAME = name || ""; FILTER = "all"; QUERY = ""; $("#q").value = "";
   ls.set("cards", CARDS); ls.set("userid", id); ls.set("uname", UNAME);
@@ -1006,7 +1118,7 @@ function paintDetail(){
     : c.niche < 45 ? `Only about ${fmtN(c.pop)} people have listened to this on Last.fm. You found a deep cut.`
     : c.niche < 75 ? `Around ${fmtN(c.pop)} listeners on Last.fm. Known, but not everywhere.`
     : `${fmtN(c.pop)} listeners on Last.fm. A crowd favourite.`;
-  const story = (c.traded ? "" : c.src === "market" ? "Bought in the marketplace. " : c.src === "discovery" ? "Found in a Discovery pack picked for your taste. " : c.special ? "Dug up in a weekly special pack. " : "") + story0;
+  const story = (c.traded ? "" : c.src === "market" ? "Bought in the marketplace. " : c.src === "map" ? "Claimed on the map after a real-world walk. " : c.src === "discovery" ? "Found in a Discovery pack picked for your taste. " : c.special ? "Dug up in a weekly special pack. " : "") + story0;
   const q = encodeURIComponent(c.artist + " " + c.name);
   $("#dInfo").style.setProperty("--c1", r.c1);
   $("#dInfo").innerHTML = `<span class="d-tag">${r.stars} ${r.name}</span>
@@ -1110,7 +1222,7 @@ async function tearPack(){
   if(!spendPack()){ PACK_BUSY = false; toast("No packs left right now."); return; }
   const cards = rollPack();
   if(!cards.length){ PACK_BUSY = false; toast("You've discovered every card."); return; }
-  const rev = revealed(); cards.forEach(c => rev.add(c.id)); ls.set(revKey(), [...rev]); cloudSave();
+  const rev = revealed(); cards.forEach(c => rev.add(c.id)); ls.set(revKey(), [...rev]); bumpStat("packs"); cloudSave();
   Snd.rip(); const pk = $("#packBtn"); pk.classList.add("shake"); await sleep(REDUCED ? 60 : 650);
   pk.classList.remove("shake"); pk.classList.add("burst"); await sleep(REDUCED ? 60 : 380);
   buildDeal(cards); PACK_BUSY = false;
@@ -1194,7 +1306,7 @@ async function tearDig(kind){
   if(id !== STAGE_ID){ PACK_BUSY = false; return; }
   try{ await grantPack(cards, kind); }
   catch(e){ reset(e && e.code === "special-used" ? "You already opened this week's special pack." : e && e.code === "daily-used" ? "You're out of daily packs." : tradeErrText(e)); updatePacks(); return; }
-  pk.classList.remove("digging"); hint.textContent = ""; cloudSave();
+  pk.classList.remove("digging"); hint.textContent = ""; bumpStat("packs"); cloudSave();
   Snd.rip(); pk.classList.add("shake"); await sleep(REDUCED ? 60 : 650);
   pk.classList.remove("shake"); pk.classList.add("burst"); await sleep(REDUCED ? 60 : 380);
   buildDeal(cards); PACK_BUSY = false; updatePacks();
@@ -1386,16 +1498,14 @@ const actions = {
   "invite": async () => { $("#menu")?.removeAttribute("open"); const url = location.origin + location.pathname;
     if(navigator.share){ try{ await navigator.share({ title:"Streamdex", text:"Turn your listening into rare trading cards.", url }); return; }catch{} }
     try{ await navigator.clipboard.writeText(url); toast("Link copied. Send it to a friend."); }catch{ toast(url); } },
-  "reset": async () => { $("#menu")?.removeAttribute("open");
-    if(TRADES.some(t => t.status === "pending")){ toast("Finish or cancel your open trades first."); return; }
-    if(!confirm("Reset your collection? Your cards, progress, bought and traded songs are cleared and you start fresh. Your in-game name and coins stay. This can't be undone.")) return;
-    const name = lfmName(); ["revealed:"+USER, "lost", "extras"].forEach(k => ls.del(k));
-    if(cloudReady() && AUTH_USER){ try{ await uref().set({ revealed:[], lost:[], extras:[], cards:[] }, { merge:true }); }catch{} }
-    if(name) handleUser(name); else { CARDS = []; USER = "me"; showLanding(); } },
   "auth": () => { AUTH_USER ? signOutGoogle() : signInGoogle(); },
   "signout": () => { $("#menu")?.removeAttribute("open"); signOutGoogle(); },
   "start": () => { AUTH_USER ? cloudPull() : signInGoogle(); },
-  "tab-col": showApp, "tab-trade": showTrade, "tab-market": showMarket, "claim-daily": () => claimDaily(),
+  "tab-col": showApp, "tab-trade": showTrade, "tab-market": showMarket, "tab-map": showMap, "tab-badges": showBadges,
+  "map-start": () => { MG.err = ""; startGeo(); },
+  "map-locate": () => { if(MG.pos && MG.map){ MG.follow = true; $("#mLoc")?.classList.add("on"); MG.map.setView([MG.pos.lat, MG.pos.lon], Math.max(MG.map.getZoom(), 16)); } else startGeo(); },
+  "map-close": () => { MG.sel = null; styleMarkers(); paintSheet(); },
+  "map-dev": () => { MG.state = "dev"; paintGate(); toast("Dev mode: tap the map to move yourself."); }, "claim-daily": () => claimDaily(),
   "trade-refresh": () => loadTraders(TQ),
   "composer-close": closeComposer, "send-offer": sendOffer,
   "wiz-roll": () => { WIZ.handle = genHandle(); const h = $("#hName"); if(h) h.textContent = WIZ.handle; },
@@ -1417,7 +1527,7 @@ document.addEventListener("click", e => {
   const a = e.target.closest("[data-act]");
   if(a){ const f = actions[a.dataset.act]; if(f){ if(a.tagName === "A") e.preventDefault(); f(a, e); return; } }
   const fl = e.target.closest("[data-filter]"); if(fl){ FILTER = fl.dataset.filter; renderChips(); renderGrid(); return; }
-  if(tradeClick(e) || marketClick(e)) return;
+  if(tradeClick(e) || marketClick(e) || mapClick(e)) return;
   const op = e.target.closest("[data-open]"); if(op){ openDetail(op.dataset.open); return; }
   if(e.target.closest("[data-gone]")){ toast("You traded this card away."); return; }
   if(e.target.closest("[data-locked]")){ toast("Open packs to discover this card."); return; }
@@ -1465,7 +1575,7 @@ function addIncoming(d, c){
 const tradeCard = c => ({ ...c, raw: c.raw || c.id.replace(/^t:/, "") });
 /*END INV*/
 function mirror(d){ ls.set("lost", d.lost); ls.set("extras", d.extras); ls.set("applied", d.applied); }
-function refreshViews(){ if(VIEW === "app") renderAll(); else if(VIEW === "trade") renderTrade(true); else if(VIEW === "market") renderMarket(true); paintCoins(); }
+function refreshViews(){ if(VIEW === "app") renderAll(); else if(VIEW === "trade") renderTrade(true); else if(VIEW === "market") renderMarket(true); else if(VIEW === "badges") renderBadges(); else if(VIEW === "map") refreshSpawns(); paintCoins(); }
 
 /* ----- messages ----- */
 function setSync(t, ok){ const el = $("#syncMsg"); if(!el) return; el.textContent = t; el.classList.toggle("ok", !!ok); }
@@ -1518,26 +1628,26 @@ async function signInGoogle(){
     else if(e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast("Sign-in failed. Try again.");
   }
 }
-function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|uid|lfmuser|handle|lost|extras|applied|coins|claim|revealed:|packs:|spseen)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
+function wipeLocal(){ try{ Object.keys(localStorage).filter(k => /^(cards|userid|uname|uid|lfmuser|handle|lost|extras|applied|coins|claim|revealed:|packs:|spseen|pstats|badges|bdseen|mapclaimed)/.test(k)).forEach(k => localStorage.removeItem(k)); }catch{} }
 async function signOutGoogle(){
   if(!cloudReady()) return;
   clearTimeout(saveT);
   const ok = await cloudSaveNow();
   if(!ok && !confirm("We couldn't back up your latest changes. Signing out will remove this device's copy. Sign out anyway?")) return;
   try{ await AUTH.signOut(); }catch{ toast("Couldn't sign out. Try again."); return; }
-  wipeLocal(); COINS = 0; stopRow(); CARDS = []; USER = "me"; UNAME = ""; HANDLE = ""; closeWizard(); closeComposer(); setBanner(null); showLanding(); toast("Signed out.");
+  wipeLocal(); PS = mergeStats(null, null); BADGES = {}; loadMC([]); COINS = 0; stopRow(); CARDS = []; USER = "me"; UNAME = ""; HANDLE = ""; closeWizard(); closeComposer(); setBanner(null); showLanding(); toast("Signed out.");
 }
 
 /* ----- cloud save ----- */
 function snapshot(){
-  const s = { lfm:lfmName(), cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get(packKey(), null), updated:Date.now() };
+  const s = { lfm:lfmName(), cards:CARDS, userid:USER, uname:UNAME, revealed:[...revealed()], packs:ls.get(packKey(), null), stats:PS, updated:Date.now() };
   if(HANDLE) s.handle = HANDLE; return s;
 }
 function profileDocs(){
   const own = ownedCards(), power = own.reduce((s,c) => s + RARITIES[rarityIdx(c)].pts, 0), r = own.length ? own.reduce((a,b) => a.niche <= b.niche ? a : b) : null;
   return { profile:{ handle:HANDLE, handleLower:HANDLE.toLowerCase(), owned:own.length, power, rarest: r ? { name:r.name, artist:r.artist, niche:r.niche } : null, updated:Date.now() }, inv:{ cards:own, updated:Date.now() } };
 }
-function cloudSave(){ if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return; clearTimeout(saveT); saveT = setTimeout(cloudSaveNow, 800); }
+function cloudSave(){ scheduleBadges(); if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return; clearTimeout(saveT); saveT = setTimeout(cloudSaveNow, 800); }
 async function cloudSaveNow(){
   if(!cloudReady() || !AUTH_USER || USER === "demo" || !CARDS.length) return true;
   const snap = snapshot();
@@ -1561,6 +1671,7 @@ async function cloudPull(){
   if(d.lfm) ls.set("lfmuser", d.lfm);
   ls.set("lost", d.lost || []); ls.set("extras", d.extras || []); ls.set("applied", d.applied || []);
   HANDLE = d.handle || ""; ls.set("handle", HANDLE); ls.set("claim", d.claim || null);
+  PS = mergeStats(d.stats, PS); savePS(); BADGES = d.badges || {}; ls.set("badges", BADGES); loadMC(d.mapClaimed || []); ls.set("mapclaimed", MCL);
   if(typeof d.coins === "number") setCoins(d.coins);
   else if(HANDLE){ setCoins(WELCOME_COINS); uref().set({ coins:WELCOME_COINS }, { merge:true }).catch(() => {}); toast(`Welcome gift: ${WELCOME_COINS} coins for the marketplace.`); }
   else setCoins(0);
@@ -1573,7 +1684,7 @@ async function cloudPull(){
     FILTER = "all"; QUERY = ""; $("#q").value = "";
     showApp();
     if(!HANDLE) openWizard(3);
-    else { startTrades(); if(merged.size !== CLOUD_META.n) cloudSave(); else setSync("Saved to your account", true); }
+    else { startTrades(); if(merged.size !== CLOUD_META.n) cloudSave(); else setSync("Saved to your account", true); scheduleBadges(); }
   } else openWizard(2);
 }
 
@@ -1717,8 +1828,8 @@ async function cancelTrade(id){
 /* ----- trade view ----- */
 const incomingN = () => AUTH_USER ? TRADES.filter(t => t.to === AUTH_USER.uid && t.status === "pending").length : 0;
 function renderTabs(){
-  const n = incomingN();
-  const h = `<button class="tab ${VIEW === "app" ? "on" : ""}" data-act="tab-col">Collection</button><button class="tab ${VIEW === "trade" ? "on" : ""}" data-act="tab-trade">Trade${n ? `<b class="badge">${n}</b>` : ""}</button><button class="tab ${VIEW === "market" ? "on" : ""}" data-act="tab-market">Market</button>`;
+  const n = incomingN(), ub = typeof unseenBadges === "function" ? unseenBadges() : 0, on = v => VIEW === v ? "on" : "";
+  const h = `<button class="tab ${on("app")}" data-act="tab-col">Collection</button><button class="tab ${on("map")}" data-act="tab-map">Map</button><button class="tab ${on("trade")}" data-act="tab-trade">Trade${n ? `<b class="badge">${n}</b>` : ""}</button><button class="tab ${on("market")}" data-act="tab-market">Market</button><button class="tab ${on("badges")}" data-act="tab-badges">Badges${ub ? `<b class="badge">${ub}</b>` : ""}</button>`;
   $$(".tabbar").forEach(e => e.innerHTML = h);
 }
 function thumbs(cards){
@@ -1900,12 +2011,12 @@ async function claimDaily(){
       tx.set(uref(), { coins, claim:{ d:today, st } }, { merge:true });
       return { coins, claim:{ d:today, st }, amt };
     });
-    ls.set("claim", r.claim); setCoins(r.coins); toast(`+${r.amt} coins. ${r.claim.st > 1 ? "Day " + r.claim.st + " streak." : "See you tomorrow."}`);
+    ls.set("claim", r.claim); setCoins(r.coins); scheduleBadges(); toast(`+${r.amt} coins. ${r.claim.st > 1 ? "Day " + r.claim.st + " streak." : "See you tomorrow."}`);
     FX.burst(innerWidth/2, 180, ["#ffd34d","#fff3b0","#ffffff"], 70); if(VIEW === "market") renderMarket(true);
   }catch(e){ if(e && e.code === "claimed"){ ls.set("claim", { d:dayKey(), st:streakNow() || 1 }); paintCoins(); if(VIEW === "market") renderMarket(true); } toast(tradeErrText(e)); }
 }
 function showMarket(){
-  stopRow(); $("#landing").classList.add("hidden"); $("#app").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.remove("hidden");
+  hideExtra(); stopRow(); $("#landing").classList.add("hidden"); $("#app").classList.add("hidden"); $("#trade").classList.add("hidden"); $("#market").classList.remove("hidden");
   $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "market"; window.scrollTo(0,0);
   renderMarket(true); if(marketOK() && !MKT.items.length && !MKT.q) loadFeed();
 }
@@ -2022,7 +2133,7 @@ async function buyItem(i){
       d.extras.push(card); tx.set(uref(), { extras:d.extras, coins:coins - price }, { merge:true });
       return { d, coins:coins - price };
     });
-    mirror(r.d); setCoins(r.coins); cloudSave(); toast(`Bought ${it.track}. It's in your collection.`); flashBanner(rarityFor(niche).name, rarityFor(niche).c1);
+    mirror(r.d); setCoins(r.coins); bumpStat("bought"); cloudSave(); toast(`Bought ${it.track}. It's in your collection.`); flashBanner(rarityFor(niche).name, rarityFor(niche).c1);
     FX.burst(innerWidth/2, innerHeight/2, [rarityFor(niche).c1, "#ffd34d", "#ffffff"], 90);
   }catch(e){ toast(tradeErrText(e)); }
   MKT.buying = false; renderMarket(false);
@@ -2038,7 +2149,7 @@ async function sellCard(id){
       removeCard(d, c); const coins = (typeof data.coins === "number" ? data.coins : 0) + v;
       tx.set(uref(), { lost:d.lost, extras:d.extras, coins }, { merge:true }); return { d, coins };
     });
-    mirror(r.d); setCoins(r.coins); closeDetail(); toast(`Sold for ${v.toLocaleString()} coins.`); cloudSave(); refreshViews();
+    mirror(r.d); setCoins(r.coins); bumpStat("sold"); closeDetail(); toast(`Sold for ${v.toLocaleString()} coins.`); cloudSave(); refreshViews();
   }catch(e){ toast(tradeErrText(e)); }
 }
 function marketClick(e){
@@ -2051,6 +2162,407 @@ function marketClick(e){
 }
 document.addEventListener("submit", e => { if(e.target.id === "mForm"){ e.preventDefault(); runSearch($("#mq").value); } });
 document.addEventListener("input", e => { if(e.target.id === "mq") MKT.q = e.target.value; });
+
+
+/* ================= player stats (synced to the account) ================= */
+function mergeStats(a, b){
+  a = a || {}; b = b || {};
+  const out = { byR:{}, days:[], walkM:Math.max(a.walkM || 0, b.walkM || 0) };
+  ["claims","packs","bought","sold","bestStreak"].forEach(k => { out[k] = Math.max(a[k] || 0, b[k] || 0); });
+  new Set([...Object.keys(a.byR || {}), ...Object.keys(b.byR || {})]).forEach(k => { out.byR[k] = Math.max((a.byR || {})[k] || 0, (b.byR || {})[k] || 0); });
+  out.days = [...new Set([...(a.days || []), ...(b.days || [])])].sort().slice(-400);
+  const ta = a.today || {}, tb = b.today || {};
+  out.today = (ta.d || "") > (tb.d || "") ? { d:ta.d, n:ta.n || 0 } : (tb.d || "") > (ta.d || "") ? { d:tb.d, n:tb.n || 0 } : { d:ta.d || tb.d || "", n:Math.max(ta.n || 0, tb.n || 0) };
+  return out;
+}
+let PS = mergeStats(ls.get("pstats", null), null), BADGES = ls.get("badges", {}) || {}, MCL = [], MCSET = new Set();
+const savePS = () => ls.set("pstats", PS);
+const bumpStat = k => { PS[k] = (PS[k] || 0) + 1; savePS(); };
+function loadMC(arr){ const now = Date.now(); MCL = (Array.isArray(arr) ? arr : []).filter(x => +String(x).split("~")[1] > now - 864e5); MCSET = new Set(MCL.map(x => String(x).split("~")[0])); }
+loadMC(ls.get("mapclaimed", []));
+async function syncStats(force){
+  if(!marketOK()) return;
+  const n = Date.now(); if(!force && n - MG.statT < 60000) return; MG.statT = n;
+  try{
+    PS = await DB.runTransaction(async tx => { const ud = await tx.get(uref()), st = mergeStats(ud.exists ? ud.data().stats : null, PS); tx.set(uref(), { stats:st }, { merge:true }); return st; });
+    savePS();
+  }catch{}
+}
+
+/* ================= map: cards spawn around you ================= */
+// Spawns are generated from a fixed world grid plus a per-cell timer, so every player sees the same cards
+// and nothing needs a server. Each cell holds at most one card, kept inside its middle 60%, so neighbours
+// are always at least 200 m apart. Each cell re-rolls on its own 24 hour cycle.
+const MAP_CFG = { CELL_M:500, SPAWN_P:.5, VIEW_M:1600, CLAIM_M:60, MAX_ACC:100, DAY:864e5 };
+const MAP_ODDS = { mythic:.5, legendary:3, epic:9, rare:20, uncommon:30, common:37.5 }; // close to pack odds, a touch kinder to the top tiers' scarcity
+const DLAT = MAP_CFG.CELL_M / 111320;
+const h32 = s => { let h = 1779033703 ^ s.length; for(let i = 0; i < s.length; i++){ h = Math.imul(h ^ s.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return (h ^ h >>> 16) >>> 0; };
+const prng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const rad = d => d * Math.PI / 180;
+const clampLat = l => Math.max(-85, Math.min(85, l));
+function distM(a, b){ const dLa = rad(b.lat - a.lat), dLo = rad(b.lon - a.lon), x = Math.sin(dLa/2)**2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLo/2)**2; return 12742000 * Math.asin(Math.sqrt(x)); }
+function compass(a, b){ const y = Math.sin(rad(b.lon - a.lon)) * Math.cos(rad(b.lat)), x = Math.cos(rad(a.lat)) * Math.sin(rad(b.lat)) - Math.sin(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(rad(b.lon - a.lon)); return ["N","NE","E","SE","S","SW","W","NW"][Math.round(((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360 / 45) % 8]; }
+const fmtDist = m => m < 100 ? Math.round(m) + " m" : m < 1000 ? Math.round(m/10) * 10 + " m" : (m/1000).toFixed(1) + " km";
+function mapRarity(r){ let x = r() * 100; for(const k of Object.keys(MAP_ODDS)){ x -= MAP_ODDS[k]; if(x < 0) return k; } return "common"; }
+function spawnAt(row, col, now){
+  const dlon = DLAT / Math.cos(rad(clampLat((row + .5) * DLAT)));
+  const off = h32("o|" + row + "|" + col) % MAP_CFG.DAY, cycle = Math.floor((now + off) / MAP_CFG.DAY);
+  const r = prng(h32("s|" + row + "|" + col + "|" + cycle));
+  if(r() >= MAP_CFG.SPAWN_P) return null;
+  const lat = (row + .2 + .6 * r()) * DLAT, lon = (col + .2 + .6 * r()) * dlon;
+  return { id:row + "." + col + "." + cycle, lat, lon, rarity:mapRarity(r), tag:TAG_POOL[Math.floor(r() * TAG_POOL.length)], exp:(cycle + 1) * MAP_CFG.DAY - off };
+}
+function spawnsNear(pos, now){
+  const R = MAP_CFG.VIEW_M, out = [], r0 = Math.floor((pos.lat - R/111320) / DLAT), r1 = Math.floor((pos.lat + R/111320) / DLAT);
+  for(let row = r0; row <= r1; row++){
+    const cl = clampLat((row + .5) * DLAT), dlon = DLAT / Math.cos(rad(cl)), dl = R / (111320 * Math.cos(rad(cl)));
+    for(let col = Math.floor((pos.lon - dl) / dlon), c1 = Math.floor((pos.lon + dl) / dlon); col <= c1; col++){
+      const s = spawnAt(row, col, now); if(s && !MCSET.has(s.id) && distM(pos, s) <= R) out.push(s);
+    }
+  }
+  return out;
+}
+
+const MG = { L:null, map:null, me:null, ring:null, acc:null, range:null, pos:null, watch:null, state:"idle", spawns:[], mk:new Map(), sel:null, busy:false, prog:"", tick:null, follow:true, first:false, statT:0, err:"" };
+let LEAF = null;
+function loadLeaflet(){
+  if(window.L) return Promise.resolve(window.L);
+  return LEAF || (LEAF = new Promise((res, rej) => {
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"; document.head.appendChild(l);
+    const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+    s.onload = () => res(window.L); s.onerror = () => { LEAF = null; s.remove(); rej(new Error("Couldn't load the map. Check your connection and try again.")); }; document.head.appendChild(s);
+  }));
+}
+function hideExtra(){ $("#mapv").classList.add("hidden"); $("#badgev").classList.add("hidden"); stopGeo(); }
+function showMap(){
+  hideExtra(); stopRow(); ["landing","app","trade","market","badgev"].forEach(id => $("#" + id).classList.add("hidden"));
+  $("#mapv").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "map"; window.scrollTo(0,0);
+  renderMapShell();
+}
+const IC_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+const IC_LOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>';
+function mapGateHead(t, p, btn, act){ $("#mapHead").innerHTML = `<div class="panel gate"><h2>${t}</h2><p class="muted">${p}</p>${btn ? `<button class="btn lg" data-act="${act}">${btn}</button>` : ""}</div>`; $("#mapBody").innerHTML = ""; }
+function renderMapShell(){
+  renderTabs(); paintCoins();
+  if(MG.map){ try{ MG.map.remove(); }catch{} MG.map = MG.me = MG.ring = MG.acc = MG.range = null; MG.mk.clear(); }
+  MG.first = false; MG.follow = true; MG.sel = null; MG.busy = false; MG.spawns = [];
+  if(USER === "demo") return mapGateHead("The map is for real collections", "The demo is just for looking around. Create an account to hunt for cards in the real world.", "Create my account", "start");
+  if(!AUTH_USER) return mapGateHead("Sign in to explore", "The map saves the cards you claim to your account. It takes about a minute to set up.", "Continue with Google", "start");
+  if(!HANDLE) return mapGateHead("One more step", "Finish setting up your account to start claiming cards on the map.", "Finish setup", "wiz-open");
+  const odds = Object.keys(MAP_ODDS).map(k => { const r = RARITIES.find(x => x.key === k); return `<span class="ptier" style="--c1:${r.c1}">${r.stars} ${r.name} &middot; ${MAP_ODDS[k]}%</span>`; }).join("");
+  $("#mapHead").innerHTML = `<section class="mp-head"><div class="panel"><h2 class="mh">Card Map</h2><p class="muted">Cards spawn in the real world around you. Walk to one, get within ${MAP_CFG.CLAIM_M} m, and claim it. Every card is a mystery until you unwrap it, and each one is replaced within 24 hours.</p><div class="mp-stats" id="mpStats"></div></div>
+    <div class="panel"><h3 class="ph">Spawn odds</h3><div class="ptiers">${odds}</div><p class="mp-note">Stay aware of your surroundings. Cards can appear anywhere, so never trespass or step into traffic. If one is somewhere you shouldn't go, skip it. A fresh one will be along tomorrow.</p></div></section>`;
+  $("#mapBody").innerHTML = `<div class="mapbox"><div id="mapEl"></div><button class="mfab" id="mLoc" data-act="map-locate" aria-label="Centre the map on me">${IC_LOC}</button><div id="mSheet" aria-live="polite"></div><div class="mgate" id="mGate"></div></div>
+    <h3 class="ph" style="margin:28px 0 12px">Nearby cards</h3><div class="nlist" id="nList"></div>`;
+  paintStats(); paintList(); paintGate();
+  loadLeaflet().then(L => { if(VIEW !== "map" || !$("#mapEl")) return; MG.L = L; initMap(); }).catch(e => { MG.state = "err"; MG.err = e.message; paintGate(); });
+}
+function initMap(){
+  const L = MG.L;
+  MG.map = L.map("mapEl", { minZoom:3, maxZoom:19, zoomControl:true, worldCopyJump:true }).setView(MG.pos ? [MG.pos.lat, MG.pos.lon] : [30, -40], MG.pos ? 16 : 3);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { subdomains:"abcd", maxZoom:20, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>' }).addTo(MG.map);
+  MG.map.on("dragstart", () => { MG.follow = false; $("#mLoc")?.classList.remove("on"); });
+  if(DEV) MG.map.on("click", e => { MG.follow = false; onPos({ lat:e.latlng.lat, lon:e.latlng.lng, acc:5, t:Date.now() }, true); });
+  setTimeout(() => MG.map && MG.map.invalidateSize(), 250);
+  if(MG.pos){ paintMe(); refreshSpawns(); }
+  maybeAutoGeo();
+}
+async function maybeAutoGeo(){
+  if(!navigator.geolocation){ MG.state = "nogeo"; paintGate(); return; }
+  if(!window.isSecureContext){ MG.state = "insecure"; paintGate(); return; }
+  try{ const p = await navigator.permissions.query({ name:"geolocation" }); if(p.state === "granted") startGeo(); else if(p.state === "denied"){ MG.state = "denied"; paintGate(); } }catch{}
+}
+function startGeo(){
+  if(!navigator.geolocation){ MG.state = "nogeo"; paintGate(); return; }
+  if(!window.isSecureContext){ MG.state = "insecure"; paintGate(); return; }
+  if(MG.watch != null) return;
+  MG.state = "ask"; paintGate();
+  MG.watch = navigator.geolocation.watchPosition(
+    p => onPos({ lat:p.coords.latitude, lon:p.coords.longitude, acc:p.coords.accuracy || 999, t:Date.now() }),
+    e => { if(e.code === 3) return; stopGeo(); MG.state = e.code === 1 ? "denied" : "err"; MG.err = "We couldn't get a location fix. Check that location services are on, then try again."; paintGate(); },
+    { enableHighAccuracy:true, maximumAge:4000, timeout:25000 });
+}
+function stopGeo(){
+  const was = MG.watch != null || MG.tick != null;
+  if(MG.watch != null){ navigator.geolocation.clearWatch(MG.watch); MG.watch = null; if(MG.state === "ask") MG.state = "idle"; }
+  clearInterval(MG.tick); MG.tick = null; if(was) syncStats(true);
+}
+function onPos(p, fake){
+  const prev = MG.pos; MG.pos = p; MG.state = fake ? "dev" : "ok";
+  if(!fake && prev && p.acc <= 50 && prev.acc <= 80){
+    const d = distM(prev, p), dt = (p.t - prev.t) / 1000;
+    if(d >= 4 && d <= 300 && dt > 0 && d / dt <= 12){ PS.walkM = (PS.walkM || 0) + d; savePS(); syncStats(false); }
+  }
+  paintMe();
+  if(MG.map && (!MG.first || MG.follow)){ MG.map.setView([p.lat, p.lon], MG.first ? MG.map.getZoom() : 16, { animate:MG.first }); }
+  if(!MG.first){ MG.first = true; MG.follow = !fake; $("#mLoc")?.classList.toggle("on", MG.follow); }
+  if(!MG.tick) MG.tick = setInterval(refreshSpawns, 20000);
+  refreshSpawns(); paintGate();
+}
+function paintMe(){
+  const L = MG.L, p = MG.pos; if(!L || !MG.map || !p) return; const ll = [p.lat, p.lon];
+  if(!MG.me){
+    MG.range = L.circle(ll, { radius:MAP_CFG.VIEW_M, color:"#f4f0e8", weight:1, opacity:.22, fill:false, dashArray:"2 8", interactive:false }).addTo(MG.map);
+    MG.acc = L.circle(ll, { radius:Math.min(p.acc, 500), color:"#4aa3ff", weight:1, opacity:.45, fillOpacity:.07, interactive:false }).addTo(MG.map);
+    MG.ring = L.circle(ll, { radius:MAP_CFG.CLAIM_M, color:"#ffe14a", weight:1.5, opacity:.85, fillColor:"#ffe14a", fillOpacity:.09, dashArray:"4 6", interactive:false }).addTo(MG.map);
+    MG.me = L.marker(ll, { icon:L.divIcon({ className:"mk", html:'<div class="medot"></div>', iconSize:[20,20], iconAnchor:[10,10] }), interactive:false, keyboard:false, zIndexOffset:2000 }).addTo(MG.map);
+  } else { MG.me.setLatLng(ll); MG.ring.setLatLng(ll); MG.acc.setLatLng(ll); MG.range.setLatLng(ll); MG.acc.setRadius(Math.min(p.acc, 500)); }
+}
+const spawnRarity = s => RARITIES.find(r => r.key === s.rarity);
+const mkHTML = s => { const r = spawnRarity(s), hi = s.rarity === "mythic" || s.rarity === "legendary"; return `<div class="mkc${hi ? " hi" : ""}" style="--c1:${r.c1};--c2:${r.c2};--rgb:${r.rgb}">?</div>`; };
+function refreshSpawns(){
+  if(!MG.pos || !MG.L || !MG.map){ paintStats(); paintList(); return; }
+  const now = Date.now();
+  MG.spawns = spawnsNear(MG.pos, now).map(s => ({ ...s, d:distM(MG.pos, s), dir:compass(MG.pos, s) })).sort((a, b) => a.d - b.d);
+  const ids = new Set(MG.spawns.map(s => s.id));
+  for(const [id, m] of MG.mk){ if(!ids.has(id)){ m.remove(); MG.mk.delete(id); } }
+  MG.spawns.forEach(s => {
+    if(MG.mk.has(s.id)) return;
+    const m = MG.L.marker([s.lat, s.lon], { icon:MG.L.divIcon({ className:"mk", html:mkHTML(s), iconSize:[38,52], iconAnchor:[19,48] }), title:spawnRarity(s).name + " card", riseOnHover:true }).addTo(MG.map);
+    m.on("click", () => selectSpawn(s.id)); MG.mk.set(s.id, m);
+  });
+  if(MG.sel && !ids.has(MG.sel)) MG.sel = null;
+  styleMarkers(); paintStats(); paintList(); paintSheet();
+}
+function styleMarkers(){
+  MG.spawns.forEach(s => { const m = MG.mk.get(s.id), el = m && m.getElement(), c = el && el.firstElementChild; if(!c) return;
+    c.classList.toggle("in", s.d <= MAP_CFG.CLAIM_M); c.classList.toggle("sel", MG.sel === s.id); m.setZIndexOffset(MG.sel === s.id ? 1000 : s.d <= MAP_CFG.CLAIM_M ? 500 : 0); });
+}
+function selectSpawn(id, fly){
+  MG.sel = id; styleMarkers(); paintSheet();
+  const s = MG.spawns.find(x => x.id === id); if(fly && s && MG.map){ MG.follow = false; $("#mLoc")?.classList.remove("on"); MG.map.flyTo([s.lat, s.lon], Math.max(MG.map.getZoom(), 17), { duration:.6 }); }
+}
+function paintStats(){
+  const el = $("#mpStats"); if(!el) return; const dk = dayKey(), today = PS.today && PS.today.d === dk ? PS.today.n : 0;
+  el.innerHTML = `<div><span>Cards nearby</span><b class="num">${MG.pos ? MG.spawns.length : "–"}</b></div><div><span>Claimed today</span><b class="num">${today}</b></div><div><span>Claimed in total</span><b class="num">${(PS.claims || 0).toLocaleString()}</b></div><div><span>Distance walked</span><b class="num">${((PS.walkM || 0) / 1000).toFixed(1)} km</b></div>`;
+}
+const leftTxt = exp => fmtLong(exp - Date.now());
+function paintList(){
+  const el = $("#nList"); if(!el) return;
+  if(!MG.pos){ el.innerHTML = '<div class="panel empty" style="grid-column:auto">Turn on your location to see the cards around you.</div>'; return; }
+  if(!MG.spawns.length){ el.innerHTML = `<div class="panel empty" style="grid-column:auto">No cards within ${fmtDist(MAP_CFG.VIEW_M)} right now. Head somewhere new, or check back soon. Cards refresh every 24 hours.</div>`; return; }
+  el.innerHTML = MG.spawns.slice(0, 14).map(s => { const r = spawnRarity(s), inr = s.d <= MAP_CFG.CLAIM_M;
+    return `<button class="nrow${inr ? " in" : ""}" type="button" data-mnear="${esc(s.id)}" style="--c1:${r.c1};--c2:${r.c2}"><span class="nchip">?</span><span class="ninfo"><b>${r.stars} ${r.name}</b><small>${esc(s.tag)} vibes &middot; gone in ${leftTxt(s.exp)}</small></span><span class="ndist"><b>${fmtDist(s.d)}</b><small>${inr ? '<span class="inr">In range</span>' : s.dir}</small></span></button>`; }).join("");
+}
+function paintSheet(){
+  const el = $("#mSheet"); if(!el) return;
+  const s = MG.sel && MG.spawns.find(x => x.id === MG.sel); if(!s){ el.innerHTML = ""; return; }
+  const r = spawnRarity(s), inr = s.d <= MAP_CFG.CLAIM_M, weak = MG.pos && MG.pos.acc > MAP_CFG.MAX_ACC, stale = MG.pos && Date.now() - MG.pos.t > 90000;
+  const note = MG.busy ? (MG.prog || "Unwrapping…") : weak ? `<span class="warn">Your GPS is only good to about ${Math.round(MG.pos.acc)} m. Step outside for a better signal.</span>` : stale ? '<span class="warn">Waiting for a fresh location…</span>' : inr ? "You're close enough. Claim it!" : `${fmtDist(s.d)} ${s.dir}. Get within ${MAP_CFG.CLAIM_M} m.`;
+  const can = inr && !weak && !stale && !MG.busy;
+  el.innerHTML = `<div class="msheet" style="--c1:${r.c1};--c2:${r.c2};--rgb:${r.rgb}"><button class="msx" data-act="map-close" aria-label="Close">&times;</button><div class="mkc static">?</div>
+    <div class="msi"><span class="ptier" style="--c1:${r.c1}">${r.stars} ${r.name}</span><b>Mystery card</b><small>${esc(s.tag)} vibes &middot; gone in ${leftTxt(s.exp)}</small><small>${note}</small></div>
+    <div class="msbtn"><button class="btn" data-mclaim="${esc(s.id)}" ${can ? "" : "disabled"}>${MG.busy ? "Unwrapping…" : can ? "Claim card" : inr ? "Waiting for GPS" : "Walk " + fmtDist(Math.max(0, s.d - MAP_CFG.CLAIM_M)) + " closer"}</button></div></div>`;
+}
+function paintGate(){
+  const g = $("#mGate"); if(!g) return;
+  const msg = (t, p, btns) => { g.classList.remove("hidden"); g.innerHTML = `<div><div class="gicon">${IC_PIN}</div><h3>${t}</h3><p class="muted">${p}</p>${btns ? `<div class="row">${btns}</div>` : ""}</div>`; };
+  const dev = DEV ? '<button class="btn ghost" data-act="map-dev">Dev: tap the map to move</button>' : "";
+  if(MG.pos && (MG.state === "ok" || MG.state === "dev")){ g.classList.add("hidden"); return; }
+  if(MG.state === "dev"){ g.classList.add("hidden"); return; }
+  if(MG.state === "ask") return msg("Finding you…", "Allow location access if your browser asks. GPS can take a few seconds to lock on.", "");
+  if(MG.state === "denied") return msg("Location is blocked", "Allow location for this site in your browser settings, then try again. We only use it while this page is open.", '<button class="btn" data-act="map-start">Try again</button>' + dev);
+  if(MG.state === "nogeo") return msg("Location isn't available", "This browser can't share your location, so the map can't find cards near you. Try your phone.", dev);
+  if(MG.state === "insecure") return msg("Needs a secure connection", "Browsers only share location with https pages.", dev);
+  if(MG.state === "err") return msg("Something went wrong", esc(MG.err || "Try again in a moment."), '<button class="btn" data-act="map-start">Try again</button>' + dev);
+  msg("Find cards near you", "Turn on location to see mystery cards around you. Walk to one to claim it. Your location is only used while this page is open and is never saved or shared.", '<button class="btn lg" data-act="map-start">Turn on location</button>' + dev);
+}
+/* ----- digging up the song behind a spawn ----- */
+async function digMapCard(rk, hint, onp){
+  const key = lfmKey(); if(!key) throw new Error("This site needs a Last.fm API key. The owner can add one.");
+  const [lo, hi] = SPECIAL_PAGES[rk], want = RARITIES.findIndex(r => r.key === rk);
+  const have = new Set([...CARDS.map(c => c.id.slice(2)), ...extrasList().map(c => c.raw || "")]);
+  const seen = new Set(ls.get("spseen", [])), used = new Set(), t0 = Date.now(); let netFail = 0;
+  for(let round = 0; round < 30 && Date.now() - t0 < 40000; round++){
+    const tag = round < 3 ? hint : pickOne(TAG_POOL); let page = lo + Math.floor(Math.random() * (hi - lo + 1)), list = [];
+    for(let a = 0; a < 4 && !list.length; a++){
+      try{ list = await tagTracks(tag, page, key); }catch(e){ if(++netFail >= 3) throw e; break; }
+      if(!list.length) page = Math.max(1, Math.floor(page / 2));
+    }
+    const pool = shuffle(list).map(x => { const artist = x.artist?.name || x.artist || "", track = x.name || ""; return { artist, track, raw:(artist + "|" + track).toLowerCase() }; })
+      .filter(x => x.artist && x.track && !used.has(x.raw) && !have.has(x.raw) && !seen.has(x.raw)).slice(0, 8);
+    for(let i = 0; i < pool.length; i += 4){
+      const res = await Promise.all(pool.slice(i, i + 4).map(async x => {
+        used.add(x.raw); let info; try{ info = await lastfmOne({ id:"t:" + x.raw, artist:x.artist, track:x.track }, key); }catch{ return null; }
+        if(!info || info.miss) return null; const ni = nicheScore(info.listeners); return RARITIES.findIndex(r => ni < r.max) === want ? { x, info, ni } : null;
+      }));
+      const ok = res.find(Boolean); if(onp) onp(round);
+      if(ok){
+        const { x, info, ni } = ok;
+        const card = { id:"x:" + x.raw + "#" + Math.random().toString(36).slice(2, 8), raw:x.raw, name:x.track, artist:x.artist, art:info.art || "", pop:info.listeners, miss:false, niche:ni, type:typeFor(info.tags), tag:info.tags[0] || "", plays:0, hours:0, affPct:Math.round(45 + (100 - ni) / 2), src:"map" };
+        await Promise.race([lookupPreview(card).then(m => { if(m && m.a && !card.art) card.art = m.a; }).catch(() => {}), sleep(5000)]);
+        ls.set("spseen", [...seen, x.raw].slice(-500)); return card;
+      }
+    }
+  }
+  throw new Error("Couldn't dig up the song for this card. It's still on the map, so try again.");
+}
+async function claimSpawn(id){
+  const s = MG.spawns.find(x => x.id === id); if(!s || MG.busy) return;
+  if(!marketOK()){ toast("Sign in and finish setup to claim cards."); return; }
+  if(MCSET.has(s.id)){ toast("You already claimed this one."); return; }
+  if(!MG.pos || Date.now() - MG.pos.t > 90000 || MG.pos.acc > MAP_CFG.MAX_ACC || distM(MG.pos, s) > MAP_CFG.CLAIM_M){ toast(`Get within ${MAP_CFG.CLAIM_M} m with a good GPS signal to claim this card.`); return; }
+  MG.busy = true; MG.prog = "Unwrapping…"; paintSheet(); Snd.rip();
+  let card;
+  try{ card = await digMapCard(s.rarity, s.tag, n => { MG.prog = "Finding the song" + ".".repeat(1 + n % 3); const sm = $(".msi small:last-child"); if(sm) sm.textContent = MG.prog; }); }
+  catch(e){ MG.busy = false; MG.prog = ""; paintSheet(); toast(e.message || "Couldn't unwrap the card. Try again."); return; }
+  try{
+    const r = await DB.runTransaction(async tx => {
+      const ud = await tx.get(uref()), data = ud.exists ? ud.data() : {}, d = invOf(data), now = Date.now();
+      const list = (data.mapClaimed || []).filter(x => +String(x).split("~")[1] > now - 864e5);
+      if(list.some(x => String(x).split("~")[0] === s.id)) throw { code:"map-claimed" };
+      list.push(s.id + "~" + s.exp); d.extras.push(card);
+      const st = mergeStats(data.stats, PS), dk = dayKey();
+      st.claims++; st.byR[s.rarity] = (st.byR[s.rarity] || 0) + 1; if(!st.days.includes(dk)) st.days.push(dk);
+      st.today = st.today.d === dk ? { d:dk, n:st.today.n + 1 } : { d:dk, n:1 };
+      tx.set(uref(), { extras:d.extras, mapClaimed:list, stats:st }, { merge:true });
+      return { d, list, st };
+    });
+    mirror(r.d); loadMC(r.list); ls.set("mapclaimed", MCL); PS = r.st; savePS();
+  }catch(e){ MG.busy = false; MG.prog = ""; if(e && e.code === "map-claimed"){ loadMC([...MCL, s.id + "~" + s.exp]); refreshSpawns(); toast("You already claimed this one."); } else { paintSheet(); toast(tradeErrText(e)); } return; }
+  MG.busy = false; MG.prog = ""; MG.sel = null; cloudSave();
+  const rr = rarityFor(card.niche), ri = rarityIdx(card);
+  Snd.reveal(ri); flashBanner(rr.name, rr.c1); FX.burst(innerWidth / 2, innerHeight / 2, [rr.c1, rr.c2, "#ffffff"], [240, 170, 110, 80, 60, 40][ri]);
+  refreshSpawns(); openCard(card); scheduleBadges();
+}
+function mapClick(e){
+  const t = e.target; let el;
+  if((el = t.closest("[data-mclaim]"))){ claimSpawn(el.dataset.mclaim); return true; }
+  if((el = t.closest("[data-mnear]"))){ selectSpawn(el.dataset.mnear, true); $("#mapEl")?.scrollIntoView({ behavior:REDUCED ? "auto" : "smooth", block:"center" }); return true; }
+  if((el = t.closest("[data-bf]"))){ BF = el.dataset.bf; renderBadges(); return true; }
+  return false;
+}
+
+/* ================= badges and milestones ================= */
+const BICON = {
+  pin:'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  card:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  coin:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',
+  flame:'<path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/>',
+  swap:'<path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/>',
+  route:'<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6"/>',
+  crown:'<path d="m3 8 4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
+  music:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+  compass:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+  pack:'<path d="M4 8h16v12H4zM4 8l3-4h10l3 4"/>',
+  bag:'<path d="M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0"/>',
+  cal:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  gem:'<path d="M6 4h12l4 5-10 12L2 9zM2 9h20"/>',
+  grid:'<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
+};
+const BGROUPS = ["Collector","Rarities","Packs and streaks","Trading and market","Map explorer"];
+const BDEFS = [
+  { id:"col10",  g:0, n:"Starter Crate",  d:"Own 10 cards.",  i:"card", t:"bronze", goal:10,  coins:10,  v:c => c.owned },
+  { id:"col50",  g:0, n:"Shelf Full",     d:"Own 50 cards.",  i:"card", t:"silver", goal:50,  coins:25,  v:c => c.owned },
+  { id:"col100", g:0, n:"Record Room",    d:"Own 100 cards.", i:"card", t:"gold",   goal:100, coins:50,  v:c => c.owned },
+  { id:"col250", g:0, n:"The Vault",      d:"Own 250 cards.", i:"crown",t:"prism",  goal:250, coins:100, v:c => c.owned },
+  { id:"set50",  g:0, n:"Halfway There",  d:"Discover half of your own top songs.", i:"grid", t:"silver", goal:50, u:"%", coins:25, v:c => c.pct },
+  { id:"set100", g:0, n:"Full Set",       d:"Discover every one of your top songs.", i:"grid", t:"prism", goal:100, u:"%", coins:150, v:c => c.pct },
+  { id:"type5",  g:0, n:"Genre Hopper",   d:"Own cards of 5 different types.", i:"music", t:"silver", goal:5, coins:20, v:c => c.types },
+  { id:"type8",  g:0, n:"Every Flavour",  d:"Own cards of 8 different types.", i:"music", t:"gold", goal:8, coins:60, v:c => c.types },
+  { id:"r_rare", g:1, n:"Rare Find",      d:"Own a Rare card or better.", i:"star", t:"bronze", goal:1, coins:10, v:c => c.rareUp },
+  { id:"r_epic", g:1, n:"Epic Taste",     d:"Own an Epic card or better.", i:"star", t:"silver", goal:1, coins:25, v:c => c.epicUp },
+  { id:"r_leg",  g:1, n:"Legend Hunter",  d:"Own a Legendary card or better.", i:"gem", t:"gold", goal:1, coins:50, v:c => c.byI[0] + c.byI[1] },
+  { id:"r_myth", g:1, n:"Mythic Secret",  d:"Own a Mythic Secret.", i:"gem", t:"prism", goal:1, coins:150, v:c => c.byI[0] },
+  { id:"r_deep", g:1, n:"Deep Diver",     d:"Own 10 Epic cards or better.", i:"star", t:"gold", goal:10, coins:60, v:c => c.epicUp },
+  { id:"r_spec", g:1, n:"Full Spectrum",  d:"Own at least one card of every rarity.", i:"gem", t:"gold", goal:6, coins:75, v:c => c.spectrum },
+  { id:"pk5",    g:2, n:"Pack Rookie",    d:"Open 5 packs.",   i:"pack", t:"bronze", goal:5,   coins:10,  v:c => c.packs },
+  { id:"pk25",   g:2, n:"Pack Habit",     d:"Open 25 packs.",  i:"pack", t:"silver", goal:25,  coins:30,  v:c => c.packs },
+  { id:"pk100",  g:2, n:"Pack Rat",       d:"Open 100 packs.", i:"pack", t:"gold",   goal:100, coins:75,  v:c => c.packs },
+  { id:"pk300",  g:2, n:"Pack Legend",    d:"Open 300 packs.", i:"pack", t:"prism",  goal:300, coins:150, v:c => c.packs },
+  { id:"st3",    g:2, n:"Back Again",       d:"Claim your daily bonus 3 days in a row.",  i:"flame", t:"bronze", goal:3,  coins:15,  v:c => c.streak },
+  { id:"st7",    g:2, n:"Weekly Ritual",    d:"Reach a 7 day streak.",  i:"flame", t:"silver", goal:7,  coins:40,  v:c => c.streak },
+  { id:"st14",   g:2, n:"Two Weeks Strong", d:"Reach a 14 day streak.", i:"flame", t:"gold",   goal:14, coins:80,  v:c => c.streak },
+  { id:"st30",   g:2, n:"Month of Music",   d:"Reach a 30 day streak.", i:"flame", t:"prism",  goal:30, coins:200, v:c => c.streak },
+  { id:"tr1",    g:3, n:"First Swap",     d:"Complete a trade.",       i:"swap", t:"bronze", goal:1,  coins:10,  v:c => c.trades },
+  { id:"tr10",   g:3, n:"Deal Maker",     d:"Complete 10 trades.",     i:"swap", t:"silver", goal:10, coins:50,  v:c => c.trades },
+  { id:"tr25",   g:3, n:"Trade Baron",    d:"Complete 25 trades.",     i:"swap", t:"gold",   goal:25, coins:120, v:c => c.trades },
+  { id:"mk1",    g:3, n:"First Purchase", d:"Buy a song in the marketplace.", i:"bag", t:"bronze", goal:1, coins:10, v:c => c.bought },
+  { id:"mk10",   g:3, n:"Regular Shopper",d:"Buy 10 songs in the marketplace.", i:"bag", t:"silver", goal:10, coins:40, v:c => c.bought },
+  { id:"sell5",  g:3, n:"Cash Out",       d:"Sell 5 cards.", i:"coin", t:"silver", goal:5, coins:25, v:c => c.sold },
+  { id:"mp1",    g:4, n:"First Steps",    d:"Claim your first card on the map.", i:"pin", t:"bronze", goal:1, coins:15, v:c => c.claims },
+  { id:"mp5",    g:4, n:"Getting Around", d:"Claim 5 cards on the map.",   i:"pin", t:"bronze", goal:5,   coins:25,  v:c => c.claims },
+  { id:"mp25",   g:4, n:"Neighbourhood Regular", d:"Claim 25 cards on the map.", i:"pin", t:"silver", goal:25, coins:60, v:c => c.claims },
+  { id:"mp100",  g:4, n:"City Explorer",  d:"Claim 100 cards on the map.", i:"compass", t:"gold", goal:100, coins:150, v:c => c.claims },
+  { id:"mp500",  g:4, n:"Pavement Legend",d:"Claim 500 cards on the map.", i:"compass", t:"prism", goal:500, coins:250, v:c => c.claims },
+  { id:"mpR",    g:4, n:"Lucky Find",     d:"Claim a Rare or better on the map.", i:"star", t:"silver", goal:1, coins:25, v:c => c.mapHi },
+  { id:"mpL",    g:4, n:"Golden Hour",    d:"Claim a Legendary or better on the map.", i:"gem", t:"gold", goal:1, coins:60, v:c => (c.m.legendary || 0) + (c.m.mythic || 0) },
+  { id:"mpM",    g:4, n:"Secret Spot",    d:"Claim a Mythic Secret on the map.", i:"gem", t:"prism", goal:1, coins:150, v:c => c.m.mythic || 0 },
+  { id:"mpRb",   g:4, n:"Map Rainbow",    d:"Claim all six rarities on the map.", i:"gem", t:"gold", goal:6, coins:100, v:c => c.mapSpectrum },
+  { id:"wk1",    g:4, n:"Warm-Up",        d:"Walk 1 km while hunting cards.", i:"route", t:"bronze", goal:1, u:"km", coins:10, v:c => c.walkKm },
+  { id:"wk10",   g:4, n:"Long Haul",      d:"Walk 10 km while hunting cards.", i:"route", t:"silver", goal:10, u:"km", coins:40, v:c => c.walkKm },
+  { id:"wk42",   g:4, n:"Marathon",       d:"Walk 42 km while hunting cards.", i:"route", t:"gold", goal:42, u:"km", coins:120, v:c => c.walkKm },
+  { id:"day7",   g:4, n:"Seven Outings",  d:"Claim map cards on 7 different days.", i:"cal", t:"silver", goal:7, coins:50, v:c => c.mapDays },
+  { id:"day30",  g:4, n:"Local Legend",   d:"Claim map cards on 30 different days.", i:"cal", t:"gold", goal:30, coins:200, v:c => c.mapDays },
+];
+function badgeCtx(){
+  const own = ownedCards(), isO = ownedPred(), byI = [0,0,0,0,0,0]; own.forEach(c => { byI[rarityIdx(c)]++; });
+  const claim = ls.get("claim", null) || {}; PS.bestStreak = Math.max(PS.bestStreak || 0, claim.st || 0);
+  const m = PS.byR || {};
+  return { owned:own.length, byI, types:new Set(own.map(c => c.type)).size, pct:CARDS.length ? CARDS.filter(isO).length / CARDS.length * 100 : 0,
+    packs:PS.packs || 0, streak:PS.bestStreak || 0, trades:TRADES.filter(t => t.status === "accepted").length, bought:PS.bought || 0, sold:PS.sold || 0,
+    claims:PS.claims || 0, m, mapHi:["rare","epic","legendary","mythic"].reduce((s, k) => s + (m[k] || 0), 0), walkKm:(PS.walkM || 0) / 1000, mapDays:(PS.days || []).length,
+    rareUp:byI[0] + byI[1] + byI[2] + byI[3], epicUp:byI[0] + byI[1] + byI[2], spectrum:byI.filter(n => n > 0).length, mapSpectrum:Object.keys(MAP_ODDS).filter(k => m[k] > 0).length };
+}
+function unseenBadges(){ const seen = new Set(ls.get("bdseen", [])); return Object.keys(BADGES).filter(id => !seen.has(id)).length; }
+let AWARDING = false, bT = null, BF = "all", NEWSET = new Set();
+function scheduleBadges(){ clearTimeout(bT); bT = setTimeout(checkBadges, 900); }
+async function checkBadges(){
+  if(AWARDING || !marketOK() || !CARDS.length) return;
+  const ctx = badgeCtx(), fresh = BDEFS.filter(b => !BADGES[b.id] && b.v(ctx) >= b.goal); if(!fresh.length) return;
+  AWARDING = true;
+  try{
+    const r = await DB.runTransaction(async tx => {
+      const ud = await tx.get(uref()), data = ud.exists ? ud.data() : {}, have = { ...(data.badges || {}) }, got = []; let add = 0;
+      fresh.forEach(b => { if(!have[b.id]){ have[b.id] = Date.now(); add += b.coins; got.push(b); } });
+      const coins = (typeof data.coins === "number" ? data.coins : 0) + add;
+      if(got.length) tx.set(uref(), { badges:have, coins }, { merge:true });
+      return { have, coins, got, add };
+    });
+    BADGES = r.have; ls.set("badges", BADGES);
+    if(r.got.length){ setCoins(r.coins); celebrateBadges(r.got, r.add); }
+  }catch{}
+  AWARDING = false;
+  if(VIEW === "badges") renderBadges(); else renderTabs();
+}
+function celebrateBadges(got, add){
+  flashBanner(got.length > 1 ? "Badges unlocked" : "Badge unlocked", "#ffd34d"); FX.burst(innerWidth / 2, 220, ["#ffd34d","#fff3b0","#ffffff","#ff7ad9"], 120); Snd.reveal(2);
+  toast(got.length === 1 ? `${got[0].n}: +${add} coins` : `${got.length} badges unlocked: +${add} coins`);
+}
+function medal(b){
+  return `<svg class="medal" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34" fill="url(#g${b.t})"/><circle cx="36" cy="36" r="28" fill="#0b0d2a" fill-opacity=".86"/><circle cx="36" cy="36" r="28" fill="none" stroke="url(#g${b.t})" stroke-width="1.5"/><g transform="translate(19.2 19.2) scale(1.4)" fill="none" stroke="url(#g${b.t})" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${BICON[b.i]}</g></svg>`;
+}
+const fmtB = (b, v) => b.u === "km" ? Math.min(b.goal, v).toFixed(1) : String(Math.floor(Math.min(b.goal, v)));
+function showBadges(){
+  hideExtra(); stopRow(); ["landing","app","trade","market","mapv"].forEach(id => $("#" + id).classList.add("hidden"));
+  $("#badgev").classList.remove("hidden"); $("#navLand").classList.add("hidden"); $("#navApp").classList.remove("hidden"); document.body.classList.add("inapp"); VIEW = "badges"; window.scrollTo(0,0);
+  const seen = new Set(ls.get("bdseen", [])); NEWSET = new Set(Object.keys(BADGES).filter(id => !seen.has(id)));
+  renderBadges(); ls.set("bdseen", Object.keys(BADGES)); renderTabs(); checkBadges();
+}
+function renderBadges(){
+  renderTabs(); paintCoins();
+  const head = $("#bdHead"), body = $("#bdBody"); if(!head) return;
+  const gate = (t, p, btn, act) => { head.innerHTML = `<div class="panel gate"><h2>${t}</h2><p class="muted">${p}</p>${btn ? `<button class="btn lg" data-act="${act}">${btn}</button>` : ""}</div>`; body.innerHTML = ""; };
+  if(USER === "demo") return gate("Badges are for real collections", "The demo is just for looking around. Create an account to earn badges and bonus coins.", "Create my account", "start");
+  if(!AUTH_USER) return gate("Sign in to earn badges", "Badges and their coin rewards belong to your account. It takes about a minute to set up.", "Continue with Google", "start");
+  if(!HANDLE) return gate("One more step", "Finish setting up your account to start earning badges.", "Finish setup", "wiz-open");
+  const ctx = badgeCtx(), items = BDEFS.map(b => ({ ...b, val:b.v(ctx), got:!!BADGES[b.id] }));
+  const done = items.filter(i => i.got).length, coins = items.filter(i => i.got).reduce((s, i) => s + i.coins, 0), pct = Math.round(done / items.length * 100);
+  const next = items.filter(i => !i.got).sort((a, b) => b.val / b.goal - a.val / a.goal).slice(0, 3);
+  head.innerHTML = `<section class="bd-head"><div class="panel"><h2 class="mh">Badges</h2><div class="bd-big num">${done}<small>of ${items.length} earned</small></div>
+    <div class="prog" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Badge progress"><i style="width:${pct}%"></i></div>
+    <p class="muted" style="margin-top:14px">Every badge pays out coins the moment you earn it. So far: <b style="color:var(--paper)"><span class="coin"></span>${coins.toLocaleString()}</b></p></div>
+    <div class="panel"><h3 class="ph">Up next</h3><div class="bnext">${next.length ? next.map(b => `<div class="bn2">${medal(b)}<div><b>${esc(b.n)}</b><div class="bprog" style="margin:6px 0 4px"><i style="width:${Math.min(100, b.val / b.goal * 100)}%"></i></div><small>${fmtB(b, b.val)} / ${b.goal}${b.u === "km" ? " km" : b.u || ""} &middot; +${b.coins} coins</small></div></div>`).join("") : '<p class="muted">You have every badge. Legend.</p>'}</div></div></section>
+    <div class="seg" style="margin:6px 0 0">${[["all","All"],["got","Earned"],["lock","Locked"]].map(([k, l]) => `<button class="chip ${BF === k ? "on" : ""}" data-bf="${k}">${l}</button>`).join("")}</div>`;
+  body.innerHTML = BGROUPS.map((g, gi) => {
+    const list = items.filter(i => i.g === gi && (BF === "all" || (BF === "got" ? i.got : !i.got))); if(!list.length) return "";
+    return `<h3 class="bgh">${g}</h3><div class="bgrid">${list.map(b => {
+      const p = Math.min(100, b.val / b.goal * 100), unit = b.u === "km" ? " km" : b.u || "";
+      return `<article class="bcard ${b.got ? "got" : "lock"} t-${b.t}">${medal(b)}<div><div class="bn">${esc(b.n)}${NEWSET.has(b.id) ? '<span class="newp">New</span>' : ""}</div><p>${esc(b.d)}</p>
+        ${b.got ? `<small class="bdone">Earned ${new Date(BADGES[b.id]).toLocaleDateString(undefined, { month:"short", day:"numeric" })} &middot; +${b.coins} coins</small>` : `<div class="bprog"><i style="width:${p}%"></i></div><small>${fmtB(b, b.val)} / ${b.goal}${unit} &middot; +${b.coins} coins</small>`}</div></article>`; }).join("")}</div>`;
+  }).join("") || '<div class="panel empty" style="grid-column:auto;margin-top:18px">Nothing here yet. Keep playing.</div>';
+}
 
 /* ================= boot ================= */
 FX.init(); paintSound(); renderFan(); renderLedger();
