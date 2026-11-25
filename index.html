@@ -2775,7 +2775,7 @@ function paintFaq(){
     + " Packs refresh at midnight." + (FEAT.weekly ? " Once a week (Monday) you also get a Weekly Special with ten random real songs, from Uncommon up to Mythic." : "");
 }
 function featOn(k){ return FEAT[k] !== false; }
-function gate(k){ if(featOn(k)) return true; toast("That part of Streamdex is switched off for now."); return false; }
+function featGate(k){ if(featOn(k)) return true; toast("That part of Streamdex is switched off for now."); return false; }
 const mapMiles = () => Math.round(MAP_CFG.REGION_M / 1609.34);
 const mapEvery = () => { const h = MAP_CFG.HOUR / 36e5; return h === 1 ? "hour" : h < 1 ? Math.round(h * 60) + " minutes" : h % 24 === 0 ? (h === 24 ? "day" : h / 24 + " days") : (Math.round(h * 10) / 10) + " hours"; };
 
@@ -2996,19 +2996,25 @@ function loginHTML(msg){
     <div class="adm-mark" aria-hidden="true">S</div>
     <div><h1>Streamdex admin</h1><p>Sign in with your admin account to change how the app works.</p></div>
     <label class="f"><span>Admin email</span><span class="fi"><input id="admEmail" type="email" name="email" autocomplete="username" required value="${esc(em)}"></span></label>
-    <label class="f"><span>Admin password</span><span class="fi"><input id="admPw" type="password" name="password" autocomplete="current-password" required></span></label>
+    <label class="f"><span>Admin password</span><span class="fi"><input id="admPw" type="password" name="password" autocomplete="current-password" required><button type="button" class="link" id="admEye" style="padding:0 13px;font-size:13px;color:var(--dim)" aria-label="Show password">Show</button></span></label>
     <div class="err" id="admErr" role="alert">${esc(msg)}</div>
     <button class="btn lg" id="admGo" type="submit">Sign in</button>
-    <button class="link muted" type="button" id="admX" style="justify-self:center;font-size:14px">Back to Streamdex</button>
+    <div class="adm-row" style="justify-content:center;gap:18px"><button class="link muted" type="button" id="admForgot" style="font-size:14px">Forgot password?</button><button class="link muted" type="button" id="admX" style="font-size:14px">Back to Streamdex</button></div>
   </form>`;
 }
 function bindLogin(){
   const f = $("#admForm"); if(!f) return;
   $("#admX").onclick = () => closeAdmin(true);
+  $("#admEye").onclick = () => { const i = $("#admPw"), show = i.type === "password"; i.type = show ? "text" : "password"; $("#admEye").textContent = show ? "Hide" : "Show"; };
+  $("#admForgot").onclick = async () => {
+    const em = $("#admEmail").value.trim(), err = $("#admErr"); if(!em){ err.textContent = "Type your admin email first, then press Forgot password."; return; }
+    try{ await A.auth.sendPasswordResetEmail(em); err.style.color = "#9dffc4"; err.textContent = "If that email has an admin account, a reset link is on its way. Check spam too."; }
+    catch(e2){ err.style.color = ""; err.textContent = "Couldn't send the reset email (" + ((e2 && e2.code) || "error") + ")."; }
+  };
   setTimeout(() => ($("#admEmail").value ? $("#admPw") : $("#admEmail")).focus(), 30);
   f.onsubmit = async e => {
     e.preventDefault(); const em = $("#admEmail").value.trim(), pw = $("#admPw").value, err = $("#admErr"), go = $("#admGo");
-    err.textContent = ""; go.disabled = true; go.textContent = "Signing in…";
+    err.textContent = ""; err.style.color = ""; go.disabled = true; go.textContent = "Signing in…";
     try{
       const cr = await A.auth.signInWithEmailAndPassword(em, pw);
       let isAdm = false;
@@ -3026,7 +3032,8 @@ function bindLogin(){
         : c === "adm/not" ? "This account isn't an admin. Add its user ID to the admins collection in Firestore."
         : c === "adm/rules" ? "Firestore blocked the admin check. Publish the admin rules from the setup steps."
         : "Couldn't sign in. Try again.";
-      go.disabled = false; go.textContent = "Sign in"; $("#admPw").value = ""; $("#admPw").focus();
+      if(/invalid-credential|wrong-password|user-not-found|invalid-email/.test(c)) err.textContent += " (" + c.replace("auth/", "") + ")";
+      err.style.color = ""; go.disabled = false; go.textContent = "Sign in"; $("#admPw").focus();
     }
   };
 }
