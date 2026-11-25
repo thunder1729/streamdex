@@ -2925,6 +2925,7 @@ bootAppConfig();
 .ai-s button:hover{background:rgba(255,255,255,.07);color:var(--paper)}
 .ai-dots{display:flex;gap:5px;padding:14px}.ai-dots i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:aidot 1s infinite}.ai-dots i:nth-child(2){animation-delay:.15s}.ai-dots i:nth-child(3){animation-delay:.3s}
 @keyframes aidot{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.ai-tools{display:flex;gap:14px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--line);font-size:13px}.ai-tools button{color:var(--muted);text-decoration:underline;text-underline-offset:3px}.ai-tools button:hover{color:var(--paper)}
 .ai-f{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
 .ai-f .fi{flex:1}
 .ai-key{padding:0 16px 14px;font-size:13.5px;color:var(--muted)}
@@ -3052,13 +3053,14 @@ function renderDash(){
     <div class="adm-bar" id="admBar"><div><div class="m" id="admBarM"></div><button class="btn ghost sm" data-a="discard">Discard</button><button class="btn go sm" data-a="publish" id="admPub">Publish changes</button></div></div>
     <aside class="adm-ai hidden" id="admAI" aria-label="Assistant"><div class="ai-h"><b>Assistant</b><span class="chip" id="aiMode"></span><button data-a="ai" aria-label="Close assistant">&times;</button></div>
       <div class="ai-log" id="aiLog" aria-live="polite"></div>
+      <div class="ai-tools hidden" id="aiTools"><button type="button" data-ai="undoall">Undo all assistant changes</button><button type="button" data-ai="clear">Clear chat</button></div>
       <form class="ai-f" id="aiForm" autocomplete="off"><span class="fi"><input type="text" id="aiIn" placeholder="Tell me what to change" aria-label="Message the assistant"></span><button class="btn sm" type="submit">Send</button></form>
       <details class="ai-key"><summary>Smarter answers (optional, free)</summary>
-        <ol><li>Open <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> and sign in with Google.</li><li>Click Create API key. No card needed.</li><li>Paste it here.</li></ol>
+        <label class="f" style="margin:6px 0"><span>Provider</span><select id="aiProv" aria-label="AI provider"><option value="groq">Groq (fast, free)</option><option value="openrouter">OpenRouter (free models)</option><option value="gemini">Google Gemini</option></select></label><ol><li>Open <a id="aiKeyLink" href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a> and sign up.</li><li>Create an API key. No card needed.</li><li>Paste it here.</li></ol>
         <span class="fi"><input type="password" id="aiKey" placeholder="Paste Gemini key" autocomplete="off"></span>
         <div class="adm-row" style="margin-top:8px"><button class="btn sm" type="button" data-ai="savekey">Save key</button><button class="btn ghost sm" type="button" data-ai="rmkey">Remove</button></div>
         <small id="aiKeyState"></small>
-        <small>The key stays in this browser. Only your game settings and what you type go to Google, never player data. Google's free tier may use them to improve its products.</small></details></aside>`;
+        <small>The key stays in this browser. Only your game settings and what you type go to the provider you pick, never player data. Free tiers may use them to improve their products.</small></details></aside>`;
   paintNav(); paintSec(); paintLive(); paintAI();
 }
 function paintNav(){
@@ -3138,6 +3140,7 @@ site(){
 data(){
   return head("Backup & reset", "Save a copy of your settings, load one back, or start over from the built-in defaults.")
   + card("Settings file", "", `<div class="adm-row"><button class="btn sm" data-a="export">Download settings</button><button class="btn ghost sm" data-a="import">Load from file</button><input type="file" id="admFile" accept=".json,application/json" hidden></div><p class="muted" style="font-size:14px">Loading a file fills the console with those settings. Nothing goes live until you publish.</p>`)
+  + card("Previous version", "Every time you publish, the version before it is saved. Load it back if a change went wrong.", `<div class="adm-row"><button class="btn ghost sm" data-a="restore-prev">Load previous version</button></div><p class="muted" style="font-size:14px">It fills the console only. Publish to make it live.</p>`)
   + card("Start over", "", `<p class="muted">Puts every setting back to what the app shipped with, including removing song overrides. Publish afterward to apply it.</p><div class="adm-row"><button class="btn ghost sm" data-a="defaults">Restore defaults</button></div>`);
 },
 setup(){
@@ -3187,15 +3190,16 @@ function paintLive(){
 
 /* ---------- actions ---------- */
 async function publish(){
-  const errs = cfgErrors(A.draft); if(errs.length || A.busy) return;
-  A.busy = true; const b = $("#admPub"); b.textContent = "Publishing…"; b.disabled = true;
+  const errs = cfgErrors(A.draft); if(errs.length || A.busy) return false;
+  A.busy = true; const b = $("#admPub"); b.textContent = "Publishing…"; b.disabled = true; let ok = false;
   try{
+    if(A.cfgOk){ try{ await A.db.collection("config").doc("backup").set({ ...CK(A.pub), savedAt:Date.now() }); }catch{} }
     const out = CK(A.draft); out.rev = (A.pub.rev || 0) + 1; out.updatedAt = Date.now(); out.updatedBy = A.user.email || "";
     await A.db.collection("config").doc("app").set(out);
     A.pub = CK(out); A.draft = CK(out); A.cfgOk = true; ls.set("appcfg", out); applyApp(out);
-    toast("Published. Players get it next time they open Streamdex.");
+    toast("Published. Players get it next time they open Streamdex."); ok = true; AI.undo = [];
   }catch(e){ toast(e && e.code === "permission-denied" ? "Firestore refused the save. Check the admin rules in Setup help." : "Couldn't publish. Check your connection and try again."); }
-  A.busy = false; b.textContent = "Publish changes"; paintSec(); paintLive();
+  A.busy = false; b.textContent = "Publish changes"; paintSec(); paintLive(); return ok;
 }
 async function search(){
   const q = $("#admQ").value.trim(); A.q = q; if(!q) return;
@@ -3218,6 +3222,12 @@ const ACT = {
   export(){ download("streamdex-settings.json", JSON.stringify(A.draft, null, 2)); },
   import(){ $("#admFile").click(); },
   defaults(){ if(!confirm("Restore every setting to the built-in defaults? You can still discard this before publishing.")) return; const rev = A.pub.rev; A.draft = CK(DEF); A.draft.rev = rev; paintSec(); paintLive(); toast("Defaults loaded. Publish to apply."); },
+  async "restore-prev"(){
+    let raw = null; try{ const sn = await A.db.collection("config").doc("backup").get(); raw = sn.exists ? sn.data() : null; }catch{ toast("Couldn't read the saved version."); return; }
+    if(!raw){ toast("No earlier version yet. One is saved each time you publish."); return; }
+    if(!confirm("Load the version saved before your last publish? Your unpublished edits in the console will be replaced.")) return;
+    const c = saneCfg(raw); c.rev = A.pub.rev; A.draft = c; paintSec(); paintLive(); toast("Previous version loaded. Publish to apply it.");
+  },
   "copy-rules"(){ const t = document.querySelector("#adm pre").textContent; navigator.clipboard.writeText(t).then(() => toast("Rules copied."), () => toast("Select the rules and copy them by hand.")); }
 };
 function onClick(e){
@@ -3254,7 +3264,7 @@ document.addEventListener("keydown", e => {
 /*AI*/
 /* ---------- assistant: runs offline for common commands, optional free Gemini key for open questions ---------- */
 const AI = { open:false, msgs:[], busy:false, undo:[], key:"" };
-try{ AI.key = localStorage.getItem("admGemKey") || ""; }catch{}
+try{ AI.prov = localStorage.getItem("admProv") || "groq"; AI.key = localStorage.getItem("admKey_" + AI.prov) || (AI.prov === "gemini" ? localStorage.getItem("admGemKey") : "") || ""; }catch{ AI.prov = "groq"; }
 const GEM = ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
 const FIELDS = [
   ["economy.welcome", "Welcome gift", ["welcome gift", "welcome coins", "starting coins", "welcome"]],
@@ -3336,7 +3346,11 @@ async function local(raw){
   if(/^(help|what can you do|how do i use this|commands)$/.test(t)) return HELP;
   if(/^undo( that| last)?$/.test(t)){ const s = AI.undo.pop(); if(!s) return { t:"There's nothing to undo." }; A.draft = JSON.parse(s); after(); return { t:"Undone." }; }
   if(/^(what did i change|what changed|summary|changes|what's changed|whats changed)$/.test(t)){ const d = diffLines(); return d.length ? { t:"Unpublished changes:", lines:d } : { t:"No unpublished changes. The console matches what players see." }; }
-  if(/^(publish|go live|save)( it| changes| everything)?$/.test(t)) return { t:isDirty() ? "I can't publish for you. Press Publish changes at the bottom when you're happy." : "There's nothing to publish yet." };
+  if(/^(please\s+)?(publish|go live|push (it|them|changes|everything) live|make (it|them|that|everything) live)( it| changes| everything| now)?$/.test(t)){
+    if(!isDirty()) return { t:"There's nothing to publish. The console already matches what players see." };
+    const er = cfgErrors(A.draft); if(er.length) return { t:"I can't publish yet: " + er[0] };
+    const d = diffLines(); return { t:`Publish ${d.length} change${d.length === 1 ? "" : "s"} to every player now?`, lines:d, confirm:true };
+  }
   if((m = t.match(/^(?:go to|open|show|take me to|switch to)\s+(?:me\s+)?(?:the\s+)?(.+?)(?:\s+(?:page|section|tab))?$/))){
     const hit = Object.keys(SECALIAS).find(k => SECALIAS[k].includes(m[1]));
     if(hit){ A.sec = hit; paintNav(); paintSec(); return { t:"Opened " + SECS.find(s => s[0] === hit)[1] + "." }; }
@@ -3385,6 +3399,23 @@ async function local(raw){
   }
   return null;
 }
+const PROVS = {
+  gemini:{ name:"Google Gemini", url:"https://aistudio.google.com/apikey", models:GEM },
+  groq:{ name:"Groq", url:"https://console.groq.com/keys", models:["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "llama-3.1-8b-instant"], ep:"https://api.groq.com/openai/v1/chat/completions" },
+  openrouter:{ name:"OpenRouter", url:"https://openrouter.ai/keys", models:["meta-llama/llama-3.3-70b-instruct:free", "openai/gpt-oss-120b:free"], ep:"https://openrouter.ai/api/v1/chat/completions" }
+};
+async function llmCall(prov, mdl, sys, hist, text){
+  if(prov === "gemini"){
+    const body = { systemInstruction:{ parts:[{ text:sys }] }, contents:[...hist.map(h => ({ role:h.role === "user" ? "user" : "model", parts:[{ text:h.text }] })), { role:"user", parts:[{ text }] }], generationConfig:{ responseMimeType:"application/json", temperature:0.2 } };
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mdl}:generateContent`, { method:"POST", headers:{ "Content-Type":"application/json", "x-goog-api-key":AI.key }, body:JSON.stringify(body) });
+    if(!r.ok) return { status:r.status, msg:await r.text().catch(() => "") };
+    const j = await r.json(); return { text:j.candidates[0].content.parts.map(p => p.text || "").join("") };
+  }
+  const P = PROVS[prov], body = { model:mdl, temperature:0.2, messages:[{ role:"system", content:sys }, ...hist.map(h => ({ role:h.role === "user" ? "user" : "assistant", content:h.text })), { role:"user", content:text }] };
+  const r = await fetch(P.ep, { method:"POST", headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + AI.key }, body:JSON.stringify(body) });
+  if(!r.ok) return { status:r.status, msg:await r.text().catch(() => "") };
+  const j = await r.json(); return { text:j.choices[0].message.content || "" };
+}
 async function gemini(text){
   const ctx = CK(A.draft); ["rev", "updatedAt", "updatedBy"].forEach(k => delete ctx[k]);
   ctx.overrides = Object.values(A.draft.overrides).map(o => `${o.n} by ${o.a} -> ${o.r}`);
@@ -3395,14 +3426,13 @@ Action types: {"op":"set","path":"dot.path","value":number|string|boolean}; {"op
 Only use paths that exist in CURRENT SETTINGS. Keep values sensible. When just answering a question, use an empty actions list. Keep the reply under 60 words, plain text, no markdown.
 Niche score runs 0 (everyone knows the song) to 100 (almost nobody). Price = priceBase * exp(priceK * (100 - niche)), rounded to priceStep, at least priceMin. Tier names can be renamed; use tier keys in actions.
 CURRENT SETTINGS: ${JSON.stringify(ctx)}`;
-  const hist = AI.msgs.filter(x => x.t).slice(-9, -1).map(x => ({ role:x.r === "me" ? "user" : "model", parts:[{ text:x.t }] }));
-  const body = { systemInstruction:{ parts:[{ text:sys }] }, contents:[...hist, { role:"user", parts:[{ text }] }], generationConfig:{ responseMimeType:"application/json", temperature:0.2 } };
-  let lastErr = "";
-  for(const mdl of GEM){
-    let r; try{ r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mdl}:generateContent`, { method:"POST", headers:{ "Content-Type":"application/json", "x-goog-api-key":AI.key }, body:JSON.stringify(body) }); }catch{ return { t:"Couldn't reach Gemini. Check your connection." }; }
-    if(r.status === 400 || r.status === 403){ let m = ""; try{ m = (await r.json()).error.message; }catch{} return { t:/API key/i.test(m) ? "Gemini rejected the key. Open “Smarter answers” below and paste it again." : "Gemini refused the request." + (m ? " " + m.slice(0, 120) : "") }; }
-    if(!r.ok){ lastErr = r.status === 429 ? "Gemini's free limit is used up for now. Try again in a minute." : "Gemini had a problem. Try again."; continue; }
-    let out; try{ const j = await r.json(), txt = j.candidates[0].content.parts.map(p => p.text || "").join(""); out = JSON.parse(txt.replace(/^```json|```$/g, "")); }catch{ return { t:"I couldn't make sense of that answer. Try rephrasing." }; }
+  const hist = AI.msgs.filter(x => x.t).slice(-9, -1).map(x => ({ role:x.r === "me" ? "user" : "model", text:x.t }));
+  const P = PROVS[AI.prov] || PROVS.gemini; let lastErr = "";
+  for(const mdl of P.models){
+    let r; try{ r = await llmCall(AI.prov, mdl, sys, hist, text); }catch{ return { t:"Couldn't reach " + P.name + ". Check your connection, or try another provider under Smarter answers." }; }
+    if(r.status === 401 || r.status === 403 || (r.status === 400 && /API key/i.test(r.msg || ""))) return { t:P.name + " rejected the key. Open “Smarter answers” below and paste it again." };
+    if(r.status){ lastErr = r.status === 429 ? P.name + "'s free limit is used up for now. Try again in a minute." : P.name + " had a problem (" + r.status + "). Try again."; continue; }
+    let out; try{ const m = r.text.match(/\{[\s\S]*\}/); out = JSON.parse(m ? m[0] : r.text); }catch{ return { t:"I couldn't make sense of that answer. Try rephrasing." }; }
     const lines = [];
     for(const a of (Array.isArray(out.actions) ? out.actions : []).slice(0, 8)){
       if(!a || typeof a !== "object") continue;
@@ -3413,7 +3443,7 @@ CURRENT SETTINGS: ${JSON.stringify(ctx)}`;
     }
     return { t:String(out.reply || "Done.").slice(0, 600), lines };
   }
-  return { t:lastErr || "Gemini isn't available right now." };
+  return { t:lastErr || P.name + " isn't available right now." };
 }
 async function aiSend(text){
   text = text.trim(); if(!text || AI.busy) return;
@@ -3422,32 +3452,45 @@ async function aiSend(text){
   try{ res = await local(text); if((!res || res.ask) && AI.key) res = await gemini(text); }catch(e){ res = { t:"Something went wrong. Try again." }; }
   if(AI.undo.length > n0 + 1) AI.undo.splice(n0 + 1);
   if(!res) res = { t:"I didn't catch that. Try something like “set the welcome gift to 500” or “turn off the map”." + (AI.key ? "" : " For open questions, add a free Gemini key under Smarter answers.") };
-  AI.msgs.push({ r:"bot", t:res.t, lines:res.lines || [], can:!!(res.lines && res.lines.length && AI.undo.length) }); AI.busy = false; paintAI();
+  AI.msgs.push({ r:"bot", t:res.t, lines:res.lines || [], confirm:!!res.confirm, can:!!(!res.confirm && res.lines && res.lines.length && AI.undo.length) }); AI.busy = false; paintAI();
 }
 function paintAI(){
   const p = $("#admAI"); if(!p) return;
   root().classList.toggle("ai-on", AI.open); p.classList.toggle("hidden", !AI.open);
   if(!AI.open) return;
-  $("#aiMode").textContent = AI.key ? "Gemini on" : "Commands"; $("#aiMode").className = "chip " + (AI.key ? "ok" : "");
+  $("#aiMode").textContent = AI.key ? PROVS[AI.prov].name + " on" : "Commands"; $("#aiMode").className = "chip " + (AI.key ? "ok" : "");
   const log = $("#aiLog");
   const sugg = ["Set the welcome gift to 500", "Turn off the map", "Make Water Copy by Hiroshi Yoshimura mythic", "Post a banner: Double coins this weekend!"];
   log.innerHTML = (AI.msgs.length ? "" : `<div class="ai-b bot">Hi! Tell me what to change and I'll set it up as a draft. You still press Publish to make it live.</div><div class="ai-s">${sugg.map(s => `<button type="button" data-ai-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>`)
-    + AI.msgs.map((m, i) => `<div class="ai-b ${m.r}">${esc(m.t)}${m.lines && m.lines.length ? `<ul>${m.lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>` : ""}${m.can && i === AI.msgs.length - 1 ? '<button type="button" class="ai-u" data-ai="undo">Undo</button>' : ""}</div>`).join("")
+    + AI.msgs.map((m, i) => `<div class="ai-b ${m.r}">${esc(m.t)}${m.lines && m.lines.length ? `<ul>${m.lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>` : ""}${m.confirm && i === AI.msgs.length - 1 ? '<div class="adm-row" style="margin-top:10px"><button type="button" class="btn sm" data-ai="pubyes">Yes, publish</button><button type="button" class="btn ghost sm" data-ai="pubno">Cancel</button></div>' : ""}${m.can && i === AI.msgs.length - 1 ? '<button type="button" class="ai-u" data-ai="undo">Undo</button>' : ""}</div>`).join("")
     + (AI.busy ? '<div class="ai-b bot ai-dots" aria-label="Thinking"><i></i><i></i><i></i></div>' : "");
   log.scrollTop = log.scrollHeight;
-  const k = $("#aiKeyState"); if(k) k.textContent = AI.key ? "A key is saved in this browser." : "No key added. Quick commands still work.";
+  const tl = $("#aiTools"); if(tl) tl.classList.toggle("hidden", !AI.msgs.length && !AI.undo.length);
+  const k = $("#aiKeyState"); if(k) k.textContent = AI.key ? "A " + PROVS[AI.prov].name + " key is saved in this browser." : "No key added. Quick commands still work.";
+  const sel = $("#aiProv"); if(sel && sel.value !== AI.prov) sel.value = AI.prov; const lk = $("#aiKeyLink"); if(lk){ lk.href = PROVS[AI.prov].url; lk.textContent = PROVS[AI.prov].url.replace("https://", ""); }
 }
 ACT.ai = () => { AI.open = !AI.open; paintAI(); if(AI.open) setTimeout(() => { const i = $("#aiIn"); if(i) i.focus(); }, 50); };
 function onAI(t){
   if(t.dataset.aiS !== undefined){ aiSend(t.dataset.aiS); return; }
   const a = t.dataset.ai;
-  if(a === "undo"){ const s = AI.undo.pop(); if(s){ A.draft = JSON.parse(s); after(); AI.msgs.push({ r:"bot", t:"Undone.", lines:[] }); paintAI(); } }
-  else if(a === "savekey"){ const v = $("#aiKey").value.trim(); if(!v) return; AI.key = v; try{ localStorage.setItem("admGemKey", v); }catch{} $("#aiKey").value = ""; paintAI(); toast("Key saved. Ask me anything."); }
-  else if(a === "rmkey"){ AI.key = ""; try{ localStorage.removeItem("admGemKey"); }catch{} paintAI(); toast("Key removed."); }
+  if(a === "pubyes" || a === "pubno"){
+    const last = AI.msgs[AI.msgs.length - 1]; if(!last || !last.confirm) return; last.confirm = false;
+    if(a === "pubno"){ AI.msgs.push({ r:"bot", t:"Okay, I didn't publish anything.", lines:[] }); paintAI(); return; }
+    AI.busy = true; paintAI(); publish().then(ok => { AI.busy = false; AI.msgs.push({ r:"bot", t:ok ? "Published. Players get it the next time they open Streamdex." : "That didn't publish. See the message at the bottom of the screen, then try again.", lines:[] }); paintAI(); });
+  }
+  else if(a === "undoall"){
+    if(!AI.undo.length){ toast("The assistant hasn't changed anything since your last publish."); return; }
+    if(!confirm("Undo everything the assistant changed since your last publish? This also undoes any edits you made by hand in that time.")) return;
+    A.draft = JSON.parse(AI.undo[0]); AI.undo = []; after(); AI.msgs.push({ r:"bot", t:"Undone. The console is back to how it was before my first change.", lines:[] }); paintAI();
+  }
+  else if(a === "clear"){ AI.msgs = []; paintAI(); toast("Chat cleared. Your settings weren't changed."); }
+  else if(a === "undo"){ const s = AI.undo.pop(); if(s){ A.draft = JSON.parse(s); after(); AI.msgs.push({ r:"bot", t:"Undone.", lines:[] }); paintAI(); } }
+  else if(a === "savekey"){ const v = $("#aiKey").value.trim(); if(!v) return; AI.key = v; try{ localStorage.setItem("admKey_" + AI.prov, v); localStorage.setItem("admProv", AI.prov); }catch{} $("#aiKey").value = ""; paintAI(); toast("Key saved. Ask me anything."); }
+  else if(a === "rmkey"){ AI.key = ""; try{ localStorage.removeItem("admKey_" + AI.prov); if(AI.prov === "gemini") localStorage.removeItem("admGemKey"); }catch{} paintAI(); toast("Key removed."); }
 }
 
 const el = root();
-el.addEventListener("click", onClick); el.addEventListener("input", onInput); el.addEventListener("change", e => { onChange(e); if(e.target.matches("select[data-p]")) onInput(e); else if(e.target.matches("select[data-ov]")) onInput(e); });
+el.addEventListener("click", onClick); el.addEventListener("input", onInput); el.addEventListener("change", e => { if(e.target.id === "aiProv"){ AI.prov = e.target.value; try{ localStorage.setItem("admProv", AI.prov); AI.key = localStorage.getItem("admKey_" + AI.prov) || (AI.prov === "gemini" ? localStorage.getItem("admGemKey") : "") || ""; }catch{ AI.key = ""; } paintAI(); return; } onChange(e); if(e.target.matches("select[data-p]")) onInput(e); else if(e.target.matches("select[data-ov]")) onInput(e); });
 el.addEventListener("submit", onSubmit);
 window.addEventListener("hashchange", () => { if(location.hash === "#admin") openAdmin(); });
 if(location.hash === "#admin") setTimeout(openAdmin, 300);
