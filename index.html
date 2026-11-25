@@ -523,9 +523,18 @@ footer a{color:var(--muted)}
   .nrow{min-height:60px}
   .btn.lg{padding:15px 26px}
 }
+
+.ann{display:flex;align-items:center;gap:12px;justify-content:center;padding:10px 44px 10px 16px;font-size:14px;font-weight:600;position:relative;text-align:center;flex-wrap:wrap;z-index:60}
+.ann.info{background:linear-gradient(90deg,#3b2bd9,#7a45ff);color:#fff}.ann.warn{background:#ffcf5c;color:#2a1d00}.ann.good{background:#1fbf84;color:#032a1c}
+.ann .alink{color:inherit;text-decoration:underline;text-underline-offset:3px}.ann .ax{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:inherit;font-size:22px;line-height:1;cursor:pointer;width:32px;height:32px;border-radius:8px;opacity:.8}.ann .ax:hover{opacity:1;background:rgba(0,0,0,.15)}
+.maint{position:fixed;inset:0;z-index:2000;background:rgba(8,8,16,.94);display:grid;place-items:center;padding:24px;backdrop-filter:blur(8px)}
+.maint.hidden{display:none}.maint-c{max-width:420px;text-align:center;display:grid;gap:12px;color:#fff}.maint-c h2{font-size:30px;font-weight:850;letter-spacing:-.02em}.maint-c p{color:#b8bbd0;line-height:1.55}.maint-i{font-size:42px}
+a.made{color:inherit;text-decoration:underline;text-underline-offset:3px}a.made.hidden,.made.hidden{display:none}
 </style>
 </head>
 <body>
+<div id="annBar" class="ann hidden" role="status"></div>
+<div id="maint" class="maint hidden" role="alert"><div class="maint-c"><div class="maint-i">&#9881;</div><h2>Back soon</h2><p id="maintTxt"></p></div></div>
 <header class="nav" id="nav">
   <a class="logo" href="#top" data-act="home"><span class="logo-disc"></span>Streamdex</a>
   <nav class="nav-links" id="navLand" aria-label="Sections"><a href="#how">How it works</a><a href="#tiers">Rarities</a><a href="#connect">No Last.fm yet?</a><a href="#faq">FAQ</a></nav>
@@ -607,7 +616,7 @@ footer a{color:var(--muted)}
       <details><summary>Is my data safe?</summary><p>Your cards are saved to your private account, and your Last.fm username is only used to fetch your public top songs. To make trading possible, your in-game name and the cards you own are visible to other signed-in players. Your Google name and email are never shown. A Spotify export is read on your device and never uploaded.</p></details>
       <details><summary>Why Last.fm and not a Spotify login?</summary><p>Spotify limits new apps to a handful of approved users, so a public game can't log everyone in. Last.fm is open, free, and works with a username.</p></details>
       <details><summary>How is rarity decided?</summary><p>By how many people have listened to the song on Last.fm. Fewer listeners means a rarer card. Songs Last.fm can't find count as the most obscure.</p></details>
-      <details><summary>How often can I open packs?</summary><p>Each day you get three packs of five cards. The first is Your Listens, drawn from your own top songs. The other two are Discovery packs: real songs from across Last.fm, picked to match the genres and kind of music you play most. Packs refresh at midnight. Once a week (Monday) you also get a Weekly Special with ten random real songs, from Uncommon up to Mythic.</p></details>
+      <details><summary>How often can I open packs?</summary><p id="faqPacks">Each day you get three packs of five cards. The first is Your Listens, drawn from your own top songs. The other two are Discovery packs: real songs from across Last.fm, picked to match the genres and kind of music you play most. Packs refresh at midnight. Once a week (Monday) you also get a Weekly Special with ten random real songs, from Uncommon up to Mythic.</p></details>
       <details><summary>What are coins and the marketplace?</summary><p>Coins let you buy any song in the marketplace. Search for it, check how rare it is, and buy it. The rarer the song, the more it costs, from about 10 coins for a chart-topper to nearly 2,000 for a true underground find. You earn coins from a daily bonus (it grows with your streak), a welcome gift, and by selling songs you got from packs, trades or the market for a quarter of their price. Coins are free and can't be bought with money.</p></details>
       <details><summary>How does trading work?</summary><p>Browse other collectors, pick up to five cards each way, and send an offer. Your cards are held safely while the offer is open. If they accept, the swap happens instantly. If they decline or you cancel, your cards come straight back. It's all free.</p></details>
       <details><summary>How does the map work?</summary><p>Open the Map tab and allow your location. Mystery cards spawn in the real world within 100 miles of where you first opened the map, never closer than about 200 meters to each other and never on water. Each one is swapped for a new one every hour. Walk to a card and get within 60 meters to claim it, or stand right on it (about 10 feet) and it claims itself. If you travel more than 100 miles away, a brand-new batch spawns around you. Rarer cards are scarcer, using nearly the same odds as packs. Your location is only used while the page is open, and it is never saved or shared.</p></details>
@@ -663,7 +672,7 @@ footer a{color:var(--muted)}
 </defs></svg>
 
 <footer><div class="wrap"><span>Streamdex is a fan project, not affiliated with Spotify or Last.fm.</span><span>Music data from <a href="https://www.last.fm" target="_blank" rel="noopener">Last.fm</a></span></div>
-  <div class="wrap" style="justify-content:center;margin-top:18px"><span class="made">Made with <span class="heart" aria-label="love">&#9829;</span> from Seattle</span></div></footer>
+  <div class="wrap" style="justify-content:center;margin-top:18px;gap:6px 18px;flex-wrap:wrap"><span class="made">Made with <span class="heart" aria-label="love">&#9829;</span> from Seattle</span><span class="made" id="brandCredit">By Pigeon Trail Co</span><a class="made" id="brandYt" href="#" target="_blank" rel="noopener">YouTube</a></div></footer>
 
 <div id="detail" class="modal hidden" role="dialog" aria-modal="true" aria-label="Card details">
   <div class="modal-bg" data-act="modal-close"></div>
@@ -722,7 +731,7 @@ footer a{color:var(--muted)}
 <script>
 "use strict";
 /* ================= config ================= */
-const MAX_CARDS = 250, PACK_SIZE = 5, DAILY_PACKS = 3; // daily normal packs per player (resets at local midnight); 1 weekly special pack (resets Monday)
+const MAX_CARDS = 250; let PACK_SIZE = 5, DAILY_PACKS = 3; // daily normal packs per player (resets at local midnight); 1 weekly special pack (resets Monday)
 // Free Last.fm API key shared by all players (it only reads public data). Replace it with your own anytime.
 const CONFIG = { LASTFM_KEY: "38717e32e731a41324cea37c39d5f320",
   // Google sign-in + cloud save (free Firebase Spark plan). Paste your Firebase web app config here.
@@ -758,8 +767,8 @@ const RARITIES = [
 const rarityIdx = c => RARITIES.findIndex(r => c.niche < r.max);
 const rarityFor = s => RARITIES.find(r => s < r.max);
 /* ----- coins ----- */
-const SELL_RATE = 0.25, DAILY_BONUS = { base:25, step:5, max:50 }, WELCOME_COINS = 100;
-const priceFor = niche => Math.max(10, Math.round(10 * Math.exp(0.052 * (100 - niche)) / 5) * 5); // 10 coins for a chart-topper, ~1,800 for the rarest
+let SELL_RATE = 0.25, WELCOME_COINS = 100; const DAILY_BONUS = { base:25, step:5, max:50 }, PRICE = { base:10, k:0.052, min:10, step:5 }, FEAT = { weekly:true, map:true, trade:true, market:true, badges:true };
+const priceFor = niche => Math.max(PRICE.min, Math.round(PRICE.base * Math.exp(PRICE.k * (100 - niche)) / PRICE.step) * PRICE.step); // 10 coins for a chart-topper, ~1,800 for the rarest
 const sellValue = c => Math.max(1, Math.round(priceFor(c.niche) * SELL_RATE));
 let COINS = +ls.get("coins", 0) || 0;
 const RANKS = [[0,"Casual listener"],[20,"Playlist regular"],[80,"Crate digger"],[200,"Deep cut hunter"],[500,"Vinyl oracle"],[1200,"Underground legend"]];
@@ -782,7 +791,11 @@ document.addEventListener("error", e => { const t = e.target;
   if(t.tagName === "IMG" && t.dataset.seed && !t.dataset.fb){ t.dataset.fb = "1"; t.src = genArt(t.dataset.seed); } }, true);
 
 /* ================= Last.fm ================= */
-const nicheScore = l => Math.max(0, Math.min(100, Math.round((Math.log10(Math.max(l,1)) - 2) / 4.7 * 100)));
+const nicheScore = (l, raw) => {
+  const o = raw && typeof APP === "object" && APP.overrides && APP.overrides[String(raw).toLowerCase()];
+  if(o && typeof ovMid === "function"){ const n = ovMid(o.r); if(n !== null) return n; }
+  return Math.max(0, Math.min(100, Math.round((Math.log10(Math.max(l,1)) - 2) / 4.7 * 100)));
+};
 const LFM_PLACEHOLDER = "2a96cbd8b46e442fc41c2b86b821562f";
 const lfmKey = () => ($("#lfm").value || ls.get("lfm","") || CONFIG.LASTFM_KEY || "").trim();
 async function lfmCall(params, tries=2){
@@ -870,7 +883,7 @@ async function buildCards(list0, key, onp){
   const info = await lastfmBatch(list.map(e => ({ id:e.id, artist:e.artist, track:e.track })), key, onp);
   const maxP = list[0].plays;
   const cards = list.map(e => { const f = info[e.id];
-    return { id:e.id, name:e.track, artist:e.artist, art:f.art || "", pop:f.listeners, miss:f.miss, niche:nicheScore(f.listeners),
+    return { id:e.id, name:e.track, artist:e.artist, art:f.art || "", pop:f.listeners, miss:f.miss, niche:nicheScore(f.listeners, e.id.slice(2)),
       type:typeFor(f.tags), tag:f.tags[0] || "", plays:e.plays, hours:Math.round(e.ms/360000)/10,
       affPct:Math.max(5, Math.round(Math.sqrt(e.plays/maxP)*100)) }; });
   cards.sort((a,b) => a.niche-b.niche || b.plays-a.plays);
@@ -969,7 +982,7 @@ function mergePacks(a, b){
 function packs(){
   if(isInfinite()) return { n:99, next:0, sp:true, spNext:0 };
   const p = packState(), now = Date.now(); ls.set(packKey(), p);
-  return { n:Math.max(0, DAILY_PACKS - p.u), next:nextMidnight() - now, sp:!p.s, spNext:nextMonday() - now };
+  return { n:Math.max(0, DAILY_PACKS - p.u), next:nextMidnight() - now, sp:FEAT.weekly && !p.s, spNext:nextMonday() - now };
 }
 function spendPack(){
   if(isInfinite()) return true;
@@ -993,6 +1006,7 @@ function updatePacks(){
   $("#pkTimer").textContent = inf ? "Unlimited packs." : s.n > 0 ? `Next: ${type === "normal" ? "Your Listens" : "Discovery"}. New packs in ${fmtLong(s.next)}` : `Out for today. New packs in ${fmtLong(s.next)}`;
   const b = $("#pkOpen"); b.textContent = !normalOK && left <= 0 && type === "normal" ? "Collection complete" : type === "normal" ? "Open Your Listens pack" : "Open Discovery pack"; b.disabled = !normalOK;
   const sc = $("#spCard"); if(sc){
+    sc.classList.toggle("hidden", !FEAT.weekly);
     sc.classList.toggle("used", !spOK);
     $("#spSub").textContent = demo ? "Create an account to unlock it." : spOK ? "10 real songs, Uncommon to Mythic" : `Claimed. Next one in ${fmtLong(s.spNext)}`;
     const sb = $("#spBtn"); sb.disabled = !spOK; sb.textContent = spOK ? "Open weekly pack" : "Claimed";
@@ -1216,7 +1230,7 @@ function rollPack(){
 function setPackFace(mode){
   $("#packBtn").className = "pack" + (mode === "special" ? " special" : mode === "taste" ? " taste" : "");
   $("#pkName").textContent = mode === "special" ? "Weekly Special" : mode === "taste" ? "Discovery" : "Your Listens";
-  $("#pkSub").textContent = mode === "special" ? "10 real songs, Uncommon to Mythic" : mode === "taste" ? "5 songs picked for your taste" : "5 cards from your top songs";
+  $("#pkSub").textContent = mode === "special" ? "10 real songs, Uncommon to Mythic" : mode === "taste" ? `${PACK_SIZE} song${PACK_SIZE === 1 ? "" : "s"} picked for your taste` : `${PACK_SIZE} card${PACK_SIZE === 1 ? "" : "s"} from your top songs`;
   $("#packHint").textContent = "Tap the pack to open it";
 }
 function openStage(mode){
@@ -1288,7 +1302,7 @@ async function digSpecial(onp){
   let picks = SPECIAL_MIX.flatMap(([k]) => got[k]);
   if(picks.length < 10) picks = picks.concat(shuffle(spare).slice(0, 10 - picks.length));
   if(picks.length < 6) throw new Error("Couldn't dig up enough songs right now. Your weekly pack wasn't used, so try again in a moment.");
-  const cards = picks.map(({ x, info }) => { const niche = nicheScore(info.listeners);
+  const cards = picks.map(({ x, info }) => { const niche = nicheScore(info.listeners, x.raw);
     return { id:"x:" + x.raw + "#" + Math.random().toString(36).slice(2,8), raw:x.raw, name:x.track, artist:x.artist, art:info.art || "", pop:info.listeners, miss:false, niche,
       type:typeFor(info.tags), tag:info.tags[0] || "", plays:0, hours:0, affPct:Math.round(45 + (100 - niche)/2), special:true, src:"weekly" }; });
   await Promise.race([Promise.all(cards.map(async c => { try{ const m = await lookupPreview(c); if(m && m.a && !c.art) c.art = m.a; }catch{} })), sleep(6000)]);
@@ -1399,7 +1413,7 @@ async function digTaste(onp){
   if(picks.length < 3) throw new Error("Couldn't find enough songs for you right now. Your pack wasn't used, so try again in a moment.");
   await Promise.all(picks.map(async p => { if(p.info.tags.length) return;
     try{ const i = await lastfmOne({ id:"t:" + p.x.raw, artist:p.x.artist, track:p.x.track }, key); if(!i.miss) p.info = { ...i, listeners:p.info.listeners || i.listeners }; }catch{} }));
-  const cards = picks.map(({ x, info }) => { const niche = nicheScore(info.listeners);
+  const cards = picks.map(({ x, info }) => { const niche = nicheScore(info.listeners, x.raw);
     return { id:"x:" + x.raw + "#" + Math.random().toString(36).slice(2,8), raw:x.raw, name:x.track, artist:x.artist, art:info.art || "", pop:info.listeners, miss:false, niche,
       type:typeFor(info.tags), tag:info.tags[0] || "", plays:0, hours:0, affPct:Math.round(45 + (100 - niche)/2), src:"discovery" }; });
   await Promise.race([Promise.all(cards.map(async c => { try{ const m = await lookupPreview(c); if(m && m.a && !c.art) c.art = m.a; }catch{} })), sleep(6000)]);
@@ -1521,7 +1535,8 @@ const actions = {
   "auth": () => { AUTH_USER ? signOutGoogle() : signInGoogle(); },
   "signout": () => { $("#menu")?.removeAttribute("open"); signOutGoogle(); },
   "start": () => { AUTH_USER ? cloudPull() : signInGoogle(); },
-  "tab-col": showApp, "tab-trade": showTrade, "tab-market": showMarket, "tab-map": showMap, "tab-badges": showBadges,
+  "tab-col": showApp, "tab-trade": () => featGate("trade") && showTrade(), "tab-market": () => featGate("market") && showMarket(), "tab-map": () => featGate("map") && showMap(), "tab-badges": () => featGate("badges") && showBadges(),
+  "ann-x": () => { ls.set("annx", APP.announcement.id); paintAnn(); },
   "map-start": () => { MG.err = ""; startGeo(); },
   "map-locate": () => { if(MG.pos && MG.map){ MG.follow = true; $("#mLoc")?.classList.add("on"); MG.map.setView([MG.pos.lat, MG.pos.lon], Math.max(MG.map.getZoom(), 16)); } else startGeo(); },
   "map-auto": () => { MG.auto = !MG.auto; ls.set("mapauto", MG.auto); const b = $("#mAuto"); if(b){ b.setAttribute("aria-pressed", String(MG.auto)); b.querySelector("b").textContent = MG.auto ? "On" : "Off"; } if(MG.auto){ MG.tried.clear(); maybeAuto(); } toast(MG.auto ? "Auto-claim on. Stand on a card to grab it." : "Auto-claim off."); },
@@ -1850,7 +1865,7 @@ async function cancelTrade(id){
 const incomingN = () => AUTH_USER ? TRADES.filter(t => t.to === AUTH_USER.uid && t.status === "pending").length : 0;
 function renderTabs(){
   const n = incomingN(), ub = typeof unseenBadges === "function" ? unseenBadges() : 0, on = v => VIEW === v ? "on" : "";
-  const h = `<button class="tab ${on("app")}" data-act="tab-col">Collection</button><button class="tab ${on("map")}" data-act="tab-map">Map</button><button class="tab ${on("trade")}" data-act="tab-trade">Trade${n ? `<b class="badge">${n}</b>` : ""}</button><button class="tab ${on("market")}" data-act="tab-market">Market</button><button class="tab ${on("badges")}" data-act="tab-badges">Badges${ub ? `<b class="badge">${ub}</b>` : ""}</button>`;
+  const h = `<button class="tab ${on("app")}" data-act="tab-col">Collection</button>` + (FEAT.map ? `<button class="tab ${on("map")}" data-act="tab-map">Map</button>` : "") + (FEAT.trade ? `<button class="tab ${on("trade")}" data-act="tab-trade">Trade${n ? `<b class="badge">${n}</b>` : ""}</button>` : "") + (FEAT.market ? `<button class="tab ${on("market")}" data-act="tab-market">Market</button>` : "") + (FEAT.badges ? `<button class="tab ${on("badges")}" data-act="tab-badges">Badges${ub ? `<b class="badge">${ub}</b>` : ""}</button>` : "");
   $$(".tabbar").forEach(e => e.innerHTML = h);
 }
 function thumbs(cards){
@@ -2065,7 +2080,7 @@ function paintList(){
   if(MKT.busy){ list.innerHTML = '<div class="empty">Looking through the crates…</div>'; return; }
   const own = ownedRaws();
   list.innerHTML = MKT.items.length ? MKT.items.map((it, i) => {
-    const niche = nicheScore(it.listeners), r = rarityFor(niche), price = priceFor(niche), owned = own.has(it.raw), afford = COINS >= price;
+    const niche = nicheScore(it.listeners, it.raw), r = rarityFor(niche), price = priceFor(niche), owned = own.has(it.raw), afford = COINS >= price;
     const art = it.art || genArt("t:" + it.raw);
     return `<div class="mrow" data-i="${i}"><button class="mplay" data-mplay="${i}" ${it.prev === null ? "disabled" : ""} aria-label="Play 30-second preview of ${esc(it.track)}">${MV.i === i && MV.a && !MV.a.paused ? IC_PAUSE : IC_PLAY}</button>
       <img class="mart" alt="" loading="lazy" src="${esc(art)}" data-seed="${esc("t:" + it.raw)}"><div class="minfo"><b>${esc(it.track)}</b><span>${esc(it.artist)}</span></div>
@@ -2137,7 +2152,7 @@ async function playRow(i){
 function setRowBtn(i, playing){ const b = $(`.mplay[data-mplay="${i}"]`); if(b) b.innerHTML = playing ? IC_PAUSE : IC_PLAY; }
 async function buyItem(i){
   const it = MKT.items[i]; if(!it || MKT.buying || !marketOK()) return;
-  const niche = nicheScore(it.listeners), price = priceFor(niche);
+  const niche = nicheScore(it.listeners, it.raw), price = priceFor(niche);
   if(ownedRaws().has(it.raw)){ toast("You already own this song."); return; }
   if(COINS < price){ toast(`You need ${(price - COINS).toLocaleString()} more coins. Claim your daily bonus or sell a song.`); return; }
   if(!confirm(`Buy “${it.track}” by ${it.artist} for ${price.toLocaleString()} coins?`)) return;
@@ -2305,8 +2320,8 @@ function renderMapShell(){
   if(!AUTH_USER) return mapGateHead("Sign in to explore", "The map saves the cards you claim to your account. It takes about a minute to set up.", "Continue with Google", "start");
   if(!HANDLE) return mapGateHead("One more step", "Finish setting up your account to start claiming cards on the map.", "Finish setup", "wiz-open");
   const odds = Object.keys(MAP_ODDS).map(k => { const r = RARITIES.find(x => x.key === k); return `<span class="ptier" style="--c1:${r.c1}">${r.stars} ${r.name} &middot; ${MAP_ODDS[k]}%</span>`; }).join("");
-  $("#mapHead").innerHTML = `<section class="mp-head"><div class="panel"><h2 class="mh">Card Map</h2><p class="muted">Mystery cards spawn in the real world within 100 miles of where you start. Get within ${MAP_CFG.CLAIM_M} m to claim one, or stand right on it (about 10 ft) and it claims itself. Cards are replaced every hour, and travel past 100 miles to spawn a brand-new batch.</p><div class="mp-stats" id="mpStats"></div></div>
-    <details class="panel mpd" ${innerWidth > 700 ? "open" : ""}><summary><h3 class="ph">Spawn odds and safety</h3></summary><div class="ptiers" style="margin-top:12px">${odds}</div><p class="mp-note">Stay aware of your surroundings. Cards can appear anywhere on land, so never trespass or step into traffic, and never use your phone while driving. If a card is somewhere you shouldn't go, skip it. A fresh one will be along within the hour.</p></details></section>`;
+  $("#mapHead").innerHTML = `<section class="mp-head"><div class="panel"><h2 class="mh">Card Map</h2><p class="muted">Mystery cards spawn in the real world within ${mapMiles()} miles of where you start. Get within ${MAP_CFG.CLAIM_M} m to claim one, or stand right on it (about 10 ft) and it claims itself. Cards are replaced every ${mapEvery()}, and travel past ${mapMiles()} miles to spawn a brand-new batch.</p><div class="mp-stats" id="mpStats"></div></div>
+    <details class="panel mpd" ${innerWidth > 700 ? "open" : ""}><summary><h3 class="ph">Spawn odds and safety</h3></summary><div class="ptiers" style="margin-top:12px">${odds}</div><p class="mp-note">Stay aware of your surroundings. Cards can appear anywhere on land, so never trespass or step into traffic, and never use your phone while driving. If a card is somewhere you shouldn't go, skip it. A fresh one will be along soon.</p></details></section>`;
   $("#mapBody").innerHTML = `<div class="mapbox"><div id="mapEl"></div>
     <div class="mtop"><button class="mchip" id="mAuto" type="button" data-act="map-auto" aria-pressed="${MG.auto}">Auto-claim <b>${MG.auto ? "On" : "Off"}</b></button></div>
     <button class="mfab" id="mLoc" data-act="map-locate" aria-label="Centre the map on me">${IC_LOC}</button><div class="mzoom" id="mZoom">Zoom in to see cards</div><div id="mSheet" aria-live="polite"></div><div class="mgate" id="mGate"></div></div>
@@ -2649,6 +2664,154 @@ function renderBadges(){
   }).join("") || '<div class="panel empty" style="grid-column:auto;margin-top:18px">Nothing here yet. Keep playing.</div>';
 }
 
+/* ================= remote settings (edited from the hidden admin console) ================= */
+// Defaults are read from the constants above BEFORE any remote setting is applied, so "restore defaults" always works.
+let APP = {};
+const FEAT_KEYS = ["map", "trade", "market", "badges"];
+const gp = (o, p, d) => { const v = String(p).split(".").reduce((a, k) => a == null ? undefined : a[k], o); return v == null ? d : v; };
+const DEF = {
+  economy:{ sellRate:SELL_RATE, welcome:WELCOME_COINS, dailyBase:DAILY_BONUS.base, dailyStep:DAILY_BONUS.step, dailyMax:DAILY_BONUS.max, priceBase:PRICE.base, priceK:PRICE.k, priceMin:PRICE.min, priceStep:PRICE.step },
+  packs:{ size:PACK_SIZE, daily:DAILY_PACKS, weekly:true },
+  rarity:RARITIES.map(r => ({ key:r.key, name:r.name, max:r.max, odds:r.odds, pts:r.pts })),
+  map:{ claimM:MAP_CFG.CLAIM_M, autoM:MAP_CFG.AUTO_M, spawnP:MAP_CFG.SPAWN_P, regionKm:MAP_CFG.REGION_M / 1000, hours:MAP_CFG.HOUR / 36e5, odds:{ ...MAP_ODDS } },
+  flags:{ map:true, trade:true, market:true, badges:true },
+  announcement:{ on:false, text:"", kind:"info", link:"", linkText:"", id:0 },
+  maintenance:{ on:false, text:"Streamdex is getting a quick update. Back in a few minutes." },
+  brand:{ youtube:"", credit:"Pigeon Trail Co" },
+  overrides:{}
+};
+const cloneJ = o => JSON.parse(JSON.stringify(o));
+function deepMerge(a, b){
+  if(Array.isArray(b)) return cloneJ(b);
+  if(b && typeof b === "object" && a && typeof a === "object" && !Array.isArray(a)){ const o = { ...a }; Object.keys(b).forEach(k => { o[k] = k in a ? deepMerge(a[k], b[k]) : cloneJ(b[k]); }); return o; }
+  return b === undefined ? a : b;
+}
+// every rule the settings must follow. The admin console shows these messages; the app uses them to ignore a broken section.
+function cfgErrors(c){
+  const e = [];
+  const num = (p, lo, hi, name) => { const v = gp(c, p); if(typeof v !== "number" || !isFinite(v) || v < lo || v > hi) e.push(`${name} must be a number between ${lo} and ${hi}.`); };
+  num("economy.sellRate", 0, 1, "Sell-back rate"); num("economy.welcome", 0, 100000, "Welcome coins");
+  num("economy.dailyBase", 0, 100000, "Daily bonus start"); num("economy.dailyStep", 0, 10000, "Daily bonus growth"); num("economy.dailyMax", 0, 100000, "Daily bonus cap");
+  num("economy.priceBase", 1, 100000, "Base price"); num("economy.priceK", 0, 0.2, "Price steepness"); num("economy.priceMin", 1, 100000, "Lowest price"); num("economy.priceStep", 1, 1000, "Round prices to");
+  num("packs.size", 1, 10, "Cards per Your Listens pack"); num("packs.daily", 1, 20, "Daily packs");
+  num("map.claimM", 10, 500, "Claim distance"); num("map.autoM", 1, 50, "Auto-claim distance"); num("map.spawnP", 0.05, 1, "Spawn chance");
+  num("map.regionKm", 1, 1000, "Spawn region"); num("map.hours", 0.25, 168, "Card lifetime");
+  if(gp(c, "economy.dailyMax", 0) < gp(c, "economy.dailyBase", 0)) e.push("The daily bonus cap can't be lower than its start.");
+  const r = c.rarity;
+  if(!Array.isArray(r) || r.length !== 6) e.push("Rarity needs exactly 6 tiers.");
+  else {
+    let prev = 0, tot = 0;
+    r.forEach((t, i) => {
+      const nm = String(t.name || "").trim() || "Tier " + (i + 1);
+      if(!String(t.name || "").trim()) e.push(`Tier ${i + 1} needs a name.`);
+      if(!(typeof t.max === "number" && t.max > prev)) e.push(`${nm}: the upper limit must be higher than the tier before it.`);
+      if(!(typeof t.odds === "number" && t.odds >= 0)) e.push(`${nm}: pack odds can't be negative.`);
+      if(!(typeof t.pts === "number" && t.pts >= 0)) e.push(`${nm}: power points can't be negative.`);
+      prev = t.max; tot += +t.odds || 0;
+    });
+    if(r[5] && r[5].max < 101) e.push("The last rarity tier must reach 101 so every song fits in a tier.");
+    if(tot <= 0) e.push("Pack odds can't all be zero.");
+  }
+  const mo = gp(c, "map.odds", {}); let ms = 0; Object.keys(DEF.map.odds).forEach(k => { const v = mo[k]; if(typeof v !== "number" || v < 0) e.push(`Map odds for ${k} must be zero or more.`); ms += +v || 0; });
+  if(ms <= 0) e.push("Map odds can't all be zero.");
+  const url = u => !u || /^https?:\/\/\S+$/i.test(u);
+  if(!url(gp(c, "brand.youtube", ""))) e.push("The YouTube link must start with http:// or https://.");
+  if(!url(gp(c, "announcement.link", ""))) e.push("The announcement link must start with http:// or https://.");
+  return e;
+}
+// keeps every section that passes the rules and falls back to defaults for any that doesn't
+function saneCfg(raw){
+  let cur = cloneJ(DEF); raw = raw || {};
+  ["economy", "packs", "rarity", "map", "flags", "announcement", "maintenance", "brand", "overrides"].forEach(k => {
+    if(raw[k] === undefined) return;
+    const trial = { ...cur, [k]: deepMerge(cur[k], raw[k]) };
+    if(!cfgErrors(trial).length) cur = trial;
+  });
+  if(raw.overrides && typeof raw.overrides === "object") cur.overrides = cloneJ(raw.overrides);
+  cur.rev = +raw.rev || 0; cur.updatedAt = +raw.updatedAt || 0;
+  return cur;
+}
+
+/* song rarity overrides: an admin can force any song into any tier. The original rating is kept so it can be restored. */
+const ovKey = (a, n) => (String(a || "") + "|" + String(n || "")).toLowerCase();
+function ovMid(key){
+  const i = RARITIES.findIndex(r => r.key === key); if(i < 0) return null;
+  const lo = i ? RARITIES[i - 1].max : 0, hi = Math.min(100, RARITIES[i].max);
+  return Math.max(0, Math.min(100, Math.floor((lo + hi) / 2)));
+}
+function applyOv(c){
+  if(!c || c.niche === undefined) return false;
+  const o = APP.overrides || {}, hit = o[ovKey(c.artist, c.name)] || (c.raw ? o[String(c.raw).toLowerCase()] : null);
+  if(hit){ const n = ovMid(hit.r); if(n === null) return false; if(c.nicheBase === undefined) c.nicheBase = c.niche; if(c.niche !== n){ c.niche = n; return true; } return false; }
+  if(c.nicheBase !== undefined){ c.niche = c.nicheBase; delete c.nicheBase; return true; }
+  return false;
+}
+function applyOvAll(){
+  CARDS.forEach(applyOv);
+  if(USER !== "demo"){ const ex = extrasList(); let ch = false; ex.forEach(c => { if(applyOv(c)) ch = true; }); if(ch) ls.set("extras", ex); }
+}
+
+function paintAnn(){
+  const a = APP.announcement, el = $("#annBar"); if(!el) return;
+  if(!a || !a.on || !String(a.text || "").trim() || ls.get("annx", 0) === a.id){ el.classList.add("hidden"); return; }
+  el.className = "ann " + (["info", "warn", "good"].includes(a.kind) ? a.kind : "info");
+  el.innerHTML = `<span class="at">${esc(a.text)}</span>` + (a.link && /^https?:\/\//i.test(a.link) ? `<a class="alink" href="${esc(a.link)}" target="_blank" rel="noopener">${esc(a.linkText || "Learn more")}</a>` : "") + `<button class="ax" data-act="ann-x" aria-label="Dismiss announcement">&times;</button>`;
+}
+function paintMaint(){
+  const m = APP.maintenance, el = $("#maint"); if(!el) return;
+  const on = !!(m && m.on); el.classList.toggle("hidden", !on);
+  if(on) $("#maintTxt").textContent = m.text || DEF.maintenance.text;
+}
+function paintBrand(){
+  const b = APP.brand || DEF.brand, cr = $("#brandCredit"), yt = $("#brandYt");
+  if(cr){ cr.textContent = b.credit ? "By " + b.credit : ""; cr.classList.toggle("hidden", !b.credit); }
+  if(yt){ const ok = /^https?:\/\//i.test(b.youtube || ""); yt.classList.toggle("hidden", !ok); if(ok) yt.href = b.youtube; }
+}
+function paintFaq(){
+  const el = $("#faqPacks"); if(!el) return;
+  const d = DAILY_PACKS;
+  el.textContent = `Each day you get ${d} pack${d === 1 ? "" : "s"}. The first is Your Listens, with ${PACK_SIZE} card${PACK_SIZE === 1 ? "" : "s"} drawn from your own top songs.`
+    + (d > 1 ? ` The other ${d - 1} ${d === 2 ? "is a Discovery pack" : "are Discovery packs"}: real songs from across Last.fm, picked to match the genres and kind of music you play most.` : "")
+    + " Packs refresh at midnight." + (FEAT.weekly ? " Once a week (Monday) you also get a Weekly Special with ten random real songs, from Uncommon up to Mythic." : "");
+}
+function featOn(k){ return FEAT[k] !== false; }
+function gate(k){ if(featOn(k)) return true; toast("That part of Streamdex is switched off for now."); return false; }
+const mapMiles = () => Math.round(MAP_CFG.REGION_M / 1609.34);
+const mapEvery = () => { const h = MAP_CFG.HOUR / 36e5; return h === 1 ? "hour" : h < 1 ? Math.round(h * 60) + " minutes" : h % 24 === 0 ? (h === 24 ? "day" : h / 24 + " days") : (Math.round(h * 10) / 10) + " hours"; };
+
+function afterConfig(){
+  try{ renderLedger(); }catch{}
+  paintBrand(); paintAnn(); paintMaint(); paintFaq();
+  try{
+    applyOvAll(); renderTabs();
+    const dead = { map:"map", trade:"trade", market:"market", badges:"badges" }, gone = Object.keys(dead).some(k => VIEW === dead[k] && !FEAT[k]);
+    if(CARDS.length){ if(gone) showApp(); else refreshViews(); updatePacks(); }
+  }catch{}
+}
+function applyApp(raw){
+  APP = saneCfg(raw); const c = APP;
+  SELL_RATE = c.economy.sellRate; WELCOME_COINS = Math.round(c.economy.welcome);
+  DAILY_BONUS.base = c.economy.dailyBase; DAILY_BONUS.step = c.economy.dailyStep; DAILY_BONUS.max = c.economy.dailyMax;
+  PRICE.base = c.economy.priceBase; PRICE.k = c.economy.priceK; PRICE.min = c.economy.priceMin; PRICE.step = c.economy.priceStep;
+  PACK_SIZE = Math.round(c.packs.size); DAILY_PACKS = Math.round(c.packs.daily); FEAT.weekly = c.packs.weekly !== false;
+  c.rarity.forEach((t, i) => { const r = RARITIES[i]; r.name = String(t.name).trim().slice(0, 24); r.max = t.max; r.odds = t.odds; r.pts = t.pts; });
+  MAP_CFG.CLAIM_M = c.map.claimM; MAP_CFG.AUTO_M = c.map.autoM; MAP_CFG.SPAWN_P = c.map.spawnP; MAP_CFG.REGION_M = c.map.regionKm * 1000; MAP_CFG.HOUR = Math.round(c.map.hours * 36e5);
+  const mt = Object.keys(DEF.map.odds).reduce((s, k) => s + (+c.map.odds[k] || 0), 0) || 1;
+  Object.keys(DEF.map.odds).forEach(k => { MAP_ODDS[k] = (+c.map.odds[k] || 0) / mt * 100; });
+  FEAT_KEYS.forEach(k => { FEAT[k] = c.flags[k] !== false; });
+  afterConfig();
+}
+async function refreshAppConfig(){
+  if(!DB) return;
+  try{ const s = await DB.collection("config").doc("app").get(), raw = s.exists ? s.data() : {}; ls.set("appcfg", raw); applyApp(raw); }catch{}
+}
+function bootAppConfig(){
+  const cached = ls.get("appcfg", null); if(cached) applyApp(cached); else afterConfig();
+  refreshAppConfig();
+  setInterval(() => { if(document.visibilityState === "visible") refreshAppConfig(); }, 10 * 60 * 1000);
+  document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && Date.now() - (APP._t || 0) > 5 * 60 * 1000){ APP._t = Date.now(); refreshAppConfig(); } });
+}
+
 /* ================= boot ================= */
 FX.init(); paintSound(); renderFan(); renderLedger();
 $("#lfm").value = ls.get("lfm", "");
@@ -2656,6 +2819,399 @@ const saved = ls.get("cards", null);
 if(saved && saved.length){ CARDS = saved; USER = ls.get("userid", "me"); UNAME = ls.get("uname", ""); showApp(); }
 renderTabs();
 initCloud();
+bootAppConfig();
 </script>
+<!-- ===== hidden admin console (Ctrl+Shift+Alt+7) ===== -->
+<style>
+.adm{position:fixed;inset:0;z-index:3000;background:radial-gradient(70% 50% at 20% 0%,rgba(34,48,216,.45),transparent 70%),radial-gradient(50% 40% at 100% 100%,rgba(255,91,31,.12),transparent 70%),#07091f;color:var(--paper);display:flex;flex-direction:column;overflow:hidden;font-size:15px}
+.adm.hidden{display:none!important}
+.adm *{scrollbar-width:thin;scrollbar-color:rgba(244,240,232,.25) transparent}
+.adm h1,.adm h2,.adm h3{letter-spacing:-.02em;line-height:1.15}
+.adm-login{margin:auto;width:min(420px,calc(100% - 32px));display:grid;gap:18px;padding:34px 30px;background:var(--ink2);border:1px solid var(--line);border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.adm-mark{width:46px;height:46px;border-radius:14px;background:var(--holo);display:grid;place-items:center;color:var(--ink);font-weight:900;font-size:22px}
+.adm-login h1{font-size:28px;font-weight:850}
+.adm-login p{color:var(--muted);font-size:15px}
+.adm .f{display:grid;gap:6px;font-weight:650;font-size:14px}
+.adm .f small{font-weight:450;color:var(--dim);font-size:13px;line-height:1.4}
+.adm .fi{display:flex;align-items:center;background:rgba(0,0,0,.28);border:1.5px solid var(--line);border-radius:12px;transition:border-color .15s,box-shadow .15s}
+.adm .fi:focus-within{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(255,225,74,.18)}
+.adm input[type=text],.adm input[type=number],.adm input[type=email],.adm input[type=password],.adm input[type=search],.adm select,.adm textarea{font:inherit;color:var(--paper);background:transparent;border:0;outline:0;padding:11px 13px;width:100%;min-width:0}
+.adm textarea{resize:vertical;min-height:84px;background:rgba(0,0,0,.28);border:1.5px solid var(--line);border-radius:12px}
+.adm textarea:focus{border-color:var(--yellow)}
+.adm select{background:rgba(0,0,0,.28);border:1.5px solid var(--line);border-radius:12px;appearance:none;padding-right:30px;cursor:pointer}
+.adm select option{background:var(--ink2)}
+.adm .fi i{font-style:normal;color:var(--dim);padding-right:13px;font-size:13px;white-space:nowrap}
+.adm .err{color:#ffb3a3;font-size:14px;min-height:1.3em}
+.adm-top{display:flex;align-items:center;gap:14px;padding:12px clamp(14px,3vw,28px);border-bottom:1px solid var(--line);background:rgba(7,9,31,.8);backdrop-filter:blur(10px)}
+.adm-top .adm-mark{width:34px;height:34px;border-radius:10px;font-size:17px}
+.adm-top b{font-weight:850;font-size:17px}.adm-fill{flex:1}
+.adm-who{color:var(--dim);font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-main{flex:1;display:grid;grid-template-columns:230px 1fr;min-height:0}
+.adm-nav{padding:16px 12px;border-right:1px solid var(--line);display:grid;gap:4px;align-content:start;overflow:auto}
+.adm-nav button{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;text-align:left;color:var(--muted);font-weight:650;transition:background .15s,color .15s}
+.adm-nav button svg{width:19px;height:19px;flex:none;opacity:.85}
+.adm-nav button:hover{background:rgba(255,255,255,.06);color:var(--paper)}
+.adm-nav button.on{background:var(--paper);color:var(--ink)}
+.adm-nav .dot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--orange)}
+.adm-body{overflow:auto;padding:clamp(16px,3vw,34px);padding-bottom:140px}
+.adm-sec{max-width:880px;margin:0 auto;display:grid;gap:18px}
+.adm-sec>header h2{font-size:clamp(26px,4vw,34px);font-weight:850}
+.adm-sec>header p{color:var(--muted);margin-top:6px;max-width:60ch}
+.adm-card{background:var(--ink2);border:1px solid var(--line);border-radius:18px;padding:20px;display:grid;gap:16px}
+.adm-card h3{font-size:17px;font-weight:800}
+.adm-card>p.sub{color:var(--muted);margin-top:-8px;font-size:14px}
+.adm-grid{align-items:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.adm-sw{position:relative;display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
+.adm-sw:first-of-type{border-top:0}
+.adm-sw .t{flex:1}.adm-sw .t b{display:block;font-weight:750}.adm-sw .t small{color:var(--dim);font-size:13px}
+.adm-sw input{position:absolute;opacity:0;pointer-events:none}
+.adm-sw .tg{width:46px;height:26px;border-radius:99px;background:rgba(255,255,255,.16);position:relative;transition:background .18s;flex:none}
+.adm-sw .tg::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .18s}
+.adm-sw input:checked+.tg{background:#1fbf84}.adm-sw input:checked+.tg::after{transform:translateX(20px)}
+.adm-sw input:focus-visible+.tg{outline:3px solid var(--yellow);outline-offset:2px}
+.adm-tbl{width:100%;border-collapse:collapse;font-size:14px}
+.adm-tbl th{text-align:left;color:var(--dim);font-weight:650;font-size:13px;padding:6px 8px}
+.adm-tbl td{padding:6px 8px;vertical-align:middle}
+.adm-tbl tr+tr td{border-top:1px solid rgba(244,240,232,.08)}
+.adm-tbl .fi{min-width:88px}
+.adm-scroll{overflow-x:auto;margin:0 -6px;padding:0 6px}
+.tier{display:inline-flex;align-items:center;gap:8px;font-weight:750;white-space:nowrap}
+.tier i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.adm-pv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.adm-pv div{background:rgba(0,0,0,.25);border-radius:12px;padding:10px 12px;display:grid;gap:2px}
+.adm-pv small{color:var(--dim);font-size:12.5px}.adm-pv b{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.adm-chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.08);font-size:13.5px;font-weight:650}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--dim)}.chip.ok::before{background:#1fbf84}.chip.warn::before{background:var(--orange)}
+.adm-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.adm-ov{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid rgba(244,240,232,.1)}
+.adm-ov:first-child{border-top:0}
+.adm-ov b{display:block;font-weight:750;overflow:hidden;text-overflow:ellipsis}.adm-ov small{color:var(--dim)}
+.adm-ov select{width:auto;min-width:130px}
+.adm-empty{color:var(--dim);padding:14px 0;text-align:center}
+.adm-note{padding:12px 14px;border-radius:12px;background:rgba(255,225,74,.1);border:1px solid rgba(255,225,74,.3);font-size:14px;color:#fff2b0}
+.adm pre{background:#03041a;border:1px solid var(--line);border-radius:12px;padding:14px;overflow:auto;font-size:12.5px;line-height:1.55;color:#cfd3ff;white-space:pre}
+.adm ol{padding-left:20px;display:grid;gap:8px;color:var(--muted)}.adm ol b{color:var(--paper)}
+.adm-bar{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;padding:14px;pointer-events:none;transform:translateY(130%);transition:transform .25s}
+.adm-bar.on{transform:none}
+.adm-bar>div{pointer-events:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;color:var(--ink);padding:10px 12px 10px 18px;border-radius:99px;box-shadow:0 14px 50px rgba(0,0,0,.55);max-width:min(760px,100%)}
+.adm-bar .m{flex:1;font-weight:750;min-width:150px}.adm-bar .m small{display:block;font-weight:500;color:#a02a10;font-size:12.5px;line-height:1.3}
+.adm-bar .btn.ghost{color:var(--ink);border-color:rgba(11,13,42,.25)}
+.adm-bar .btn.ghost:hover{background:rgba(11,13,42,.07)}
+.adm-bar .btn.go{background:var(--blue);color:#fff}
+@media (max-width:760px){
+  .adm-main{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .adm-nav{display:flex;border-right:0;border-bottom:1px solid var(--line);padding:8px 10px;overflow-x:auto;gap:6px}
+  .adm-nav button{white-space:nowrap;padding:8px 12px}.adm-nav button svg{display:none}
+  .adm-who{display:none}
+  .adm-ov{grid-template-columns:1fr auto}.adm-ov select{grid-column:1}
+  .adm-bar>div{border-radius:22px}
+}
+@media (prefers-reduced-motion:reduce){.adm *{transition:none!important}}
+</style>
+
+<div id="adm" class="adm hidden" role="dialog" aria-modal="true" aria-label="Streamdex admin"></div>
+
+<script>
+/* ================= admin console ================= */
+(() => {
+const A = { app:null, auth:null, db:null, user:null, pub:null, draft:null, sec:"overview", q:"", res:[], busy:false, searching:false, idle:null, cfgOk:null };
+const root = () => document.getElementById("adm");
+const SECS = [
+  ["overview", "Overview", '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
+  ["economy", "Coins & prices", '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5c0-1 1.3-1.7 3-1.7s3 .7 3 1.7-1.3 1.6-3 1.9-3 .9-3 2 1.3 1.8 3 1.8 3-.8 3-1.8"/>'],
+  ["packs", "Packs", '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6"/>'],
+  ["rarity", "Rarity tiers", '<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>'],
+  ["songs", "Song rarity", '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'],
+  ["map", "Map", '<path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>'],
+  ["features", "Features", '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'],
+  ["site", "Banner & brand", '<path d="M4 5h16v10H9l-5 4z"/>'],
+  ["data", "Backup & reset", '<path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/>'],
+  ["setup", "Setup help", '<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/>']
+];
+const CK = o => JSON.parse(JSON.stringify(o));
+const strip = c => { const o = CK(c); delete o.rev; delete o.updatedAt; delete o.updatedBy; return JSON.stringify(o); };
+const isDirty = () => !!A.draft && strip(A.draft) !== strip(A.pub);
+const sp = (o, path, v) => { const ks = path.split("."); let t = o; ks.slice(0, -1).forEach(k => t = t[k]); t[ks[ks.length - 1]] = v; };
+const tierColor = k => (RARITIES.find(r => r.key === k) || RARITIES[0]).c1;
+const money = n => Math.round(n).toLocaleString();
+const SIGS = { overview:"", economy:"economy", packs:"packs", rarity:"rarity", map:"map", features:"flags", site:"" };
+
+/* ---------- open / close ---------- */
+function openAdmin(){
+  const el = root(); if(!el) return;
+  el.classList.remove("hidden"); document.body.classList.add("noscroll");
+  if(!window.firebase || !CONFIG.FIREBASE || !CONFIG.FIREBASE.apiKey){ el.innerHTML = loginHTML("Firebase isn't set up on this site, so the console can't sign in."); bindLogin(); return; }
+  if(!A.app){
+    try{
+      A.app = firebase.apps.find(a => a.name === "admin") || firebase.initializeApp(CONFIG.FIREBASE, "admin");
+      A.auth = A.app.auth(); A.db = A.app.firestore();
+      try{ A.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION); }catch{}
+    }catch(e){ el.innerHTML = loginHTML("The console couldn't start. Reload the page and try again."); bindLogin(); return; }
+  }
+  if(A.user && A.draft) renderDash(); else { el.innerHTML = loginHTML(""); bindLogin(); }
+}
+function closeAdmin(force){
+  if(!force && A.user && isDirty() && !confirm("You have unpublished changes. Close the console and discard them?")) return;
+  clearTimeout(A.idle); A.draft = A.pub ? CK(A.pub) : null;
+  root().classList.add("hidden"); document.body.classList.remove("noscroll");
+  if(location.hash === "#admin") history.replaceState(null, "", location.pathname + location.search);
+}
+function bump(){ clearTimeout(A.idle); if(A.user) A.idle = setTimeout(() => lock("You were signed out after 20 minutes of no activity."), 20 * 60 * 1000); }
+async function lock(msg){ try{ await A.auth.signOut(); }catch{} A.user = A.draft = A.pub = null; clearTimeout(A.idle); root().innerHTML = loginHTML(msg || ""); bindLogin(); }
+
+/* ---------- login ---------- */
+function loginHTML(msg){
+  let em = ""; try{ em = localStorage.getItem("admEmail") || ""; }catch{}
+  return `<form class="adm-login" id="admForm" autocomplete="on">
+    <div class="adm-mark" aria-hidden="true">S</div>
+    <div><h1>Streamdex admin</h1><p>Sign in with your admin account to change how the app works.</p></div>
+    <label class="f"><span>Admin email</span><span class="fi"><input id="admEmail" type="email" name="email" autocomplete="username" required value="${esc(em)}"></span></label>
+    <label class="f"><span>Admin password</span><span class="fi"><input id="admPw" type="password" name="password" autocomplete="current-password" required></span></label>
+    <div class="err" id="admErr" role="alert">${esc(msg)}</div>
+    <button class="btn lg" id="admGo" type="submit">Sign in</button>
+    <button class="link muted" type="button" id="admX" style="justify-self:center;font-size:14px">Back to Streamdex</button>
+  </form>`;
+}
+function bindLogin(){
+  const f = $("#admForm"); if(!f) return;
+  $("#admX").onclick = () => closeAdmin(true);
+  setTimeout(() => ($("#admEmail").value ? $("#admPw") : $("#admEmail")).focus(), 30);
+  f.onsubmit = async e => {
+    e.preventDefault(); const em = $("#admEmail").value.trim(), pw = $("#admPw").value, err = $("#admErr"), go = $("#admGo");
+    err.textContent = ""; go.disabled = true; go.textContent = "Signing in…";
+    try{
+      const cr = await A.auth.signInWithEmailAndPassword(em, pw);
+      let isAdm = false;
+      try{ isAdm = (await A.db.collection("admins").doc(cr.user.uid).get()).exists; }
+      catch(e2){ await A.auth.signOut(); throw { code:e2 && e2.code === "permission-denied" ? "adm/rules" : "adm/read" }; }
+      if(!isAdm){ await A.auth.signOut(); throw { code:"adm/not" }; }
+      try{ localStorage.setItem("admEmail", em); }catch{}
+      A.user = cr.user; await loadCfg(); renderDash(); bump();
+    }catch(e2){
+      const c = e2 && e2.code || "";
+      err.textContent = /invalid-credential|wrong-password|user-not-found|invalid-email/.test(c) ? "That email or password isn't right."
+        : c === "auth/too-many-requests" ? "Too many attempts. Wait a few minutes, then try again."
+        : c === "auth/operation-not-allowed" ? "Email and password sign-in is switched off in Firebase. Open Setup help in this console after you sign in, or follow step 1 of the setup steps."
+        : c === "auth/network-request-failed" ? "Can't reach the server. Check your connection."
+        : c === "adm/not" ? "This account isn't an admin. Add its user ID to the admins collection in Firestore."
+        : c === "adm/rules" ? "Firestore blocked the admin check. Publish the admin rules from the setup steps."
+        : "Couldn't sign in. Try again.";
+      go.disabled = false; go.textContent = "Sign in"; $("#admPw").value = ""; $("#admPw").focus();
+    }
+  };
+}
+async function loadCfg(){
+  let raw = {}, ok = false;
+  try{ const s = await A.db.collection("config").doc("app").get(); ok = s.exists; raw = s.exists ? s.data() : {}; }catch{ ok = null; }
+  A.cfgOk = ok; A.pub = saneCfg(raw); A.draft = CK(A.pub);
+}
+
+/* ---------- dashboard shell ---------- */
+function renderDash(){
+  const el = root(), dirty = isDirty();
+  el.innerHTML = `<div class="adm-top"><div class="adm-mark" aria-hidden="true">S</div><b>Admin</b><span class="adm-fill"></span><span class="adm-who">${esc(A.user.email || "")}</span>
+      <button class="btn ghost sm" data-a="exit">Exit</button><button class="btn ghost sm" data-a="out">Sign out</button></div>
+    <div class="adm-main"><nav class="adm-nav" id="admNav" aria-label="Admin sections"></nav><main class="adm-body" id="admBody" tabindex="-1"></main></div>
+    <div class="adm-bar" id="admBar"><div><div class="m" id="admBarM"></div><button class="btn ghost sm" data-a="discard">Discard</button><button class="btn go sm" data-a="publish" id="admPub">Publish changes</button></div></div>`;
+  paintNav(); paintSec(); paintLive();
+}
+function paintNav(){
+  $("#admNav").innerHTML = SECS.map(([k, n, ic]) => `<button data-sec="${k}" class="${A.sec === k ? "on" : ""}" ${A.sec === k ? 'aria-current="page"' : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ic}</svg>${n}${secDirty(k) ? '<span class="dot" title="Unpublished changes"></span>' : ""}</button>`).join("");
+}
+function secDirty(k){
+  if(!A.draft || !A.pub) return false;
+  const g = o => JSON.stringify(k === "songs" ? o.overrides : k === "site" ? [o.announcement, o.maintenance, o.brand] : o[SIGS[k]] ?? null);
+  if(k === "overview" || k === "data" || k === "setup") return false;
+  return g(A.draft) !== g(A.pub);
+}
+const tg = (path, title, sub) => `<label class="adm-sw"><span class="t"><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</span><input type="checkbox" data-p="${path}" data-t="b" ${gp(A.draft, path) ? "checked" : ""}><span class="tg"></span></label>`;
+const fld = (path, label, o = {}) => { const t = o.t || "n", v = gp(A.draft, path, "");
+  return `<label class="f"><span>${label}</span><span class="fi"><input data-p="${path}" data-t="${t}" ${t === "n" ? `type="number" step="${o.step || 1}" inputmode="decimal"` : 'type="text"'} ${o.ph ? `placeholder="${esc(o.ph)}"` : ""} value="${esc(v)}">${o.unit ? `<i>${o.unit}</i>` : ""}</span>${o.hint ? `<small>${o.hint}</small>` : ""}</label>`; };
+const card = (h, sub, inner) => `<section class="adm-card"><h3>${h}</h3>${sub ? `<p class="sub">${sub}</p>` : ""}${inner}</section>`;
+const head = (h, p) => `<header><h2>${h}</h2><p>${p}</p></header>`;
+const tierMid = i => { const t = A.draft.rarity; return Math.min(100, Math.floor(((i ? t[i - 1].max : 0) + Math.min(100, t[i].max)) / 2)); };
+const priceAt = (n, e = A.draft.economy) => Math.max(e.priceMin, Math.round(e.priceBase * Math.exp(e.priceK * (100 - n)) / e.priceStep) * e.priceStep);
+
+const SEC = {
+overview(){
+  const p = A.pub, on = [];
+  const ch = (t, ok) => `<span class="chip ${ok ? "ok" : "warn"}">${t}</span>`;
+  return head("Overview", "Everything here changes the live game for every player. Edit a section, then publish. Players get the update the next time they open Streamdex.")
+  + card("Status", "", `<div class="adm-chips">
+      ${ch(A.cfgOk === null ? "Couldn't read settings" : A.cfgOk ? "Settings published (version " + (p.rev || 0) + ")" : "Using built-in defaults", A.cfgOk)}
+      ${ch(p.maintenance.on ? "Maintenance screen is ON" : "Site is open", !p.maintenance.on)}
+      ${ch(p.announcement.on ? "Banner is showing" : "No banner", true)}
+      ${ch(Object.keys(p.flags).filter(k => !p.flags[k]).length ? "Switched off: " + Object.keys(p.flags).filter(k => !p.flags[k]).join(", ") : "All features on", !Object.keys(p.flags).some(k => !p.flags[k]))}
+      ${ch(Object.keys(p.overrides).length + " song rarity override" + (Object.keys(p.overrides).length === 1 ? "" : "s"), true)}</div>
+      ${p.updatedAt ? `<p class="muted" style="font-size:14px">Last published ${new Date(p.updatedAt).toLocaleString()}${p.updatedBy ? " by " + esc(p.updatedBy) : ""}.</p>` : ""}`)
+  + card("Quick actions", "", `<div class="adm-row"><button class="btn sm" data-sec="songs">Change a song's rarity</button><button class="btn ghost sm" data-sec="economy">Edit prices</button><button class="btn ghost sm" data-sec="site">Post an announcement</button><button class="btn ghost sm" data-sec="features">Switch features</button></div>`)
+  + card("Good to know", "", `<ol><li><b>Nothing is live until you publish.</b> Use Discard to go back to what players see now.</li><li><b>Coins and cards are saved on each player's device and account</b>, so this console changes rules, not individual balances.</li><li>Changing map spawn chance, distance or lifetime moves where cards appear on the map for everyone.</li></ol>`);
+},
+economy(){
+  return head("Coins & prices", "How much songs cost, what players earn and what selling pays.")
+  + card("Starting coins and daily bonus", "", `<div class="adm-grid">${fld("economy.welcome", "Welcome gift", { unit:"coins", hint:"Given once when a player makes an account." })}${fld("economy.dailyBase", "Daily bonus, day 1", { unit:"coins" })}${fld("economy.dailyStep", "Growth per streak day", { unit:"coins" })}${fld("economy.dailyMax", "Daily bonus cap", { unit:"coins" })}</div><div class="adm-pv" data-pv="bonus"></div>`)
+  + card("Song prices", "Price rises as songs get rarer: price = base × e^(steepness × (100 − niche score)).", `<div class="adm-grid">${fld("economy.priceBase", "Base price", { unit:"coins", hint:"Price of the most popular song." })}${fld("economy.priceK", "Steepness", { step:"0.001", hint:"Higher makes rare songs much pricier." })}${fld("economy.priceMin", "Lowest price", { unit:"coins" })}${fld("economy.priceStep", "Round to nearest", { unit:"coins" })}${fld("economy.sellRate", "Sell-back rate", { step:"0.05", hint:"0.25 means a card sells for a quarter of its price." })}</div><div class="adm-pv" data-pv="prices"></div>`);
+},
+packs(){
+  return head("Packs", "How many packs players open each day and how big they are.")
+  + card("Daily packs", "", `<div class="adm-grid">${fld("packs.daily", "Packs per day", { hint:"The first is Your Listens, the rest are Discovery." })}${fld("packs.size", "Cards in a Your Listens pack", { hint:"Discovery packs follow the same size." })}</div>${tg("packs.weekly", "Weekly Special pack", "Ten real songs, Uncommon to Mythic, every Monday.")}`)
+  + card("Chance of each rarity", "Odds apply to Discovery and the odds list shown on the landing page. They don't need to add up to 100.", `<div class="adm-scroll"><table class="adm-tbl"><tr><th>Tier</th><th>Chance</th></tr>${A.draft.rarity.map((t, i) => `<tr><td><span class="tier"><i style="background:${RARITIES[i].c1}"></i>${esc(t.name)}</span></td><td><span class="fi"><input type="number" step="0.5" data-p="rarity.${i}.odds" data-t="n" value="${t.odds}"><i>%</i></span></td></tr>`).join("")}</table></div><div class="adm-row"><span class="muted" data-pv="oddsum"></span><button class="btn ghost sm" data-a="norm-odds">Scale to 100%</button></div>`);
+},
+rarity(){
+  return head("Rarity tiers", "Rename tiers and choose where each one starts. A song's niche score runs from 0 (everyone knows it) to 100 (almost nobody does).")
+  + card("Tiers, rarest first", "Each tier covers scores from the previous tier's limit up to its own. The last tier must reach 101.", `<div class="adm-scroll"><table class="adm-tbl"><tr><th>Tier</th><th>Name</th><th>Score below</th><th>Power points</th></tr>${A.draft.rarity.map((t, i) => `<tr><td><span class="tier"><i style="background:${RARITIES[i].c1}"></i>${i + 1}</span></td><td><span class="fi"><input type="text" maxlength="24" data-p="rarity.${i}.name" data-t="s" value="${esc(t.name)}"></span></td><td><span class="fi"><input type="number" data-p="rarity.${i}.max" data-t="n" value="${t.max}"></span></td><td><span class="fi"><input type="number" data-p="rarity.${i}.pts" data-t="n" value="${t.pts}"></span></td></tr>`).join("")}</table></div><div class="adm-pv" data-pv="tiers"></div>`)
+  + card("Need one special song?", "", `<p class="muted">To make a single song Mythic as an easter egg, or knock one down a tier, use <button class="link" data-sec="songs">Song rarity</button>.</p>`);
+},
+songs(){
+  const ov = A.draft.overrides, keys = Object.keys(ov);
+  const opts = sel => A.draft.rarity.map((t, i) => `<option value="${RARITIES[i].key}" ${sel === RARITIES[i].key ? "selected" : ""}>${esc(t.name)}</option>`).join("");
+  return head("Song rarity", "Search any song and force it into a tier. It applies to new packs, the market, the map and cards players already own.")
+  + card("Find a song", "", `<form class="adm-row" id="admSearch" style="flex-wrap:nowrap"><span class="fi" style="flex:1"><input type="search" id="admQ" placeholder="Song or artist" value="${esc(A.q)}"></span><button class="btn sm" type="submit">Search</button></form><div id="admRes">${resHTML()}</div>`)
+  + card(`Overrides (${keys.length})`, "", keys.length ? keys.map(k => `<div class="adm-ov"><div><b>${esc(ov[k].n || k)}</b><small>${esc(ov[k].a || "")}</small></div><select data-ov="${esc(k)}" aria-label="Rarity for ${esc(ov[k].n || k)}">${opts(ov[k].r)}</select><button class="btn ghost sm" data-rm="${esc(k)}">Remove</button></div>`).join("") : '<div class="adm-empty">No overrides yet. Every song uses its natural rarity.</div>');
+},
+map(){
+  const odds = Object.keys(A.draft.map.odds).map(k => { const r = RARITIES.find(x => x.key === k); return fld("map.odds." + k, `${esc(r.name)} chance`, { unit:"%", step:"0.5" }); }).join("");
+  return head("Map", "Where and how often cards appear in the real world.")
+  + card("Spawning", "", `<div class="adm-grid">${fld("map.hours", "Card lifetime", { unit:"hours", step:"0.25", hint:"Cards are replaced after this long." })}${fld("map.spawnP", "Spawn chance per cell", { step:"0.05", hint:"0.5 fills about half the grid." })}${fld("map.regionKm", "Spawn radius", { unit:"km", hint:"Around where each player starts." })}</div>`)
+  + card("Claiming", "", `<div class="adm-grid">${fld("map.claimM", "Claim distance", { unit:"m", hint:"How close to tap-claim a card." })}${fld("map.autoM", "Auto-claim distance", { unit:"m", step:"0.5", hint:"Standing this close claims it for you." })}</div>`)
+  + card("Rarity of map cards", "Scaled automatically if they don't add to 100.", `<div class="adm-grid">${odds}</div>`);
+},
+features(){
+  return head("Features", "Switch parts of the app off while you fix something. Hidden tabs disappear for everyone.")
+  + card("Sections", "", tg("flags.map", "Card Map", "Real-world card hunting.") + tg("flags.trade", "Trading", "Player-to-player swaps.") + tg("flags.market", "Marketplace", "Buying and selling for coins.") + tg("flags.badges", "Badges", "Milestones and achievements.") + tg("packs.weekly", "Weekly Special pack", "The Monday bonus pack."));
+},
+site(){
+  const a = A.draft.announcement, m = A.draft.maintenance;
+  return head("Banner & brand", "Talk to every player, close the site for repairs, and set your credits.")
+  + card("Announcement banner", "Shows across the top of the app until a player dismisses it.", tg("announcement.on", "Show banner") + `<label class="f"><span>Message</span><textarea data-p="announcement.text" data-t="s" maxlength="220" placeholder="Double coins this weekend!">${esc(a.text)}</textarea></label>
+    <div class="adm-grid"><label class="f"><span>Style</span><select data-p="announcement.kind" data-t="s">${[["info", "Blue, news"], ["good", "Green, good news"], ["warn", "Yellow, heads up"]].map(([v, n]) => `<option value="${v}" ${a.kind === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>${fld("announcement.linkText", "Link text", { t:"s", ph:"Learn more" })}${fld("announcement.link", "Link address", { t:"s", ph:"https://" })}</div>
+    <div class="adm-row"><button class="btn ghost sm" data-a="reshow">Show again to players who dismissed it</button></div>`)
+  + card("Maintenance screen", "Covers the whole app with a message. Use it while you make big changes.", tg("maintenance.on", "Turn maintenance on") + `<label class="f"><span>Message</span><textarea data-p="maintenance.text" data-t="s" maxlength="220">${esc(m.text)}</textarea></label>`)
+  + card("Brand", "Shown in the footer.", `<div class="adm-grid">${fld("brand.credit", "Credit", { t:"s", hint:"Shows as “By …”. Leave empty to hide.", ph:"Pigeon Trail Co" })}${fld("brand.youtube", "YouTube link", { t:"s", hint:"Leave empty to hide.", ph:"https://youtube.com/@…" })}</div>`);
+},
+data(){
+  return head("Backup & reset", "Save a copy of your settings, load one back, or start over from the built-in defaults.")
+  + card("Settings file", "", `<div class="adm-row"><button class="btn sm" data-a="export">Download settings</button><button class="btn ghost sm" data-a="import">Load from file</button><input type="file" id="admFile" accept=".json,application/json" hidden></div><p class="muted" style="font-size:14px">Loading a file fills the console with those settings. Nothing goes live until you publish.</p>`)
+  + card("Start over", "", `<p class="muted">Puts every setting back to what the app shipped with, including removing song overrides. Publish afterward to apply it.</p><div class="adm-row"><button class="btn ghost sm" data-a="defaults">Restore defaults</button></div>`);
+},
+setup(){
+  const rules = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ...keep all your existing rules, and ADD these two blocks:
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+  }
+}`;
+  return head("Setup help", "One-time steps in the Firebase console. After this, everything is done from here.")
+  + card("Steps", "", `<ol><li><b>Turn on email sign-in.</b> Firebase console → Build → Authentication → Sign-in method → Email/Password → Enable → Save.</li><li><b>Create your admin account.</b> Authentication → Users → Add user. Pick an email and a long password only you know. Copy the new user's <b>User UID</b>.</li><li><b>Make it an admin.</b> Firestore Database → Start collection → ID <b>admins</b> → Document ID: paste the UID → add one field (any name, such as <b>ok</b>, type boolean, true) → Save.</li><li><b>Publish the rules below.</b> Firestore Database → Rules → add the two blocks inside your existing rules → Publish.</li></ol>`)
+  + card("Rules to add", "The security lives in these rules, not in this page. Without them, no one can publish.", `<pre>${esc(rules)}</pre><div class="adm-row"><button class="btn ghost sm" data-a="copy-rules">Copy rules</button></div>`)
+  + `<div class="adm-note">This page is public, so anyone can find the sign-in. That's fine: only the account you added to <b>admins</b> can change anything, and wrong guesses are rate-limited by Firebase.</div>`;
+}
+};
+function resHTML(){
+  if(A.searching) return '<div class="adm-empty">Searching…</div>';
+  if(!A.res.length) return A.q ? '<div class="adm-empty">No songs found. Try the artist name too.</div>' : "";
+  const opts = i => A.draft.rarity.map((t, j) => `<option value="${RARITIES[j].key}" ${j === i ? "selected" : ""}>${esc(t.name)}</option>`).join("");
+  return `<div style="margin-top:12px">` + A.res.map((r, n) => { const nat = rarityFor(nicheScore(r.listeners)), idx = RARITIES.findIndex(x => x.key === nat.key);
+    return `<div class="adm-ov"><div><b>${esc(r.name)}</b><small>${esc(r.artist)} · ${money(r.listeners)} listeners · naturally ${esc(A.draft.rarity[idx].name)}</small></div><select id="admT${n}" aria-label="Tier">${opts(0)}</select><button class="btn sm" data-add="${n}">Set</button></div>`; }).join("") + `</div>`;
+}
+function paintSec(){ $("#admBody").innerHTML = `<div class="adm-sec">${SEC[A.sec]()}</div>`; paintPv(); }
+function paintPv(){
+  const d = A.draft, q = s => document.querySelector(`[data-pv="${s}"]`);
+  const b = q("bonus"); if(b) b.innerHTML = [1, 2, 3, 5, 10].map(n => `<div><small>Day ${n} streak</small><b>${money(Math.min(d.economy.dailyMax, d.economy.dailyBase + d.economy.dailyStep * (n - 1)))}</b></div>`).join("");
+  const p = q("prices"); if(p) p.innerHTML = d.rarity.map((t, i) => { const pr = priceAt(tierMid(i)); return `<div><small>${esc(t.name)} costs</small><b>${money(pr)}</b><small>sells for ${money(Math.max(1, pr * d.economy.sellRate))}</small></div>`; }).join("");
+  const t = q("tiers"); if(t) t.innerHTML = d.rarity.map((x, i) => `<div><small>${esc(x.name)}</small><b>${i ? d.rarity[i - 1].max : 0}–${Math.min(100, x.max - 1)}</b></div>`).join("");
+  const o = q("oddsum"); if(o) o.textContent = "Total: " + Math.round(d.rarity.reduce((s, x) => s + (+x.odds || 0), 0) * 10) / 10 + "%";
+}
+function paintLive(){
+  const errs = cfgErrors(A.draft), dirty = isDirty(), bar = $("#admBar"); if(!bar) return;
+  bar.classList.toggle("on", dirty);
+  $("#admBarM").innerHTML = errs.length ? `Fix before publishing<small>${esc(errs[0])}${errs.length > 1 ? ` (+${errs.length - 1} more)` : ""}</small>` : "Unpublished changes";
+  $("#admPub").disabled = !!errs.length || A.busy;
+  paintPv(); paintNav();
+}
+
+/* ---------- actions ---------- */
+async function publish(){
+  const errs = cfgErrors(A.draft); if(errs.length || A.busy) return;
+  A.busy = true; const b = $("#admPub"); b.textContent = "Publishing…"; b.disabled = true;
+  try{
+    const out = CK(A.draft); out.rev = (A.pub.rev || 0) + 1; out.updatedAt = Date.now(); out.updatedBy = A.user.email || "";
+    await A.db.collection("config").doc("app").set(out);
+    A.pub = CK(out); A.draft = CK(out); A.cfgOk = true; ls.set("appcfg", out); applyApp(out);
+    toast("Published. Players get it next time they open Streamdex.");
+  }catch(e){ toast(e && e.code === "permission-denied" ? "Firestore refused the save. Check the admin rules in Setup help." : "Couldn't publish. Check your connection and try again."); }
+  A.busy = false; b.textContent = "Publish changes"; paintSec(); paintLive();
+}
+async function search(){
+  const q = $("#admQ").value.trim(); A.q = q; if(!q) return;
+  A.searching = true; $("#admRes").innerHTML = resHTML();
+  try{
+    const r = await fetch(`https://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(q)}&limit=8&api_key=${CONFIG.LASTFM_KEY}&format=json`);
+    const j = await r.json(), t = (j.results && j.results.trackmatches && j.results.trackmatches.track) || [];
+    A.res = t.map(x => ({ name:x.name, artist:x.artist, listeners:+x.listeners || 0 }));
+  }catch{ A.res = []; toast("Search failed. Try again."); }
+  A.searching = false; $("#admRes").innerHTML = resHTML();
+}
+function download(name, text){ const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type:"application/json" })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
+const ACT = {
+  exit(){ closeAdmin(); },
+  out(){ if(isDirty() && !confirm("You have unpublished changes. Sign out and discard them?")) return; lock(""); },
+  publish,
+  discard(){ A.draft = CK(A.pub); paintSec(); paintLive(); toast("Changes discarded."); },
+  "norm-odds"(){ const r = A.draft.rarity, s = r.reduce((x, t) => x + (+t.odds || 0), 0); if(s > 0){ r.forEach(t => t.odds = Math.round(t.odds / s * 1000) / 10); } paintSec(); paintLive(); },
+  reshow(){ A.draft.announcement.id = (A.draft.announcement.id || 0) + 1; paintLive(); toast("Will show again once you publish."); },
+  export(){ download("streamdex-settings.json", JSON.stringify(A.draft, null, 2)); },
+  import(){ $("#admFile").click(); },
+  defaults(){ if(!confirm("Restore every setting to the built-in defaults? You can still discard this before publishing.")) return; const rev = A.pub.rev; A.draft = CK(DEF); A.draft.rev = rev; paintSec(); paintLive(); toast("Defaults loaded. Publish to apply."); },
+  "copy-rules"(){ const t = document.querySelector("#adm pre").textContent; navigator.clipboard.writeText(t).then(() => toast("Rules copied."), () => toast("Select the rules and copy them by hand.")); }
+};
+function onClick(e){
+  const t = e.target.closest("[data-a],[data-sec],[data-rm],[data-add]"); if(!t || !root().contains(t)) return; bump();
+  if(t.dataset.a){ const f = ACT[t.dataset.a]; if(f) f(); }
+  else if(t.dataset.sec){ A.sec = t.dataset.sec; paintNav(); paintSec(); $("#admBody").scrollTop = 0; }
+  else if(t.dataset.rm){ delete A.draft.overrides[t.dataset.rm]; paintSec(); paintLive(); }
+  else if(t.dataset.add !== undefined){
+    const r = A.res[+t.dataset.add], tier = $("#admT" + t.dataset.add).value; if(!r) return;
+    A.draft.overrides[ovKey(r.artist, r.name)] = { r:tier, a:r.artist, n:r.name };
+    A.res = []; A.q = ""; paintSec(); paintLive(); toast(`${r.name} set to ${A.draft.rarity[RARITIES.findIndex(x => x.key === tier)].name}.`);
+  }
+}
+function onInput(e){
+  const el = e.target; bump();
+  if(el.dataset.p){
+    const t = el.dataset.t, v = t === "b" ? el.checked : t === "n" ? (el.value === "" ? NaN : parseFloat(el.value)) : el.value;
+    sp(A.draft, el.dataset.p, v); paintLive();
+  }else if(el.dataset.ov){ A.draft.overrides[el.dataset.ov].r = el.value; paintLive(); }
+}
+function onSubmit(e){ if(e.target.id === "admSearch"){ e.preventDefault(); search(); } }
+function onChange(e){
+  if(e.target.id !== "admFile") return; const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { try{ const raw = JSON.parse(rd.result), c = saneCfg(raw); c.rev = A.pub.rev; A.draft = c; paintSec(); paintLive(); toast("Settings loaded. Publish to apply."); }catch{ toast("That file isn't a Streamdex settings file."); } };
+  rd.readAsText(f); e.target.value = "";
+}
+
+document.addEventListener("keydown", e => {
+  if(e.ctrlKey && e.shiftKey && e.altKey && e.code === "Digit7"){ e.preventDefault(); e.stopPropagation(); openAdmin(); return; }
+  if(e.key === "Escape" && !root().classList.contains("hidden") && !A.user) closeAdmin(true);
+}, true);
+const el = root();
+el.addEventListener("click", onClick); el.addEventListener("input", onInput); el.addEventListener("change", e => { onChange(e); if(e.target.matches("select[data-p]")) onInput(e); else if(e.target.matches("select[data-ov]")) onInput(e); });
+el.addEventListener("submit", onSubmit);
+window.addEventListener("hashchange", () => { if(location.hash === "#admin") openAdmin(); });
+if(location.hash === "#admin") setTimeout(openAdmin, 300);
+})();
+</script>
+
 </body>
 </html>
