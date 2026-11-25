@@ -2988,7 +2988,7 @@ function closeAdmin(force){
   if(location.hash === "#admin") history.replaceState(null, "", location.pathname + location.search);
 }
 function bump(){ clearTimeout(A.idle); if(A.user) A.idle = setTimeout(() => lock("You were signed out after 20 minutes of no activity."), 20 * 60 * 1000); }
-async function lock(msg){ try{ await A.auth.signOut(); }catch{} A.user = A.draft = A.pub = null; AI.msgs = []; AI.undo = []; AI.open = false; clearTimeout(A.idle); root().innerHTML = loginHTML(msg || ""); bindLogin(); }
+async function lock(msg){ try{ await A.auth.signOut(); }catch{} A.user = A.draft = A.pub = null; AI.msgs = []; AI.undo = []; AI.open = false; AI.key = ""; AI.keys = {}; clearTimeout(A.idle); root().innerHTML = loginHTML(msg || ""); bindLogin(); }
 
 /* ---------- login ---------- */
 function loginHTML(msg){
@@ -3023,7 +3023,7 @@ function bindLogin(){
       catch(e2){ await A.auth.signOut(); throw { code:e2 && e2.code === "permission-denied" ? "adm/rules" : "adm/read" }; }
       if(!isAdm){ await A.auth.signOut(); throw { code:"adm/not" }; }
       try{ localStorage.setItem("admEmail", em); }catch{}
-      A.user = cr.user; await loadCfg(); renderDash(); bump();
+      A.user = cr.user; await loadCfg(); try{ await loadAIKeys(); }catch{} renderDash(); bump();
     }catch(e2){
       const c = e2 && e2.code || "";
       err.textContent = /invalid-credential|wrong-password|user-not-found|invalid-email/.test(c) ? "That email or password isn't right."
@@ -3057,10 +3057,10 @@ function renderDash(){
       <form class="ai-f" id="aiForm" autocomplete="off"><span class="fi"><input type="text" id="aiIn" placeholder="Tell me what to change" aria-label="Message the assistant"></span><button class="btn sm" type="submit">Send</button></form>
       <details class="ai-key"><summary>Smarter answers (optional, free)</summary>
         <label class="f" style="margin:6px 0"><span>Provider</span><select id="aiProv" aria-label="AI provider"><option value="groq">Groq (fast, free)</option><option value="openrouter">OpenRouter (free models)</option><option value="gemini">Google Gemini</option></select></label><ol><li>Open <a id="aiKeyLink" href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a> and sign up.</li><li>Create an API key. No card needed.</li><li>Paste it here.</li></ol>
-        <span class="fi"><input type="password" id="aiKey" placeholder="Paste Gemini key" autocomplete="off"></span>
+        <span class="fi"><input type="password" id="aiKey" placeholder="Paste Groq key" autocomplete="off"></span>
         <div class="adm-row" style="margin-top:8px"><button class="btn sm" type="button" data-ai="savekey">Save key</button><button class="btn ghost sm" type="button" data-ai="rmkey">Remove</button></div>
         <small id="aiKeyState"></small>
-        <small>The key stays in this browser. Only your game settings and what you type go to the provider you pick, never player data. Free tiers may use them to improve their products.</small></details></aside>`;
+        <small>The key is saved to your admin account, and only that account can read it, so it works on any device you sign in on. Only your game settings and what you type go to the provider you pick, never player data. Free tiers may use them to improve their products.</small></details></aside>`;
   paintNav(); paintSec(); paintLive(); paintAI();
 }
 function paintNav(){
@@ -3147,10 +3147,14 @@ setup(){
   const rules = `rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ...keep all your existing rules, and ADD these two blocks:
+    // ...keep all your existing rules, and ADD these three blocks:
     match /admins/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;
+    }
+    match /adminSecrets/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
     match /config/{doc} {
       allow read: if true;
@@ -3160,7 +3164,7 @@ service cloud.firestore {
   }
 }`;
   return head("Setup help", "One-time steps in the Firebase console. After this, everything is done from here.")
-  + card("Steps", "", `<ol><li><b>Turn on email sign-in.</b> Firebase console → Build → Authentication → Sign-in method → Email/Password → Enable → Save.</li><li><b>Create your admin account.</b> Authentication → Users → Add user. Pick an email and a long password only you know. Copy the new user's <b>User UID</b>.</li><li><b>Make it an admin.</b> Firestore Database → Start collection → ID <b>admins</b> → Document ID: paste the UID → add one field (any name, such as <b>ok</b>, type boolean, true) → Save.</li><li><b>Publish the rules below.</b> Firestore Database → Rules → add the two blocks inside your existing rules → Publish.</li></ol>`)
+  + card("Steps", "", `<ol><li><b>Turn on email sign-in.</b> Firebase console → Build → Authentication → Sign-in method → Email/Password → Enable → Save.</li><li><b>Create your admin account.</b> Authentication → Users → Add user. Pick an email and a long password only you know. Copy the new user's <b>User UID</b>.</li><li><b>Make it an admin.</b> Firestore Database → Start collection → ID <b>admins</b> → Document ID: paste the UID → add one field (any name, such as <b>ok</b>, type boolean, true) → Save.</li><li><b>Publish the rules below.</b> Firestore Database → Rules → add the three blocks inside your existing rules → Publish. The adminSecrets block is what lets your AI key follow you to other devices.</li></ol>`)
   + card("Rules to add", "The security lives in these rules, not in this page. Without them, no one can publish.", `<pre>${esc(rules)}</pre><div class="adm-row"><button class="btn ghost sm" data-a="copy-rules">Copy rules</button></div>`)
   + `<div class="adm-note">This page is public, so anyone can find the sign-in. That's fine: only the account you added to <b>admins</b> can change anything, and wrong guesses are rate-limited by Firebase.</div>`;
 }
@@ -3263,8 +3267,47 @@ document.addEventListener("keydown", e => {
 }, true);
 /*AI*/
 /* ---------- assistant: runs offline for common commands, optional free Gemini key for open questions ---------- */
-const AI = { open:false, msgs:[], busy:false, undo:[], key:"" };
+const AI = { open:false, msgs:[], busy:false, undo:[], key:"", keys:{}, cloud:null };
 try{ AI.prov = localStorage.getItem("admProv") || "groq"; AI.key = localStorage.getItem("admKey_" + AI.prov) || (AI.prov === "gemini" ? localStorage.getItem("admGemKey") : "") || ""; }catch{ AI.prov = "groq"; }
+
+/* ---------- the AI key lives on the admin account, so it follows you to any device ---------- */
+const AI_PROVS = ["gemini", "groq", "openrouter"];
+const legacyKey = p => { try{ return localStorage.getItem("admKey_" + p) || (p === "gemini" ? localStorage.getItem("admGemKey") : "") || ""; }catch{ return ""; } };
+const dropLegacy = p => { try{ localStorage.removeItem("admKey_" + p); if(p === "gemini") localStorage.removeItem("admGemKey"); }catch{} };
+const secRef = () => A.db.collection("adminSecrets").doc(A.user.uid);
+async function loadAIKeys(){
+  let d = {}, ok = true;
+  try{ const snap = await secRef().get(); d = snap.exists ? snap.data() : {}; }catch{ ok = false; }
+  const keys = { ...(d.keys || {}) }, moved = [];
+  AI_PROVS.forEach(p => { const lk = legacyKey(p); if(lk && !keys[p]){ keys[p] = lk; moved.push(p); } });   // keys the old version saved in this browser
+  if(ok && moved.length){
+    try{ await secRef().set({ keys:Object.fromEntries(moved.map(p => [p, keys[p]])), prov:d.prov || AI.prov, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }, { merge:true }); moved.forEach(dropLegacy); }
+    catch{ ok = false; }
+  }
+  AI.keys = keys; AI.cloud = ok;
+  if(d.prov && PROVS[d.prov]) AI.prov = d.prov;
+  AI.key = AI.keys[AI.prov] || "";
+}
+async function saveAIKey(v){
+  const p = AI.prov; AI.keys[p] = v; AI.key = v; const inp = $("#aiKey"); if(inp) inp.value = "";
+  try{ localStorage.setItem("admProv", p); }catch{}
+  try{
+    await secRef().set({ keys:{ [p]:v }, prov:p, updatedAt:firebase.firestore.FieldValue.serverTimestamp() }, { merge:true });
+    AI.cloud = true; dropLegacy(p); paintAI(); toast("Key saved to your admin account. It works on every device you sign in on.");
+  }catch(e){
+    AI.cloud = false; try{ localStorage.setItem("admKey_" + p, v); }catch{} paintAI();
+    toast(e && e.code === "permission-denied" ? "Saved on this browser only. Add the adminSecrets rule from Setup help to sync it everywhere." : "Saved on this browser only. Couldn't reach the server to sync it.");
+  }
+}
+async function removeAIKey(){
+  const p = AI.prov; delete AI.keys[p]; AI.key = ""; dropLegacy(p); paintAI();
+  try{ await secRef().set({ keys:{ [p]:firebase.firestore.FieldValue.delete() } }, { merge:true }); toast("Key removed from your account."); }
+  catch{ toast("Removed here, but couldn't update your account. Try again."); }
+}
+async function saveAIProv(p){
+  AI.prov = p; AI.key = AI.keys[p] || legacyKey(p); try{ localStorage.setItem("admProv", p); }catch{} paintAI();
+  try{ await secRef().set({ prov:p }, { merge:true }); }catch{}
+}
 const GEM = ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
 const FIELDS = [
   ["economy.welcome", "Welcome gift", ["welcome gift", "welcome coins", "starting coins", "welcome"]],
@@ -3451,7 +3494,7 @@ async function aiSend(text){
   let res = null; const n0 = AI.undo.length;
   try{ res = await local(text); if((!res || res.ask) && AI.key) res = await gemini(text); }catch(e){ res = { t:"Something went wrong. Try again." }; }
   if(AI.undo.length > n0 + 1) AI.undo.splice(n0 + 1);
-  if(!res) res = { t:"I didn't catch that. Try something like “set the welcome gift to 500” or “turn off the map”." + (AI.key ? "" : " For open questions, add a free Gemini key under Smarter answers.") };
+  if(!res) res = { t:"I didn't catch that. Try something like “set the welcome gift to 500” or “turn off the map”." + (AI.key ? "" : " For open questions, add a free " + PROVS[AI.prov].name.replace("Google ", "") + " key under Smarter answers.") };
   AI.msgs.push({ r:"bot", t:res.t, lines:res.lines || [], confirm:!!res.confirm, can:!!(!res.confirm && res.lines && res.lines.length && AI.undo.length) }); AI.busy = false; paintAI();
 }
 function paintAI(){
@@ -3466,8 +3509,8 @@ function paintAI(){
     + (AI.busy ? '<div class="ai-b bot ai-dots" aria-label="Thinking"><i></i><i></i><i></i></div>' : "");
   log.scrollTop = log.scrollHeight;
   const tl = $("#aiTools"); if(tl) tl.classList.toggle("hidden", !AI.msgs.length && !AI.undo.length);
-  const k = $("#aiKeyState"); if(k) k.textContent = AI.key ? "A " + PROVS[AI.prov].name + " key is saved in this browser." : "No key added. Quick commands still work.";
-  const sel = $("#aiProv"); if(sel && sel.value !== AI.prov) sel.value = AI.prov; const lk = $("#aiKeyLink"); if(lk){ lk.href = PROVS[AI.prov].url; lk.textContent = PROVS[AI.prov].url.replace("https://", ""); }
+  const k = $("#aiKeyState"); if(k) k.textContent = AI.key ? (AI.cloud === false ? "A " + PROVS[AI.prov].name + " key is saved in this browser only. Add the adminSecrets rule in Setup help to sync it." : "A " + PROVS[AI.prov].name + " key is saved to your admin account and follows you to any device.") : "No key added. Quick commands still work.";
+  const sel = $("#aiProv"); if(sel && sel.value !== AI.prov) sel.value = AI.prov; const ki = $("#aiKey"); if(ki) ki.placeholder = "Paste " + PROVS[AI.prov].name.replace("Google ", "") + " key"; const lk = $("#aiKeyLink"); if(lk){ lk.href = PROVS[AI.prov].url; lk.textContent = PROVS[AI.prov].url.replace("https://", ""); }
 }
 ACT.ai = () => { AI.open = !AI.open; paintAI(); if(AI.open) setTimeout(() => { const i = $("#aiIn"); if(i) i.focus(); }, 50); };
 function onAI(t){
@@ -3485,12 +3528,12 @@ function onAI(t){
   }
   else if(a === "clear"){ AI.msgs = []; paintAI(); toast("Chat cleared. Your settings weren't changed."); }
   else if(a === "undo"){ const s = AI.undo.pop(); if(s){ A.draft = JSON.parse(s); after(); AI.msgs.push({ r:"bot", t:"Undone.", lines:[] }); paintAI(); } }
-  else if(a === "savekey"){ const v = $("#aiKey").value.trim(); if(!v) return; AI.key = v; try{ localStorage.setItem("admKey_" + AI.prov, v); localStorage.setItem("admProv", AI.prov); }catch{} $("#aiKey").value = ""; paintAI(); toast("Key saved. Ask me anything."); }
-  else if(a === "rmkey"){ AI.key = ""; try{ localStorage.removeItem("admKey_" + AI.prov); if(AI.prov === "gemini") localStorage.removeItem("admGemKey"); }catch{} paintAI(); toast("Key removed."); }
+  else if(a === "savekey"){ const v = $("#aiKey").value.trim(); if(v) saveAIKey(v); }
+  else if(a === "rmkey"){ removeAIKey(); }
 }
 
 const el = root();
-el.addEventListener("click", onClick); el.addEventListener("input", onInput); el.addEventListener("change", e => { if(e.target.id === "aiProv"){ AI.prov = e.target.value; try{ localStorage.setItem("admProv", AI.prov); AI.key = localStorage.getItem("admKey_" + AI.prov) || (AI.prov === "gemini" ? localStorage.getItem("admGemKey") : "") || ""; }catch{ AI.key = ""; } paintAI(); return; } onChange(e); if(e.target.matches("select[data-p]")) onInput(e); else if(e.target.matches("select[data-ov]")) onInput(e); });
+el.addEventListener("click", onClick); el.addEventListener("input", onInput); el.addEventListener("change", e => { if(e.target.id === "aiProv"){ saveAIProv(e.target.value); return; } onChange(e); if(e.target.matches("select[data-p]")) onInput(e); else if(e.target.matches("select[data-ov]")) onInput(e); });
 el.addEventListener("submit", onSubmit);
 window.addEventListener("hashchange", () => { if(location.hash === "#admin") openAdmin(); });
 if(location.hash === "#admin") setTimeout(openAdmin, 300);
