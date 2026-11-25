@@ -2907,6 +2907,35 @@ bootAppConfig();
   .adm-ov{grid-template-columns:1fr auto}.adm-ov select{grid-column:1}
   .adm-bar>div{border-radius:22px}
 }
+.adm-ai{position:absolute;top:58px;right:0;bottom:0;width:400px;z-index:7;display:flex;flex-direction:column;background:#0d1030;border-left:1px solid var(--line);box-shadow:-20px 0 60px rgba(0,0,0,.35)}
+.adm.ai-on .adm-main{margin-right:400px}
+.adm.ai-on .adm-bar{right:400px}
+.ai-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ai-h b{font-weight:850;font-size:16px;flex:1}
+.ai-h button{width:32px;height:32px;border-radius:9px;font-size:22px;line-height:1;color:var(--muted)}.ai-h button:hover{background:rgba(255,255,255,.08);color:var(--paper)}
+.ai-log{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.ai-b{max-width:88%;padding:10px 14px;border-radius:16px;line-height:1.45;font-size:14.5px;overflow-wrap:anywhere}
+.ai-b.me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:5px}
+.ai-b.bot{align-self:flex-start;background:var(--ink3);border-bottom-left-radius:5px}
+.ai-b ul{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:4px;font-size:13.5px}
+.ai-b li{padding:6px 9px;background:rgba(0,0,0,.28);border-radius:8px;color:#dfe2ff}
+.ai-u{margin-top:8px;font-size:13px;font-weight:700;color:var(--yellow);text-decoration:underline;text-underline-offset:3px}
+.ai-s{display:grid;gap:8px;margin-top:4px}
+.ai-s button{text-align:left;padding:10px 13px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:14px;transition:background .15s,color .15s}
+.ai-s button:hover{background:rgba(255,255,255,.07);color:var(--paper)}
+.ai-dots{display:flex;gap:5px;padding:14px}.ai-dots i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:aidot 1s infinite}.ai-dots i:nth-child(2){animation-delay:.15s}.ai-dots i:nth-child(3){animation-delay:.3s}
+@keyframes aidot{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.ai-f{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.ai-f .fi{flex:1}
+.ai-key{padding:0 16px 14px;font-size:13.5px;color:var(--muted)}
+.ai-key summary{cursor:pointer;padding:6px 0;font-weight:650}
+.ai-key ol{margin:6px 0 10px;font-size:13.5px}.ai-key a{color:var(--yellow)}
+.ai-key small{display:block;margin-top:8px;color:var(--dim);line-height:1.4}
+@media (max-width:760px){
+  .adm-ai{top:0;width:100%;z-index:9;border-left:0}
+  .adm.ai-on .adm-main{margin-right:0}.adm.ai-on .adm-bar{right:0}
+}
+@media (prefers-reduced-motion:reduce){.ai-dots i{animation:none}}
 @media (prefers-reduced-motion:reduce){.adm *{transition:none!important}}
 </style>
 
@@ -2958,7 +2987,7 @@ function closeAdmin(force){
   if(location.hash === "#admin") history.replaceState(null, "", location.pathname + location.search);
 }
 function bump(){ clearTimeout(A.idle); if(A.user) A.idle = setTimeout(() => lock("You were signed out after 20 minutes of no activity."), 20 * 60 * 1000); }
-async function lock(msg){ try{ await A.auth.signOut(); }catch{} A.user = A.draft = A.pub = null; clearTimeout(A.idle); root().innerHTML = loginHTML(msg || ""); bindLogin(); }
+async function lock(msg){ try{ await A.auth.signOut(); }catch{} A.user = A.draft = A.pub = null; AI.msgs = []; AI.undo = []; AI.open = false; clearTimeout(A.idle); root().innerHTML = loginHTML(msg || ""); bindLogin(); }
 
 /* ---------- login ---------- */
 function loginHTML(msg){
@@ -3011,10 +3040,19 @@ async function loadCfg(){
 function renderDash(){
   const el = root(), dirty = isDirty();
   el.innerHTML = `<div class="adm-top"><div class="adm-mark" aria-hidden="true">S</div><b>Admin</b><span class="adm-fill"></span><span class="adm-who">${esc(A.user.email || "")}</span>
-      <button class="btn ghost sm" data-a="exit">Exit</button><button class="btn ghost sm" data-a="out">Sign out</button></div>
+      <button class="btn sm" data-a="ai" aria-expanded="false">&#10022; Assistant</button><button class="btn ghost sm" data-a="exit">Exit</button><button class="btn ghost sm" data-a="out">Sign out</button></div>
     <div class="adm-main"><nav class="adm-nav" id="admNav" aria-label="Admin sections"></nav><main class="adm-body" id="admBody" tabindex="-1"></main></div>
-    <div class="adm-bar" id="admBar"><div><div class="m" id="admBarM"></div><button class="btn ghost sm" data-a="discard">Discard</button><button class="btn go sm" data-a="publish" id="admPub">Publish changes</button></div></div>`;
-  paintNav(); paintSec(); paintLive();
+    <div class="adm-bar" id="admBar"><div><div class="m" id="admBarM"></div><button class="btn ghost sm" data-a="discard">Discard</button><button class="btn go sm" data-a="publish" id="admPub">Publish changes</button></div></div>
+    <aside class="adm-ai hidden" id="admAI" aria-label="Assistant"><div class="ai-h"><b>Assistant</b><span class="chip" id="aiMode"></span><button data-a="ai" aria-label="Close assistant">&times;</button></div>
+      <div class="ai-log" id="aiLog" aria-live="polite"></div>
+      <form class="ai-f" id="aiForm" autocomplete="off"><span class="fi"><input type="text" id="aiIn" placeholder="Tell me what to change" aria-label="Message the assistant"></span><button class="btn sm" type="submit">Send</button></form>
+      <details class="ai-key"><summary>Smarter answers (optional, free)</summary>
+        <ol><li>Open <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> and sign in with Google.</li><li>Click Create API key. No card needed.</li><li>Paste it here.</li></ol>
+        <span class="fi"><input type="password" id="aiKey" placeholder="Paste Gemini key" autocomplete="off"></span>
+        <div class="adm-row" style="margin-top:8px"><button class="btn sm" type="button" data-ai="savekey">Save key</button><button class="btn ghost sm" type="button" data-ai="rmkey">Remove</button></div>
+        <small id="aiKeyState"></small>
+        <small>The key stays in this browser. Only your game settings and what you type go to Google, never player data. Google's free tier may use them to improve its products.</small></details></aside>`;
+  paintNav(); paintSec(); paintLive(); paintAI();
 }
 function paintNav(){
   $("#admNav").innerHTML = SECS.map(([k, n, ic]) => `<button data-sec="${k}" class="${A.sec === k ? "on" : ""}" ${A.sec === k ? 'aria-current="page"' : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ic}</svg>${n}${secDirty(k) ? '<span class="dot" title="Unpublished changes"></span>' : ""}</button>`).join("");
@@ -3176,7 +3214,8 @@ const ACT = {
   "copy-rules"(){ const t = document.querySelector("#adm pre").textContent; navigator.clipboard.writeText(t).then(() => toast("Rules copied."), () => toast("Select the rules and copy them by hand.")); }
 };
 function onClick(e){
-  const t = e.target.closest("[data-a],[data-sec],[data-rm],[data-add]"); if(!t || !root().contains(t)) return; bump();
+  const t = e.target.closest("[data-a],[data-sec],[data-rm],[data-add],[data-ai],[data-ai-s]"); if(!t || !root().contains(t)) return; bump();
+  if(t.dataset.ai !== undefined || t.dataset.aiS !== undefined){ onAI(t); return; }
   if(t.dataset.a){ const f = ACT[t.dataset.a]; if(f) f(); }
   else if(t.dataset.sec){ A.sec = t.dataset.sec; paintNav(); paintSec(); $("#admBody").scrollTop = 0; }
   else if(t.dataset.rm){ delete A.draft.overrides[t.dataset.rm]; paintSec(); paintLive(); }
@@ -3193,7 +3232,7 @@ function onInput(e){
     sp(A.draft, el.dataset.p, v); paintLive();
   }else if(el.dataset.ov){ A.draft.overrides[el.dataset.ov].r = el.value; paintLive(); }
 }
-function onSubmit(e){ if(e.target.id === "admSearch"){ e.preventDefault(); search(); } }
+function onSubmit(e){ if(e.target.id === "admSearch"){ e.preventDefault(); search(); } else if(e.target.id === "aiForm"){ e.preventDefault(); const i = $("#aiIn"), v = i.value; i.value = ""; aiSend(v); } }
 function onChange(e){
   if(e.target.id !== "admFile") return; const f = e.target.files[0]; if(!f) return;
   const rd = new FileReader();
@@ -3205,6 +3244,201 @@ document.addEventListener("keydown", e => {
   if(e.ctrlKey && e.shiftKey && e.altKey && e.code === "Digit7"){ e.preventDefault(); e.stopPropagation(); openAdmin(); return; }
   if(e.key === "Escape" && !root().classList.contains("hidden") && !A.user) closeAdmin(true);
 }, true);
+/*AI*/
+/* ---------- assistant: runs offline for common commands, optional free Gemini key for open questions ---------- */
+const AI = { open:false, msgs:[], busy:false, undo:[], key:"" };
+try{ AI.key = localStorage.getItem("admGemKey") || ""; }catch{}
+const GEM = ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
+const FIELDS = [
+  ["economy.welcome", "Welcome gift", ["welcome gift", "welcome coins", "starting coins", "welcome"]],
+  ["economy.dailyBase", "Daily bonus, day 1", ["daily bonus start", "daily bonus", "daily coins", "daily reward"]],
+  ["economy.dailyStep", "Daily bonus growth", ["streak growth", "daily growth", "bonus growth", "growth"]],
+  ["economy.dailyMax", "Daily bonus cap", ["daily bonus cap", "daily cap", "max daily bonus", "max daily"]],
+  ["economy.priceBase", "Base price", ["base price"]],
+  ["economy.priceK", "Price steepness", ["price steepness", "steepness"]],
+  ["economy.priceMin", "Lowest price", ["lowest price", "minimum price", "min price"]],
+  ["economy.priceStep", "Price rounding", ["price rounding", "round to"]],
+  ["economy.sellRate", "Sell-back rate", ["sell-back rate", "sell back rate", "sell rate", "sellback", "sell back"], "pct"],
+  ["packs.size", "Cards per pack", ["cards per pack", "pack size"]],
+  ["packs.daily", "Packs per day", ["packs per day", "daily packs", "packs a day"]],
+  ["map.hours", "Map card lifetime", ["card lifetime", "map lifetime", "lifetime"]],
+  ["map.spawnP", "Map spawn chance", ["spawn chance", "spawn rate"], "pct"],
+  ["map.regionKm", "Map spawn radius", ["spawn radius", "spawn region", "radius"]],
+  ["map.claimM", "Claim distance", ["claim distance"]],
+  ["map.autoM", "Auto-claim distance", ["auto-claim distance", "auto claim distance", "auto-claim", "auto claim"]],
+  ["brand.credit", "Footer credit", ["footer credit", "credit"], "text"],
+  ["brand.youtube", "YouTube link", ["youtube link", "youtube", "yt link"], "text"]
+];
+const FLAGS = [
+  ["flags.map", "Card Map", ["card map", "map"]], ["flags.trade", "Trading", ["trading", "trades", "trade"]],
+  ["flags.market", "Marketplace", ["marketplace", "market", "shop"]], ["flags.badges", "Badges", ["badges", "badge"]],
+  ["packs.weekly", "Weekly Special pack", ["weekly special", "weekly pack", "weekly"]],
+  ["maintenance.on", "Maintenance screen", ["maintenance mode", "maintenance"]], ["announcement.on", "Announcement banner", ["announcement", "banner"]]
+];
+const SECALIAS = { overview:["overview", "home", "status"], economy:["economy", "coins", "prices", "coins and prices"], packs:["packs", "pack settings"], rarity:["rarity tiers", "tiers", "rarity"], songs:["song rarity", "songs", "overrides"], map:["map"], features:["features"], site:["banner and brand", "banner", "brand", "announcement", "maintenance"], data:["backup", "reset", "data", "backup and reset"], setup:["setup", "setup help", "rules", "help page"] };
+const esc2 = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const fields = () => FIELDS.concat(A.draft.rarity.flatMap((t, i) => [
+  ["rarity." + i + ".odds", t.name + " pack odds", [t.name.toLowerCase() + " pack odds", t.name.toLowerCase() + " odds", t.name.toLowerCase() + " chance"]],
+  ["map.odds." + RARITIES[i].key, t.name + " map odds", [t.name.toLowerCase() + " map odds", t.name.toLowerCase() + " map chance"]]]));
+function best(list, text){ let hit = null, len = 0; list.forEach(f => f[2].forEach(a => { if(a.length > len && new RegExp("(^|[^a-z])" + esc2(a) + "([^a-z]|$)").test(text)){ hit = f; len = a.length; } })); return hit; }
+const fmtV = v => typeof v === "boolean" ? (v ? "on" : "off") : typeof v === "number" ? (Math.round(v * 1000) / 1000).toLocaleString() : v === "" ? "empty" : '"' + v + '"';
+const tierRx = () => A.draft.rarity.map((t, i) => esc2(t.name.toLowerCase())).concat(RARITIES.map(r => r.key)).sort((a, b) => b.length - a.length).join("|");
+const tierKey = w => { w = w.toLowerCase(); const i = A.draft.rarity.findIndex(t => t.name.toLowerCase() === w); return i >= 0 ? RARITIES[i].key : RARITIES.find(r => r.key === w) ? w : null; };
+const tierName = k => A.draft.rarity[RARITIES.findIndex(r => r.key === k)].name;
+function after(){ paintSec(); paintLive(); }
+function trySet(path, value, label){
+  const cur = gp(A.draft, path); if(cur === undefined) return { err:"There's no setting called " + path + "." };
+  if(typeof cur === "number"){ value = typeof value === "string" ? parseFloat(value) : value; if(typeof value !== "number" || !isFinite(value)) return { err:"That setting needs a number." }; }
+  else if(typeof cur === "boolean") value = value === true || value === "true";
+  else value = String(value == null ? "" : value);
+  const t = CK(A.draft); sp(t, path, value);
+  const before = new Set(cfgErrors(A.draft)), bad = cfgErrors(t).filter(e => !before.has(e));
+  if(bad.length) return { err:bad[0] };
+  AI.undo.push(JSON.stringify(A.draft)); sp(A.draft, path, value); after();
+  return { line:`${label || path}: ${fmtV(cur)} → ${fmtV(value)}` };
+}
+async function findSong(song, artist){
+  const q = artist ? `&track=${encodeURIComponent(song)}&artist=${encodeURIComponent(artist)}` : `&track=${encodeURIComponent(song)}`;
+  const r = await fetch(`https://ws.audioscrobbler.com/2.0/?method=track.search&limit=5${q}&api_key=${CONFIG.LASTFM_KEY}&format=json`);
+  const j = await r.json(), t = (j.results && j.results.trackmatches && j.results.trackmatches.track) || [];
+  const al = (artist || "").toLowerCase(), pick = t.find(x => al && x.artist.toLowerCase().includes(al)) || t[0];
+  return pick ? { name:pick.name, artist:pick.artist, listeners:+pick.listeners || 0 } : null;
+}
+async function setSong(song, artist, tier){
+  const k = tierKey(tier); if(!k) return { err:"I don't know a tier called " + tier + "." };
+  let s; try{ s = await findSong(song, artist); }catch{ return { err:"Song search is unavailable right now." }; }
+  if(!s) return { err:`I couldn't find “${song}”${artist ? " by " + artist : ""}. Check the spelling or add the artist.` };
+  AI.undo.push(JSON.stringify(A.draft)); A.draft.overrides[ovKey(s.artist, s.name)] = { r:k, a:s.artist, n:s.name }; after();
+  return { line:`${s.name} by ${s.artist} → ${tierName(k)}` };
+}
+function diffLines(){
+  const out = [], lab = Object.fromEntries(fields().concat(FLAGS).map(f => [f[0], f[1]]));
+  const walk = (a, b, p) => { if(b && typeof b === "object" && !Array.isArray(b)){ Object.keys(b).forEach(k => { if(k === "overrides") return; walk(a ? a[k] : undefined, b[k], p ? p + "." + k : k); }); }
+    else if(Array.isArray(b)){ b.forEach((x, i) => walk(a ? a[i] : undefined, x, p + "." + i)); }
+    else if(JSON.stringify(a) !== JSON.stringify(b)) out.push(`${lab[p] || p}: ${fmtV(a)} → ${fmtV(b)}`); };
+  const d = CK(A.draft), p = CK(A.pub); ["rev", "updatedAt", "updatedBy"].forEach(k => { delete d[k]; delete p[k]; }); walk(p, d, "");
+  const po = A.pub.overrides, dov = A.draft.overrides;
+  Object.keys(dov).forEach(k => { if(!po[k] || po[k].r !== dov[k].r) out.push(`${dov[k].n}: now ${tierName(dov[k].r)}`); });
+  Object.keys(po).forEach(k => { if(!dov[k]) out.push(`${po[k].n}: override removed`); });
+  return out;
+}
+const HELP = { t:"I can change settings for you. Nothing goes live until you press Publish.", lines:["Set the welcome gift to 500", "Double the base price", "Increase the sell rate by 10%", "Turn off the map", "Make Water Copy by Hiroshi Yoshimura mythic", "Post a banner: Double coins this weekend!", "What did I change?", "Undo"] };
+async function local(raw){
+  const text = raw.trim().replace(/[“”]/g, '"'), t = text.toLowerCase().replace(/[.!?]+$/, "");
+  let m;
+  if(/^(help|what can you do|how do i use this|commands)$/.test(t)) return HELP;
+  if(/^undo( that| last)?$/.test(t)){ const s = AI.undo.pop(); if(!s) return { t:"There's nothing to undo." }; A.draft = JSON.parse(s); after(); return { t:"Undone." }; }
+  if(/^(what did i change|what changed|summary|changes|what's changed|whats changed)$/.test(t)){ const d = diffLines(); return d.length ? { t:"Unpublished changes:", lines:d } : { t:"No unpublished changes. The console matches what players see." }; }
+  if(/^(publish|go live|save)( it| changes| everything)?$/.test(t)) return { t:isDirty() ? "I can't publish for you. Press Publish changes at the bottom when you're happy." : "There's nothing to publish yet." };
+  if((m = t.match(/^(?:go to|open|show|take me to|switch to)\s+(?:me\s+)?(?:the\s+)?(.+?)(?:\s+(?:page|section|tab))?$/))){
+    const hit = Object.keys(SECALIAS).find(k => SECALIAS[k].includes(m[1]));
+    if(hit){ A.sec = hit; paintNav(); paintSec(); return { t:"Opened " + SECS.find(s => s[0] === hit)[1] + "." }; }
+  }
+  if((m = text.match(/^(?:announce|announcement|post (?:a |an )?(?:banner|announcement)|banner|set (?:the )?banner)\s*[:\-]\s*(.+)$/i)) || (m = text.match(/^(?:announce|post (?:a |an )?(?:banner|announcement)(?: saying)?)\s+(.+)$/i))){
+    const a = trySet("announcement.text", m[1].slice(0, 220), "Banner text"); if(a.err) return { t:a.err };
+    const b = trySet("announcement.on", true, "Banner"); return { t:"Banner ready.", lines:[a.line, b.line || "Banner: on"] };
+  }
+  if((m = t.match(/^(?:turn|switch)\s+(on|off)\s+(?:the\s+)?(.+)$/)) || (m = t.match(/^(enable|disable|hide|start|stop|activate|deactivate)\s+(?:the\s+)?(.+)$/)) || (m = t.match(/^(.+?)\s+(on|off)$/))){
+    let w1 = m[1], w2 = m[2], on;
+    if(/^(on|off)$/.test(w2) && !/^(on|off)$/.test(w1)){ [w1, w2] = [w2, w1]; }
+    on = /^(on|enable|start|activate)$/.test(w1); const subject = w2, f = best(FLAGS, subject);
+    if(f){ const r = trySet(f[0], on, f[1]); return r.err ? { t:r.err } : { t:`${f[1]} is ${on ? "on" : "off"} in your draft.`, lines:[r.line] }; }
+  }
+  if((m = t.match(/^(double|triple|halve)\s+(?:the\s+)?(.+)$/))){
+    const f = best(fields(), m[2]); if(f){ const cur = gp(A.draft, f[0]); if(typeof cur === "number"){ const k = { double:2, triple:3, halve:.5 }[m[1]], r = trySet(f[0], Math.round(cur * k * 1000) / 1000, f[1]); return r.err ? { t:r.err } : { t:"Done.", lines:[r.line] }; } }
+  }
+  if((m = t.match(/^(raise|increase|lower|decrease|reduce|cut|boost)\s+(?:the\s+)?(.+?)\s+by\s+(-?\d[\d,]*\.?\d*)\s*(%|percent)?$/))){
+    const f = best(fields(), m[2]), cur = f && gp(A.draft, f[0]);
+    if(f && typeof cur === "number"){ const n = parseFloat(m[3].replace(/,/g, "")), up = /raise|increase|boost/.test(m[1]); let nv;
+      if(m[4]) nv = cur * (1 + (up ? 1 : -1) * n / 100); else nv = cur + (up ? 1 : -1) * (f[3] === "pct" && n > 1 ? n / 100 : n);
+      const r = trySet(f[0], Math.round(nv * 1000) / 1000, f[1]); return r.err ? { t:r.err } : { t:"Done.", lines:[r.line] }; }
+  }
+  const tr = tierRx();
+  if((m = text.match(new RegExp("^(?:make|set|put|turn|change)\\s+(?:the\\s+song\\s+)?\"?(.+?)\"?\\s+(?:to\\s+|into\\s+|a\\s+|an\\s+)?(?:be\\s+)?(?:a\\s+|an\\s+)?(" + tr + ")(?:\\s+secret)?\\s*(?:rarity|tier|card)?$", "i"))) && !best(fields(), m[1].toLowerCase())){
+    let song = m[1], artist = ""; const by = song.match(/^(.+?)\s+by\s+(.+)$/i); if(by){ song = by[1]; artist = by[2]; }
+    const r = await setSong(song.replace(/^"|"$/g, ""), artist, m[2]); return r.err ? { t:r.err } : { t:"Song rarity set.", lines:[r.line] };
+  }
+  if(/override|natural|normal/.test(t) && (m = t.match(/^(?:remove|clear|reset|delete)\s+(?:the\s+)?(?:rarity\s+)?(?:override\s+)?(?:for\s+|on\s+|of\s+)?(.+?)(?:\s+(?:back\s+)?to\s+(?:normal|natural|default))?$/))){
+    const q = m[1].replace(/^"|"$/g, ""), k = Object.keys(A.draft.overrides).find(k => k.includes(q) || (A.draft.overrides[k].n || "").toLowerCase().includes(q));
+    if(!k) return { t:`I don't see an override for “${q}”.` }; const nm = A.draft.overrides[k].n; AI.undo.push(JSON.stringify(A.draft)); delete A.draft.overrides[k]; after(); return { t:`${nm} will use its natural rarity.` };
+  }
+  if((m = t.match(new RegExp("(?:how much|price|cost).*\\b(" + tr + ")\\b"))) ){
+    const k = tierKey(m[1]), i = RARITIES.findIndex(r => r.key === k), p = priceAt(tierMid(i)); return { t:`A typical ${tierName(k)} song costs ${money(p)} coins and sells back for about ${money(Math.max(1, p * A.draft.economy.sellRate))}.` };
+  }
+  if((m = t.match(/^(?:what is|what's|whats|show|how (?:much|many) is)\s+(?:the\s+)?(.+)$/))){
+    const f = best(fields(), m[1]), g = best(FLAGS, m[1]);
+    if(f) return { t:`${f[1]} is ${fmtV(gp(A.draft, f[0]))}.` }; if(g) return { t:`${g[1]} is ${gp(A.draft, g[0]) ? "on" : "off"}.` };
+  }
+  const f = best(fields(), t);
+  if(f && /^(set|change|make|update|put|use)\b/.test(t)){
+    let v;
+    if(f[3] === "text"){ const mm = text.match(/\b(?:to|as|=|:)\s*(.+)$/i); v = mm ? mm[1].trim().replace(/^"|"$/g, "") : ""; if(!v) return { t:"What should it say?", ask:true }; }
+    else { const nums = t.match(/-?\d[\d,]*\.?\d*/g); if(!nums) return { t:`What number should ${f[1].toLowerCase()} be?`, ask:true }; v = parseFloat(nums[nums.length - 1].replace(/,/g, "")); if(f[3] === "pct" && (/%|percent/.test(t) || v > 1)) v = v / 100; }
+    const r = trySet(f[0], v, f[1]); return r.err ? { t:r.err } : { t:"Done. Press Publish when you're ready.", lines:[r.line] };
+  }
+  return null;
+}
+async function gemini(text){
+  const ctx = CK(A.draft); ["rev", "updatedAt", "updatedBy"].forEach(k => delete ctx[k]);
+  ctx.overrides = Object.values(A.draft.overrides).map(o => `${o.n} by ${o.a} -> ${o.r}`);
+  const sys = `You are the assistant inside the admin console of Streamdex, a game where a player's music listening becomes trading cards, and rarer (more niche) songs make rarer cards. You help the owner change settings.
+You can only edit a DRAFT. Nothing goes live until the owner presses Publish, so never say a change is live.
+Reply ONLY with JSON: {"reply":"short plain answer","actions":[...]}.
+Action types: {"op":"set","path":"dot.path","value":number|string|boolean}; {"op":"override","song":"title","artist":"artist or empty","tier":"mythic|legendary|epic|rare|uncommon|common"}; {"op":"remove_override","song":"title"}; {"op":"goto","section":"overview|economy|packs|rarity|songs|map|features|site|data|setup"}.
+Only use paths that exist in CURRENT SETTINGS. Keep values sensible. When just answering a question, use an empty actions list. Keep the reply under 60 words, plain text, no markdown.
+Niche score runs 0 (everyone knows the song) to 100 (almost nobody). Price = priceBase * exp(priceK * (100 - niche)), rounded to priceStep, at least priceMin. Tier names can be renamed; use tier keys in actions.
+CURRENT SETTINGS: ${JSON.stringify(ctx)}`;
+  const hist = AI.msgs.filter(x => x.t).slice(-9, -1).map(x => ({ role:x.r === "me" ? "user" : "model", parts:[{ text:x.t }] }));
+  const body = { systemInstruction:{ parts:[{ text:sys }] }, contents:[...hist, { role:"user", parts:[{ text }] }], generationConfig:{ responseMimeType:"application/json", temperature:0.2 } };
+  let lastErr = "";
+  for(const mdl of GEM){
+    let r; try{ r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mdl}:generateContent`, { method:"POST", headers:{ "Content-Type":"application/json", "x-goog-api-key":AI.key }, body:JSON.stringify(body) }); }catch{ return { t:"Couldn't reach Gemini. Check your connection." }; }
+    if(r.status === 400 || r.status === 403){ let m = ""; try{ m = (await r.json()).error.message; }catch{} return { t:/API key/i.test(m) ? "Gemini rejected the key. Open “Smarter answers” below and paste it again." : "Gemini refused the request." + (m ? " " + m.slice(0, 120) : "") }; }
+    if(!r.ok){ lastErr = r.status === 429 ? "Gemini's free limit is used up for now. Try again in a minute." : "Gemini had a problem. Try again."; continue; }
+    let out; try{ const j = await r.json(), txt = j.candidates[0].content.parts.map(p => p.text || "").join(""); out = JSON.parse(txt.replace(/^```json|```$/g, "")); }catch{ return { t:"I couldn't make sense of that answer. Try rephrasing." }; }
+    const lines = [];
+    for(const a of (Array.isArray(out.actions) ? out.actions : []).slice(0, 8)){
+      if(!a || typeof a !== "object") continue;
+      if(a.op === "set"){ const f = fields().concat(FLAGS).find(x => x[0] === a.path), r2 = trySet(String(a.path), a.value, f && f[1]); lines.push(r2.err ? "Skipped: " + r2.err : r2.line); }
+      else if(a.op === "override"){ const r2 = await setSong(String(a.song || ""), String(a.artist || ""), String(a.tier || "")); lines.push(r2.err ? "Skipped: " + r2.err : r2.line); }
+      else if(a.op === "remove_override"){ const q = String(a.song || "").toLowerCase(), k = Object.keys(A.draft.overrides).find(k => k.includes(q)); if(k){ AI.undo.push(JSON.stringify(A.draft)); delete A.draft.overrides[k]; after(); lines.push("Override removed: " + q); } else lines.push("Skipped: no override for " + q); }
+      else if(a.op === "goto" && SECS.some(s => s[0] === a.section)){ A.sec = a.section; paintNav(); paintSec(); }
+    }
+    return { t:String(out.reply || "Done.").slice(0, 600), lines };
+  }
+  return { t:lastErr || "Gemini isn't available right now." };
+}
+async function aiSend(text){
+  text = text.trim(); if(!text || AI.busy) return;
+  AI.msgs.push({ r:"me", t:text }); AI.busy = true; paintAI();
+  let res = null; const n0 = AI.undo.length;
+  try{ res = await local(text); if((!res || res.ask) && AI.key) res = await gemini(text); }catch(e){ res = { t:"Something went wrong. Try again." }; }
+  if(AI.undo.length > n0 + 1) AI.undo.splice(n0 + 1);
+  if(!res) res = { t:"I didn't catch that. Try something like “set the welcome gift to 500” or “turn off the map”." + (AI.key ? "" : " For open questions, add a free Gemini key under Smarter answers.") };
+  AI.msgs.push({ r:"bot", t:res.t, lines:res.lines || [], can:!!(res.lines && res.lines.length && AI.undo.length) }); AI.busy = false; paintAI();
+}
+function paintAI(){
+  const p = $("#admAI"); if(!p) return;
+  root().classList.toggle("ai-on", AI.open); p.classList.toggle("hidden", !AI.open);
+  if(!AI.open) return;
+  $("#aiMode").textContent = AI.key ? "Gemini on" : "Commands"; $("#aiMode").className = "chip " + (AI.key ? "ok" : "");
+  const log = $("#aiLog");
+  const sugg = ["Set the welcome gift to 500", "Turn off the map", "Make Water Copy by Hiroshi Yoshimura mythic", "Post a banner: Double coins this weekend!"];
+  log.innerHTML = (AI.msgs.length ? "" : `<div class="ai-b bot">Hi! Tell me what to change and I'll set it up as a draft. You still press Publish to make it live.</div><div class="ai-s">${sugg.map(s => `<button type="button" data-ai-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>`)
+    + AI.msgs.map((m, i) => `<div class="ai-b ${m.r}">${esc(m.t)}${m.lines && m.lines.length ? `<ul>${m.lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>` : ""}${m.can && i === AI.msgs.length - 1 ? '<button type="button" class="ai-u" data-ai="undo">Undo</button>' : ""}</div>`).join("")
+    + (AI.busy ? '<div class="ai-b bot ai-dots" aria-label="Thinking"><i></i><i></i><i></i></div>' : "");
+  log.scrollTop = log.scrollHeight;
+  const k = $("#aiKeyState"); if(k) k.textContent = AI.key ? "A key is saved in this browser." : "No key added. Quick commands still work.";
+}
+ACT.ai = () => { AI.open = !AI.open; paintAI(); if(AI.open) setTimeout(() => { const i = $("#aiIn"); if(i) i.focus(); }, 50); };
+function onAI(t){
+  if(t.dataset.aiS !== undefined){ aiSend(t.dataset.aiS); return; }
+  const a = t.dataset.ai;
+  if(a === "undo"){ const s = AI.undo.pop(); if(s){ A.draft = JSON.parse(s); after(); AI.msgs.push({ r:"bot", t:"Undone.", lines:[] }); paintAI(); } }
+  else if(a === "savekey"){ const v = $("#aiKey").value.trim(); if(!v) return; AI.key = v; try{ localStorage.setItem("admGemKey", v); }catch{} $("#aiKey").value = ""; paintAI(); toast("Key saved. Ask me anything."); }
+  else if(a === "rmkey"){ AI.key = ""; try{ localStorage.removeItem("admGemKey"); }catch{} paintAI(); toast("Key removed."); }
+}
+
 const el = root();
 el.addEventListener("click", onClick); el.addEventListener("input", onInput); el.addEventListener("change", e => { onChange(e); if(e.target.matches("select[data-p]")) onInput(e); else if(e.target.matches("select[data-ov]")) onInput(e); });
 el.addEventListener("submit", onSubmit);
