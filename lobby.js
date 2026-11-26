@@ -42,9 +42,6 @@ body.lb-open>*:not(#lobby):not(.toast):not(script):not(style){display:none!impor
 .lb-bottom>*{pointer-events:auto}
 .lb-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .lb-help{font-size:13px;opacity:.7;text-align:center;pointer-events:none}
-#lbStick{position:absolute;left:18px;bottom:calc(104px + env(safe-area-inset-bottom));width:112px;height:112px;border-radius:50%;background:rgba(244,240,232,.08);border:1.5px solid rgba(244,240,232,.3);display:none}
-#lbStick i{position:absolute;left:34px;top:34px;width:44px;height:44px;border-radius:50%;background:rgba(244,240,232,.7);pointer-events:none}
-@media (pointer:coarse){#lbStick{display:block}.lb-help{display:none}}
 .lb-ask{position:absolute;left:50%;top:30%;transform:translateX(-50%);width:min(360px,calc(100% - 32px));background:var(--ink2,#14173d);border:1.5px solid var(--line,rgba(244,240,232,.2));border-radius:16px;padding:20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .lb-ask p{margin:0 0 14px;font-weight:650}
 .lb-trade{position:absolute;inset:0;display:grid;place-items:center;padding:12px;background:rgba(5,6,22,.66)}
@@ -63,6 +60,47 @@ button.lb-card.sel{outline:3px solid #6ff0a0;outline-offset:2px}
 .lb-foot{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .lb-foot .st{margin-right:auto;font-size:14px;font-weight:650}
 @media (max-width:620px){.lb-cards{grid-template-columns:repeat(2,1fr);min-height:90px}}
+.lb-stick,.lb-jump{display:none}
+/* ----- phones and tablets only (the main pointer is a finger) ----- */
+@media (pointer:coarse){
+#lobby{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+#lobby button,#lobby select{touch-action:manipulation}
+.lb-stick{display:block;position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));width:118px;height:118px;border-radius:50%;background:rgba(244,240,232,.08);border:1.5px solid rgba(244,240,232,.3);touch-action:none}
+#lbStick{left:calc(16px + env(safe-area-inset-left))}
+#lbLook{right:calc(16px + env(safe-area-inset-right))}
+.lb-stick i{position:absolute;left:35.5px;top:35.5px;width:44px;height:44px;border-radius:50%;background:rgba(244,240,232,.7);pointer-events:none}
+.lb-stick span{position:absolute;left:0;right:0;bottom:-18px;text-align:center;font-size:12px;font-weight:650;opacity:.75;pointer-events:none}
+.lb-jump{display:block;position:absolute;right:calc(39px + env(safe-area-inset-right));bottom:calc(154px + env(safe-area-inset-bottom));width:72px;height:72px;border-radius:50%;font-size:15px;font-weight:750;color:inherit;background:rgba(7,9,31,.8);border:1.5px solid rgba(244,240,232,.4)}
+.lb-top{padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}
+.lb-bottom{display:contents}
+.lb-help,.lb-jump-key{display:none}
+.lb-emotes{position:absolute;z-index:1;left:0;right:0;top:calc(62px + env(safe-area-inset-top));flex-wrap:nowrap;gap:6px;padding:0 8px}
+.lb-emotes .lb-pill{min-height:44px;min-width:48px;padding:8px 12px;white-space:nowrap}
+#lbNear{position:absolute;z-index:1;left:50%;transform:translateX(-50%);bottom:calc(244px + env(safe-area-inset-bottom));min-height:48px;max-width:calc(100% - 24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-note{top:calc(116px + env(safe-area-inset-top));font-size:13px}
+#lobby.lb-busy .lb-stick,#lobby.lb-busy .lb-jump,#lobby.lb-busy .lb-emotes{display:none}
+.lb-trade{padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));grid-template:minmax(0,1fr)/minmax(0,1fr)}
+.lb-box{align-self:center;padding:12px 12px 0;gap:10px;overscroll-behavior:contain}
+.lb-bag{touch-action:pan-x pan-y;min-height:max-content}
+.lb-foot{position:sticky;bottom:0;margin:0 -12px;padding:10px 12px 12px;background:var(--ink2,#14173d);border-top:1px solid var(--line,rgba(244,240,232,.2))}
+.lb-foot .st{flex-basis:100%}
+.lb-foot .btn{flex:1;min-height:46px}
+}
+/* phones held sideways: short screen */
+@media (pointer:coarse) and (max-height:500px){
+.lb-emotes{left:50%;right:auto;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top))}
+.lb-emotes .lb-pill{min-width:44px;padding:8px 10px}
+.lb-top #lbWho{display:none}
+.lb-note{top:calc(62px + env(safe-area-inset-top))}
+.lb-stick{width:104px;height:104px}
+.lb-stick i{left:28.5px;top:28.5px}
+.lb-jump{width:62px;height:62px;right:calc(37px + env(safe-area-inset-right));bottom:calc(138px + env(safe-area-inset-bottom))}
+#lbNear{bottom:calc(20px + env(safe-area-inset-bottom));max-width:calc(100% - 300px)}
+.lb-cards{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));min-height:70px}
+.lb-bag{grid-auto-columns:72px}
+.lb-foot .st{flex-basis:auto}
+.lb-foot .btn{flex:none}
+}
 `;
 const style = document.createElement("style"); style.textContent = css; document.head.appendChild(style);
 const root = document.createElement("div");
@@ -73,10 +111,12 @@ root.innerHTML = `
 <div class="lb-top"><button class="btn sm ghost lb-pill" data-lb="exit">&larr; Back</button><span class="lb-pill" id="lbWho">Connecting…</span><span class="lb-gap"></span>
   <label class="lb-pill" id="lbRoomWrap" hidden>Room <select id="lbRoom"></select></label></div>
 <div class="lb-note" id="lbNote" hidden></div>
-<div id="lbStick" aria-hidden="true"><i></i></div>
+<div class="lb-stick" id="lbStick" aria-hidden="true"><i></i><span>Move</span></div>
+<div class="lb-stick" id="lbLook" aria-hidden="true"><i></i><span>Look</span></div>
+<button type="button" class="lb-jump" data-lb="jump">Jump</button>
 <div class="lb-bottom">
   <button class="btn" data-lb="near" id="lbNear" hidden></button>
-  <div class="lb-row">${Object.entries(EMOTES).map(([k, v]) => `<button class="lb-pill" data-emote="${k}">${v}</button>`).join("")}<button class="lb-pill" data-lb="jump">Jump</button></div>
+  <div class="lb-row lb-emotes">${Object.entries(EMOTES).map(([k, v]) => `<button class="lb-pill" data-emote="${k}">${v}</button>`).join("")}<button class="lb-pill lb-jump-key" data-lb="jump">Jump</button></div>
   <div class="lb-help">WASD or arrows to move · drag to look · E to trade · Space to jump</div>
 </div>
 <div class="lb-ask" id="lbAsk" hidden role="alertdialog"></div>
@@ -87,7 +127,7 @@ const canvas = $("#lbCanvas");
 /* ---------- state ---------- */
 let backScroll = 0, gfx = null, models = {}, running = false, raf = 0, last = 0, net = null, session = null, gen = 0;
 const me = { x: 0, z: 6, r: Math.PI, y: 0, vy: 0, moving: false, emote: null, color: "#ff5b1f", name: "You" };
-const peers = new Map(), keys = new Set(), stick = { x: 0, y: 0 };
+const peers = new Map(), keys = new Set(), stick = { x: 0, y: 0 }, look = { x: 0, y: 0 };
 const cam = { yaw: 0, pitch: .45, dist: 7.5 };
 let nearId = null;
 const TABLES = [[-6,-3],[6,-3],[-6,5],[6,5]];
@@ -189,6 +229,7 @@ function step(dt, t) {
   } else ix = iz = 0;
   if (keys.has("q")) cam.yaw -= 1.8*dt;
   if (keys.has("r")) cam.yaw += 1.8*dt;
+  if (!session) { cam.yaw -= look.x*2.4*dt; cam.pitch = clamp(cam.pitch + look.y*1.3*dt, .15, 1.15); }
   const len = Math.hypot(ix, iz);
   me.moving = len > .12;
   if (me.moving) {
@@ -234,10 +275,15 @@ function note(text) { const n = $("#lbNote"); n.hidden = !text; n.textContent = 
 function who() { const n = peers.size + 1; $("#lbWho").textContent = net?.practice ? "Practice room" : `Live · ${n} ${n === 1 ? "person" : "people"} here`; }
 function ask(html, buttons) {
   const a = $("#lbAsk");
-  if (!html) { a.hidden = true; a.innerHTML = ""; return; }
+  if (!html) { a.hidden = true; a.innerHTML = ""; syncControls(); return; }
   a.innerHTML = `<p>${html}</p><div class="lb-row">${buttons.map((b, i) => `<button class="btn sm ${i ? "ghost" : ""}" data-ans="${i}">${esc(b[0])}</button>`).join("")}</div>`;
-  a.hidden = false;
+  a.hidden = false; syncControls();
   a.onclick = e => { const b = e.target.closest("[data-ans]"); if (!b) return; ask(); buttons[+b.dataset.ans][1](); };
+}
+function syncControls() {
+  const busy = !$("#lbAsk").hidden || !!session;
+  root.classList.toggle("lb-busy", busy);
+  if (busy) sticks.forEach(s => s.reset());
 }
 function emote(k) { me.emote = { k, at: Date.now() }; net?.publish(true); }
 function jump() { if (!me.y && !session) { me.vy = 5; me.jumpAt = Date.now(); net?.publish(true); } }
@@ -250,7 +296,7 @@ const signature = (aCards, bCards) => key(aCards) + "\u0003" + key(bCards);
 const parseCards = s => { try { const a = JSON.parse(s || "[]"); return Array.isArray(a) ? a.slice(0, MAX_CARDS).filter(c => c && typeof c.id === "string" && typeof c.niche === "number" && c.niche >= 0 && c.niche <= 100).map(c => slim({ ...c, art: /^(https:|data:image\/)/.test(c.art || "") ? c.art : "" })) : []; } catch { return []; } };
 
 function openSession(s) { /* s: {role, partner, mine:[], theirs:[], myReady, theirReady, state, setCards, setReady, close, lock} */
-  session = s; me.busy = true; keys.clear(); stick.x = stick.y = 0; ask();
+  session = s; me.busy = true; keys.clear(); ask();
   net.publish(true); renderTrade();
 }
 function endSession(message) {
@@ -258,6 +304,7 @@ function endSession(message) {
   clearInterval(session.timer);
   session = null; me.busy = false;
   const t = $("#lbTrade"); t.hidden = true; t.innerHTML = "";
+  syncControls();
   net?.publish(true);
   if (message) B.toast(message);
 }
@@ -600,7 +647,7 @@ function close() {
   if (session) { if (session.abort) session.abort(); else session.close(); }
   endSession();
   net?.stop(); net = null;
-  peers.clear(); tags.forEach(t => t.remove()); tags.clear(); keys.clear(); stick.x = stick.y = 0; ask(); note("");
+  peers.clear(); tags.forEach(t => t.remove()); tags.clear(); keys.clear(); sticks.forEach(s => s.reset()); ask(); note("");
   root.hidden = true; document.body.classList.remove("noscroll", "lb-open"); window.scrollTo(0, backScroll);
 }
 
@@ -612,7 +659,7 @@ root.addEventListener("click", e => {
   if (el.dataset.pick) return toggleCard(el.dataset.pick);
   const a = el.dataset.lb;
   if (a === "exit") close();
-  else if (a === "jump") jump();
+  else if (a === "jump") { if (!el.classList.contains("lb-jump") || e.detail === 0) jump(); }
   else if (a === "near" && nearId) net?.invite(nearId);
   else if (a === "leave") session?.close();
   else if (a === "ready" && session && session.state === "open") { const sig = sigNow(session); session.myReady = session.myReady === sig ? "" : sig; session.setReady(session.myReady); checkReady(); }
@@ -622,11 +669,28 @@ canvas.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.client
 canvas.addEventListener("pointermove", e => { if (!drag || e.pointerId !== drag.id) return; cam.yaw -= (e.clientX - drag.x)*.006; cam.pitch = clamp(cam.pitch + (e.clientY - drag.y)*.004, .15, 1.15); drag.x = e.clientX; drag.y = e.clientY; });
 ["pointerup","pointercancel"].forEach(ev => canvas.addEventListener(ev, () => drag = null));
 canvas.addEventListener("wheel", e => { cam.dist = clamp(cam.dist + e.deltaY*.008, 4.5, 13); e.preventDefault(); }, { passive: false });
-const pad = $("#lbStick"); let padId = null;
-const padMove = e => { const r = pad.getBoundingClientRect(); let x = (e.clientX - r.left - r.width/2)/40, y = (e.clientY - r.top - r.height/2)/40; const l = Math.hypot(x, y); if (l > 1) { x /= l; y /= l; } stick.x = session ? 0 : x; stick.y = session ? 0 : y; pad.firstElementChild.style.transform = `translate(${x*34}px,${y*34}px)`; };
-pad.addEventListener("pointerdown", e => { padId = e.pointerId; pad.setPointerCapture(padId); padMove(e); });
-pad.addEventListener("pointermove", e => { if (e.pointerId === padId) padMove(e); });
-["pointerup","pointercancel"].forEach(ev => pad.addEventListener(ev, () => { padId = null; stick.x = stick.y = 0; pad.firstElementChild.style.transform = ""; }));
+/* each joystick follows its own finger, so you can move and look at the same time */
+function makeStick(pad, out) {
+  const knob = pad.firstElementChild;
+  let finger = null;
+  const reset = () => { finger = null; out.x = out.y = 0; knob.style.transform = ""; };
+  const move = e => {
+    const r = pad.getBoundingClientRect(), reach = r.width*.34;
+    let x = (e.clientX - r.left - r.width/2)/reach, y = (e.clientY - r.top - r.height/2)/reach;
+    const l = Math.hypot(x, y); if (l > 1) { x /= l; y /= l; }
+    knob.style.transform = `translate(${x*reach}px,${y*reach}px)`;
+    const dead = Math.hypot(x, y) < .15; /* ignore tiny thumb wobbles */
+    out.x = dead || session ? 0 : x; out.y = dead || session ? 0 : y;
+  };
+  pad.addEventListener("pointerdown", e => { if (finger !== null) return; e.preventDefault(); finger = e.pointerId; pad.setPointerCapture(finger); move(e); });
+  pad.addEventListener("pointermove", e => { if (e.pointerId === finger) move(e); });
+  ["pointerup","pointercancel","lostpointercapture"].forEach(ev => pad.addEventListener(ev, e => { if (e.pointerId === finger) reset(); }));
+  return { reset };
+}
+const sticks = [makeStick($("#lbStick"), stick), makeStick($("#lbLook"), look)];
+/* Phones don't send a "click" for a second finger, so Jump reacts to the touch itself */
+$(".lb-jump").addEventListener("pointerdown", e => { e.preventDefault(); jump(); });
+root.addEventListener("contextmenu", e => e.preventDefault());
 window.addEventListener("keydown", e => {
   if (!running) return;
   if (e.target.tagName === "SELECT") return;
@@ -640,7 +704,7 @@ window.addEventListener("keydown", e => {
   keys.add(k);
 }, true);
 window.addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
-window.addEventListener("blur", () => { keys.clear(); stick.x = stick.y = 0; });
+window.addEventListener("blur", () => { keys.clear(); sticks.forEach(s => s.reset()); });
 /* hidden tabs leave the room, so idle players don't use up the free connection limit */
 let resume = false, hideTimer = 0;
 document.addEventListener("visibilitychange", () => {
