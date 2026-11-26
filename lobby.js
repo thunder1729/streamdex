@@ -12,9 +12,12 @@ const USE_BLENDER_MODELS = false;
 const B = window.StreamdexLobbyBridge, R3 = window.Lobby3D;
 if (!B || !R3) return;
 const { M, rgb } = R3;
-const ROOMS = 5, ROOM_CAP = 12, MAX_CARDS = 5, SEND_MS = 200, BEAT_MS = 15000, STALE_MS = 45000;
+const MAX_CARDS = 5, SEND_MS = 200, BEAT_MS = 15000, STALE_MS = 45000;
 const ARENA = 12.5, SPEED = 4.6;
 const EMOTES = { wave: "👋", yes: "👍", love: "🔥", trade: "🔁 Trade?" };
+/* admin settings (Admin > Multiplayer); safe defaults if the site doesn't provide them */
+const cfg = () => ({ on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", ...(B.lobbyCfg ? B.lobbyCfg() : {}) });
+const ROOMS = () => Math.max(1, Math.min(5, Math.round(+cfg().rooms) || 5)), ROOM_CAP = () => Math.max(2, Math.min(20, Math.round(+cfg().cap) || 12));
 const $ = s => root.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -28,7 +31,7 @@ body.lb-open>*:not(#lobby):not(.toast):not(script):not(style){display:none!impor
 #lobby[hidden],#lobby [hidden]{display:none!important}
 #lbCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
 #lbLabels{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.lb-top,.lb-note,.lb-bottom,#lbStick{z-index:2}
+.lb-top,.lb-bottom,#lbStick{z-index:2}
 .lb-load{position:absolute;inset:0;z-index:1;display:grid;place-content:center;justify-items:center;gap:22px;text-align:center;padding:24px;background:radial-gradient(ellipse at 50% 40%,#1a1f6b 0%,#0b0d2a 70%);transition:opacity .35s}
 .lb-load.out{opacity:0;pointer-events:none}
 .lb-disc{position:relative;width:124px;height:124px;border-radius:50%;background:repeating-radial-gradient(circle,#101018 0 3px,#1b1b28 3px 4px);box-shadow:0 0 0 3px #2230d8,0 0 50px rgba(34,48,216,.65);animation:lbspin 1.6s linear infinite}
@@ -51,7 +54,9 @@ body.lb-open>*:not(#lobby):not(.toast):not(script):not(style){display:none!impor
 .lb-top>*{pointer-events:auto}
 .lb-pill{font-size:14px;font-weight:650;padding:8px 14px;border-radius:99px;background:rgba(7,9,31,.8);border:1px solid rgba(244,240,232,.2);color:inherit}
 .lb-top .lb-gap{flex:1}
-.lb-note{position:absolute;left:50%;transform:translateX(-50%);top:calc(62px + env(safe-area-inset-top));width:max-content;max-width:calc(100% - 24px);text-align:center;font-size:14px;padding:8px 14px;border-radius:12px;background:rgba(255,91,31,.94);color:#14060a;font-weight:650;pointer-events:none}
+.lb-notes{position:absolute;left:50%;transform:translateX(-50%);top:calc(62px + env(safe-area-inset-top));z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;width:max-content;max-width:calc(100% - 24px);pointer-events:none}
+.lb-msg{text-align:center;font-size:14px;padding:8px 14px;border-radius:12px;background:rgba(34,48,216,.92);color:#f4f0e8;font-weight:650;border:1px solid rgba(244,240,232,.25)}
+.lb-note{text-align:center;font-size:14px;padding:8px 14px;border-radius:12px;background:rgba(255,91,31,.94);color:#14060a;font-weight:650;}
 .lb-bottom{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 12px calc(14px + env(safe-area-inset-bottom));pointer-events:none}
 .lb-bottom>*{pointer-events:auto}
 .lb-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
@@ -87,7 +92,7 @@ root.innerHTML = `
 <div class="lb-load" id="lbLoad" role="status" aria-live="polite"><div class="lb-disc"><i></i></div><div><h3>Entering the lobby</h3><p id="lbLoadMsg">Connecting to the server…</p></div><div class="lb-bar"><b></b></div></div>
 <div class="lb-top"><button class="btn sm ghost lb-pill" data-lb="exit">&larr; Back</button><span class="lb-pill" id="lbWho">Connecting…</span><span class="lb-gap"></span>
   <label class="lb-pill" id="lbRoomWrap" hidden>Room <select id="lbRoom"></select></label></div>
-<div class="lb-note" id="lbNote" hidden></div>
+<div class="lb-notes"><div class="lb-msg" id="lbMsg" hidden></div><div class="lb-note" id="lbNote" hidden></div></div>
 <div id="lbStick" aria-hidden="true"><i></i></div>
 <div class="lb-bottom">
   <button class="btn" data-lb="near" id="lbNear" hidden></button>
@@ -226,14 +231,14 @@ function step(dt, t) {
     const d = Math.hypot(p.x - me.x, p.z - me.z);
     if (d < bd && !p.busy) { bd = d; best = id; }
   }
-  if (session) best = null;
+  if (session || !cfg().trades) best = null;
   if (best !== nearId) { nearId = best; const b = $("#lbNear"); b.hidden = !best; if (best) b.textContent = "Trade with " + peers.get(best).name; }
   net?.tick?.(dt);
 }
 function frame(now) {
   if (!running) return;
   const dt = Math.min(.05, (now - last)/1000 || 0), t = now/1000; last = now;
-  step(dt, t);
+  step(dt, t); applyCfg();
   if (gfx) {
     const cp = Math.cos(cam.pitch), target = [me.x, 1.2, me.z];
     gfx.begin([me.x + Math.sin(cam.yaw)*cp*cam.dist, 1.2 + Math.sin(cam.pitch)*cam.dist, me.z + Math.cos(cam.yaw)*cp*cam.dist], target);
@@ -242,6 +247,18 @@ function frame(now) {
     for (const [id, p] of peers) { drawAvatar(p, t); setTag(id, p, false); }
   }
   raf = requestAnimationFrame(frame);
+}
+
+/* ---------- admin settings ---------- */
+let cfgAt = 0;
+function applyCfg(force) {
+  const t = Date.now(); if (!force && t - cfgAt < 1000) return; cfgAt = t;
+  const c = cfg();
+  if (!c.on) { B.toast("The lobby is closed for now."); close(); return; }
+  const m = $("#lbMsg"), txt = String(c.note || "").slice(0, 120);
+  if (m.textContent !== txt) m.textContent = txt;
+  m.hidden = !txt;
+  root.querySelectorAll("[data-emote]").forEach(b => b.hidden = !c.emotes);
 }
 
 /* ---------- loading screen ---------- */
@@ -264,7 +281,7 @@ function ask(html, buttons) {
   a.hidden = false;
   a.onclick = e => { const b = e.target.closest("[data-ans]"); if (!b) return; ask(); buttons[+b.dataset.ans][1](); };
 }
-function emote(k) { me.emote = { k, at: Date.now() }; net?.publish(true); }
+function emote(k) { if (!cfg().emotes) return; me.emote = { k, at: Date.now() }; net?.publish(true); }
 function jump() { if (!me.y && !session) { me.vy = 5; me.jumpAt = Date.now(); net?.publish(true); } }
 
 /* ---------- trade table (same UI for live and practice) ----------
@@ -404,12 +421,12 @@ function liveNet(db, user) {
     const mine = ++joining;
     leaveRoom();
     let pick = wanted;
-    if (!pick) for (let i = 1; i <= ROOMS && !pick; i++) {
+    if (!pick) for (let i = 1; i <= ROOMS() && !pick; i++) {
       const v = (await base.child("rooms/" + i).once("value")).val() || {};
-      if (Object.entries(v).filter(([id, p]) => id !== uid && fresh(p)).length < ROOM_CAP) pick = String(i);
+      if (Object.entries(v).filter(([id, p]) => id !== uid && fresh(p)).length < ROOM_CAP()) pick = String(i);
     } else {
       const v = (await base.child("rooms/" + pick).once("value")).val() || {};
-      if (Object.entries(v).filter(([id, p]) => id !== uid && fresh(p)).length >= ROOM_CAP) { B.toast("That room is full."); return join(""); }
+      if (Object.entries(v).filter(([id, p]) => id !== uid && fresh(p)).length >= ROOM_CAP()) { B.toast("That room is full."); return join(""); }
     }
     if (stopped || mine !== joining) return;
     if (!pick) { note("Every room is full right now. Try again in a few minutes."); return; }
@@ -506,7 +523,7 @@ function liveNet(db, user) {
   return {
     practice: false,
     async start() {
-      $("#lbRoom").innerHTML = Array.from({ length: ROOMS }, (_, i) => `<option value="${i+1}">${i+1}</option>`).join("");
+      $("#lbRoom").innerHTML = Array.from({ length: ROOMS() }, (_, i) => `<option value="${i+1}">${i+1}</option>`).join("");
       $("#lbRoomWrap").hidden = false;
       $("#lbRoom").onchange = e => { if (!session) { loading(true, "Switching rooms…"); join(e.target.value).then(() => loading(false)).catch(failed); } else e.target.value = room; };
       B.watchTrades();
@@ -518,7 +535,7 @@ function liveNet(db, user) {
         const name = await nameFor(from);
         if (stopped) return;
         if (!name || !v.sid || now() - v.t > 30000) return drop();
-        if (session || asking || pendingInvite || !B.tradeEnabled()) { ref.child("state").set("closed").catch(() => {}); return drop(); }
+        if (session || asking || pendingInvite || !B.tradeEnabled() || !cfg().trades) { ref.child("state").set("closed").catch(() => {}); return drop(); }
         asking = from; me.busy = true; this.publish(true);
         const answer = async yes => {
           clearTimeout(expire); asking = null; me.busy = false; drop();
@@ -549,7 +566,7 @@ function liveNet(db, user) {
     async invite(partnerId) {
       const p = peers.get(partnerId);
       if (!p || session || pendingInvite || asking) return;
-      if (!B.tradeEnabled()) return B.toast("Trading is switched off for now.");
+      if (!B.tradeEnabled() || !cfg().trades) return B.toast("Trading is switched off for now.");
       if (B.openOffers() >= 10) return B.toast("You have 10 open offers. Cancel one in the Trade tab first.");
       const ref = base.child("sessions").push(), sid = ref.key, inbox = base.child(`invites/${partnerId}/${uid}`);
       let off = () => {}, timer = 0;
@@ -583,6 +600,7 @@ async function connect() {
   if (!info.user || !info.handle) return practice("Sign in and finish your account to meet real players.");
   if (!LOBBY_DB_URL) return practice("Live multiplayer isn't set up yet.");
   if (!B.tradeEnabled()) return practice("Trading is switched off right now.");
+  if (cfg().practiceOnly) return practice("The live lobby is paused right now.");
   try {
     if (!firebase.database) await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js");
     if (mine !== gen) return;
@@ -610,6 +628,7 @@ async function loadModels() {
 /* ---------- open / close ---------- */
 function open() {
   if (running) return;
+  if (!cfg().on) return B.toast("The lobby is closed for now.");
   if (!gfx) {
     try { gfx = R3.create(canvas); } catch (e) { console.warn(e); }
     if (!gfx) return B.toast("This browser can't show 3D graphics (WebGL).");
@@ -617,7 +636,7 @@ function open() {
   }
   backScroll = window.scrollY; root.hidden = false; document.body.classList.add("noscroll", "lb-open");
   Object.assign(me, { x: (Math.random()-.5)*4, z: 5 + Math.random()*2, r: Math.PI, y: 0, vy: 0, busy: false, emote: null });
-  cam.yaw = 0; nearId = null; $("#lbNear").hidden = true; $("#lbWho").textContent = "Connecting…"; loading(true);
+  applyCfg(true); cam.yaw = 0; nearId = null; $("#lbNear").hidden = true; $("#lbWho").textContent = "Connecting…"; loading(true);
   running = true; last = performance.now(); raf = requestAnimationFrame(frame);
   connect();
   canvas.setAttribute("tabindex", "-1"); canvas.focus();
@@ -680,7 +699,7 @@ document.addEventListener("visibilitychange", () => {
 
 /* ---------- the new tab: added next to the existing ones ---------- */
 function addTabs() {
-  const allowed = B.tradeEnabled();
+  const allowed = B.tradeEnabled() && cfg().on;
   document.querySelectorAll(".tabbar").forEach(bar => {
     const have = bar.querySelector("[data-lobby-tab]");
     if (!allowed) return have?.remove();
