@@ -4,7 +4,7 @@
 "use strict";
 
 /* ===== SETUP: paste your Realtime Database URL between the quotes (see SETUP.md) ===== */
-const LOBBY_DB_URL = "";
+const LOBBY_DB_URL = "https://streamdex-40c93-default-rtdb.firebaseio.com";
 /* Set to true after you export models from Blender into the models folder. */
 const USE_BLENDER_MODELS = false;
 /* ===================================================================================== */
