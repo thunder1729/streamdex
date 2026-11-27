@@ -16,7 +16,7 @@ const MAX_CARDS = 5, SEND_MS = 200, BEAT_MS = 15000, STALE_MS = 45000;
 const ARENA = 12.5, SPEED = 4.6;
 const EMOTES = { wave: "👋", yes: "👍", love: "🔥", trade: "🔁 Trade?", dance: "💃", laugh: "😂" };
 /* admin settings (Admin > Multiplayer); safe defaults if the site doesn't provide them */
-const cfg = () => { const c = { on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", arcade: true, arcadeCap: 150, arcadeRate: 100, ...(B.lobbyCfg ? B.lobbyCfg() : {}) }; c.games = { beat: true, match: true, catch: true, ...(c.games || {}) }; return c; };
+const cfg = () => { const c = { on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", arcade: true, arcadeCap: 150, arcadeRate: 100, chat: true, chatSlow: 2, chatWords: "", ...(B.lobbyCfg ? B.lobbyCfg() : {}) }; c.games = { beat: true, match: true, catch: true, ...(c.games || {}) }; return c; };
 const Arc = () => window.StreamdexArcade, arcadeOpen = () => !!(Arc() && Arc().isOpen());
 const ROOMS = () => Math.max(1, Math.min(5, Math.round(+cfg().rooms) || 5)), ROOM_CAP = () => Math.max(2, Math.min(20, Math.round(+cfg().cap) || 12));
 const $ = s => root.querySelector(s);
@@ -79,6 +79,18 @@ body.lb-open>*:not(#lobby):not(.toast):not(script):not(style){display:none!impor
 button.lb-card{padding:0;background:none;border:0;color:inherit;cursor:pointer}
 button.lb-card.sel{outline:3px solid #6ff0a0;outline-offset:2px}
 .lb-empty{grid-column:1/-1;opacity:.65;font-size:14px;padding:24px 4px;text-align:center}
+.lb-chat{position:absolute;left:12px;bottom:calc(122px + env(safe-area-inset-bottom));width:min(330px,calc(100% - 24px));z-index:2;display:flex;flex-direction:column;gap:6px}
+.lb-log{max-height:170px;overflow-y:auto;padding:8px 10px;border-radius:12px;background:rgba(7,9,31,.72);border:1px solid rgba(244,240,232,.18);font-size:13.5px;line-height:1.35;touch-action:pan-y;user-select:text;-webkit-user-select:text;word-break:break-word;scrollbar-width:thin}
+.lb-log:empty{display:none}
+.lb-log .lb-nm{font:inherit;font-weight:800;padding:0;background:none;border:0;cursor:pointer}
+.lb-log .lb-nm:hover{text-decoration:underline}
+.lb-chatform{display:flex;gap:6px}
+.lb-chatform input{flex:1;min-width:0;padding:9px 12px;border-radius:12px;border:1.5px solid rgba(244,240,232,.25);background:rgba(7,9,31,.82);color:inherit;font:inherit;font-size:14px;outline:none;user-select:text;-webkit-user-select:text}
+.lb-chatform input:focus{border-color:#ffd34d}
+.lb-chat:not(:focus-within) .lb-log{opacity:.82}
+.lb-say{font-style:normal;white-space:normal;max-width:210px;text-align:center;font-size:14px;font-weight:600;line-height:1.3;padding:6px 11px;border-radius:14px;background:#f4f0e8;color:#0b0d2a;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+.lb-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff5b1f;margin-left:6px;vertical-align:middle}
+@media (pointer:coarse){.lb-chat{left:auto;right:12px;bottom:calc(168px + env(safe-area-inset-bottom));width:min(250px,56vw)}.lb-log{max-height:120px}}
 .lb-coins b{font-variant-numeric:tabular-nums}
 .lb-coins.pop{animation:lbpop .5s}
 @keyframes lbpop{40%{transform:scale(1.25);background:#ffd34d;color:#14060a}}
@@ -102,9 +114,10 @@ root.innerHTML = `
 <div class="lb-bottom">
   <button class="btn lb-play" data-lb="play" id="lbPlay" hidden></button>
   <button class="btn" data-lb="near" id="lbNear" hidden></button>
-  <div class="lb-row">${Object.entries(EMOTES).map(([k, v]) => `<button class="lb-pill" data-emote="${k}">${v}</button>`).join("")}<button class="lb-pill" data-lb="arcade" id="lbArcadeBtn">🎮 Arcade</button><button class="lb-pill" data-lb="jump">Jump</button></div>
-  <div class="lb-help">WASD or arrows to move · drag to look · E to trade or play · 1-6 emotes · Space to jump</div>
+  <div class="lb-row">${Object.entries(EMOTES).map(([k, v]) => `<button class="lb-pill" data-emote="${k}">${v}</button>`).join("")}<button class="lb-pill" data-lb="chat" id="lbChatBtn">💬 Chat<i class="lb-dot" hidden></i></button><button class="lb-pill" data-lb="arcade" id="lbArcadeBtn">🎮 Arcade</button><button class="lb-pill" data-lb="jump">Jump</button></div>
+  <div class="lb-help">WASD or arrows to move · drag to look · Enter to chat · E to trade or play · 1-6 emotes · Space to jump</div>
 </div>
+<div class="lb-chat" id="lbChat" hidden><div class="lb-log" id="lbLog" aria-live="polite" aria-label="Lobby chat"></div><form class="lb-chatform" id="lbChatForm"><input id="lbChatIn" maxlength="120" placeholder="Press Enter to chat" autocomplete="off" enterkeyhint="send" aria-label="Chat message"><button class="btn sm" type="submit">Send</button></form></div>
 <div class="lb-ask" id="lbAsk" hidden role="alertdialog"></div>
 <div class="lb-trade" id="lbTrade" hidden role="dialog" aria-label="Trade table"></div>`;
 document.body.appendChild(root);
@@ -305,14 +318,16 @@ function drawAvatar(p, t) {
 const tags = new Map();
 function setTag(id, p, isMe) {
   let el = tags.get(id);
-  if (!el) { el = document.createElement("div"); el.className = "lb-tag"; el.innerHTML = "<em hidden></em><b></b>"; $("#lbLabels").appendChild(el); tags.set(id, el); }
+  if (!el) { el = document.createElement("div"); el.className = "lb-tag"; el.innerHTML = "<i class=\"lb-say\" hidden></i><em hidden></em><b></b>"; $("#lbLabels").appendChild(el); tags.set(id, el); }
   const s = gfx.project(p.x, 2.35 + (p.y || 0), p.z);
   el.hidden = !s; if (!s) return;
   const name = (isMe ? "You" : p.name) + (p.bot ? " (bot)" : "") + (p.busy && !isMe ? " · trading" : "");
   if (el.lastChild.textContent !== name) el.lastChild.textContent = name;
   const live = p.emote && Date.now() - p.emote.at < 3000;
-  el.firstChild.hidden = !live;
-  if (live) el.firstChild.textContent = EMOTES[p.emote.k] || "";
+  const em = el.querySelector("em"), sy = el.querySelector(".lb-say"), talk = p.say && Date.now() - p.say.at < 6500 && cfg().chat;
+  em.hidden = !live || !!talk;
+  if (live) em.textContent = EMOTES[p.emote.k] || "";
+  sy.hidden = !talk; if (talk && sy.textContent !== p.say.text) sy.textContent = p.say.text;
   el.style.transform = `translate(${s[0]}px,${s[1]}px) translate(-50%,-100%)`;
   el.style.zIndex = Math.round(1000 - s[2]*10);
 }
@@ -384,7 +399,7 @@ function applyCfg(force) {
   if (m.textContent !== txt) m.textContent = txt;
   m.hidden = !txt;
   root.querySelectorAll("[data-emote]").forEach(b => b.hidden = !c.emotes);
-  live = c; $("#lbArcadeBtn").hidden = !(c.arcade && Object.values(c.games).some(Boolean));
+  live = c; chatShow(); $("#lbArcadeBtn").hidden = !(c.arcade && Object.values(c.games).some(Boolean));
   if (!c.arcade && arcadeOpen()) Arc().close();
   const info = B.info(), earn = !!(info.user && info.handle && !info.demo), pill = $("#lbCoins"), amt = B.coins ? B.coins() : 0;
   pill.hidden = !earn || !c.arcade;
@@ -480,6 +495,48 @@ function toggleCard(id) {
   s.myReady = ""; s.setCards(s.mine); checkReady();
 }
 
+/* ---------- chat ---------- */
+const BAD_WORDS = ["fuck", "shit", "bitch", "asshole", "cunt"]; /* a basic list; add more in Admin > Multiplayer */
+const muted = new Set();
+let chatOpen = !matchMedia("(pointer:coarse)").matches, unread = 0, lastSend = 0;
+const blocked = () => BAD_WORDS.concat(String(cfg().chatWords || "").split(/[,\n]/).map(w => w.trim().toLowerCase()).filter(w => w.length > 1));
+function clean(text) {
+  let t = String(text ?? "").replace(/\s+/g, " ").trim().replace(/https?:\/\/\S+|www\.\S+/gi, "[link]").slice(0, 120);
+  for (const w of blocked()) t = t.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), m => "*".repeat(m.length));
+  return t;
+}
+function chatShow() {
+  const c = cfg(), box = $("#lbChat"); if (!box) return;
+  box.hidden = !c.chat || !chatOpen; $("#lbChatBtn").hidden = !c.chat;
+  const dot = $("#lbChatBtn .lb-dot"); dot.hidden = !(unread && !chatOpen);
+  if (chatOpen) unread = 0;
+}
+function chatAdd(m) { /* m: { uid, name, text, mine } */
+  if (!m.mine && muted.has(m.uid)) return;
+  const log = $("#lbLog"), near = log.scrollHeight - log.scrollTop - log.clientHeight < 40, row = document.createElement("div"), who = document.createElement("button");
+  who.type = "button"; who.className = "lb-nm"; who.textContent = m.name; who.dataset.uid = m.mine ? "" : (m.uid || ""); who.style.color = colorFor(m.uid || "me"); who.title = m.mine ? "" : "Click to mute or unmute";
+  row.append(who, ": ", document.createTextNode(m.text)); log.appendChild(row);
+  while (log.children.length > 60) log.firstChild.remove();
+  if (near || m.mine) log.scrollTop = log.scrollHeight;
+  if (!m.mine && !chatOpen) { unread++; chatShow(); }
+}
+function chatClear() { const l = $("#lbLog"); if (l) l.innerHTML = ""; unread = 0; }
+function sendChat(raw) {
+  const c = cfg(); if (!c.chat) return;
+  const text = clean(raw); if (!text) return;
+  const wait = lastSend + (+c.chatSlow || 0)*1000 - Date.now();
+  if (wait > 0) return B.toast(`Slow down! You can chat again in ${Math.ceil(wait/1000)}s.`);
+  lastSend = Date.now();
+  chatAdd({ uid: "me", name: "You", text, mine: true }); me.say = { text, at: Date.now() };
+  net?.chat?.(text);
+}
+$("#lbChatForm").addEventListener("submit", e => { e.preventDefault(); const i = $("#lbChatIn"); sendChat(i.value); i.value = ""; });
+$("#lbLog").addEventListener("click", e => {
+  const b = e.target.closest(".lb-nm"); if (!b || !b.dataset.uid) return;
+  const id = b.dataset.uid, p = peers.get(id), name = b.textContent;
+  if (muted.has(id)) { muted.delete(id); B.toast(`Unmuted ${name}.`); } else { muted.add(id); if (p) p.say = null; B.toast(`Muted ${name}. Click their name again to unmute.`); }
+});
+
 /* ---------- practice room: bots, nothing is saved ---------- */
 function practiceNet(reason) {
   const sample = (id, name, artist, niche) => slim({ id, name, artist, niche, plays: 12, pop: Math.round(10 ** (2 + niche/100*4.7)), type: "Normal", no: 1 });
@@ -503,6 +560,10 @@ function practiceNet(reason) {
       }
     },
     publish() {},
+    chat() {
+      const lines = ["Nice to meet you!", "Want to trade?", "Try the arcade, it's fun 🎮", "That's a rare one!", "gg", "Hi hi 👋", "Love this island"];
+      later(1200 + Math.random()*1500, () => { const p = peers.get(Math.random() < .5 ? "bot-a" : "bot-b"); if (!p) return; const text = lines[Math.floor(Math.random()*lines.length)]; chatAdd({ uid: p.id, name: p.name, text }); p.say = { text, at: Date.now() }; });
+    },
     invite(id) {
       const p = peers.get(id); p.busy = true; p.tx = p.x; p.tz = p.z;
       const own = B.cards().map(slim);
@@ -568,6 +629,17 @@ function liveNet(db, user) {
     for (const ev of ["child_added", "child_changed"]) roomOffs.push(on(ref, ev, upsert));
     roomOffs.push(on(ref, "child_removed", s => { peers.delete(s.key); dropTag(s.key); who(); }));
     note(""); who();
+    chatClear();
+    roomOffs.push(on(base.child("chat/" + room).limitToLast(30), "child_added", chatIn));
+  }
+  async function chatIn(snap) {
+    const v = snap.val(), inRoom = room;
+    if (!v || typeof v.m !== "string" || v.u === uid || now() - (+v.t || 0) > 600000) return;
+    const name = await nameFor(v.u);
+    if (stopped || room !== inRoom || !name) return;
+    const text = clean(v.m); if (!text) return;
+    chatAdd({ uid: v.u, name, text });
+    const p = peers.get(v.u); if (p && !muted.has(v.u) && now() - v.t < 8000) p.say = { text, at: Date.now() };
   }
 
   /* one shared trade session, seen from side "a" (inviter) or "b" */
@@ -693,6 +765,12 @@ function liveNet(db, user) {
       sent = t; lastSent = k; myRef.set(d).catch(() => {});
     },
     tick() { this.publish(false); for (const [id, p] of peers) if (now() - p.seen > STALE_MS) { peers.delete(id); dropTag(id); who(); } },
+    chat(text) {
+      if (!room) return;
+      const r = base.child("chat/" + room).push({ u: uid, m: text, t: firebase.database.ServerValue.TIMESTAMP });
+      r.catch(e => { console.warn("lobby chat", e); B.toast("Couldn't send that. The chat rules may not be published yet (see SETUP.md)."); });
+      later(120000, () => r.remove().catch(() => {}));
+    },
     async invite(partnerId) {
       const p = peers.get(partnerId);
       if (!p || session || pendingInvite || asking) return;
@@ -778,7 +856,7 @@ function close() {
   if (session) { if (session.abort) session.abort(); else session.close(); }
   endSession();
   net?.stop(); net = null;
-  peers.clear(); tags.forEach(t => t.remove()); tags.clear(); keys.clear(); stick.x = stick.y = 0; ask(); note("");
+  chatClear(); me.say = null; peers.clear(); tags.forEach(t => t.remove()); tags.clear(); keys.clear(); stick.x = stick.y = 0; ask(); note("");
   clearTimeout(loadTimer); $("#lbLoad").hidden = true; root.classList.remove("lb-loading");
   root.hidden = true; document.body.classList.remove("noscroll", "lb-open"); window.scrollTo(0, backScroll);
 }
@@ -795,6 +873,7 @@ root.addEventListener("click", e => {
   else if (a === "near" && nearId) net?.invite(nearId);
   else if (a === "play" && nearCab) Arc()?.open(nearCab.key);
   else if (a === "arcade" && !session) Arc()?.open();
+  else if (a === "chat") { chatOpen = !chatOpen; chatShow(); if (chatOpen && !matchMedia("(pointer:coarse)").matches) $("#lbChatIn").focus(); }
   else if (a === "leave") session?.close();
   else if (a === "ready" && session && session.state === "open") { const sig = sigNow(session); session.myReady = session.myReady === sig ? "" : sig; session.setReady(session.myReady); checkReady(); }
 });
@@ -811,10 +890,12 @@ pad.addEventListener("pointermove", e => { if (e.pointerId === padId) padMove(e)
 window.addEventListener("keydown", e => {
   if (!running) return;
   if (e.target.tagName === "SELECT") return;
+  if (e.target.tagName === "INPUT") { e.stopPropagation(); if (e.key === "Escape") e.target.blur(); return; } /* typing in chat */
   e.stopPropagation();
   const k = e.key.toLowerCase();
   if (k === "escape") { if (arcadeOpen()) return; if (session) { if (session.state === "open") session.close(); } else close(); return; }
   if (session || arcadeOpen()) return;
+  if ((k === "enter" || k === "t") && !e.repeat && cfg().chat) { e.preventDefault(); chatOpen = true; chatShow(); return $("#lbChatIn").focus(); }
   if (k === "e" && !e.repeat && nearCab) return Arc().open(nearCab.key);
   if (k === "e" && nearId && !e.repeat) return net?.invite(nearId);
   if (/^[1-9]$/.test(k) && !e.repeat) { const em = Object.keys(EMOTES)[+k - 1]; if (em) return emote(em); }
