@@ -4,7 +4,7 @@
 "use strict";
 
 /* ===== SETUP: paste your Realtime Database URL between the quotes (see SETUP.md) ===== */
-const LOBBY_DB_URL = "https://streamdex-40c93-default-rtdb.firebaseio.com";
+const LOBBY_DB_URL = " https://streamdex-40c93-default-rtdb.firebaseio.com";
 /* Set to true after you export models from Blender into the models folder. */
 const USE_BLENDER_MODELS = false;
 /* ===================================================================================== */
@@ -14,9 +14,10 @@ if (!B || !R3) return;
 const { M, rgb } = R3;
 const MAX_CARDS = 5, SEND_MS = 200, BEAT_MS = 15000, STALE_MS = 45000;
 const ARENA = 12.5, SPEED = 4.6;
-const EMOTES = { wave: "👋", yes: "👍", love: "🔥", trade: "🔁 Trade?" };
+const EMOTES = { wave: "👋", yes: "👍", love: "🔥", trade: "🔁 Trade?", dance: "💃", laugh: "😂" };
 /* admin settings (Admin > Multiplayer); safe defaults if the site doesn't provide them */
-const cfg = () => ({ on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", ...(B.lobbyCfg ? B.lobbyCfg() : {}) });
+const cfg = () => { const c = { on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", arcade: true, arcadeCap: 150, arcadeRate: 100, ...(B.lobbyCfg ? B.lobbyCfg() : {}) }; c.games = { beat: true, match: true, catch: true, ...(c.games || {}) }; return c; };
+const Arc = () => window.StreamdexArcade, arcadeOpen = () => !!(Arc() && Arc().isOpen());
 const ROOMS = () => Math.max(1, Math.min(5, Math.round(+cfg().rooms) || 5)), ROOM_CAP = () => Math.max(2, Math.min(20, Math.round(+cfg().cap) || 12));
 const $ = s => root.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -78,6 +79,10 @@ body.lb-open>*:not(#lobby):not(.toast):not(script):not(style){display:none!impor
 button.lb-card{padding:0;background:none;border:0;color:inherit;cursor:pointer}
 button.lb-card.sel{outline:3px solid #6ff0a0;outline-offset:2px}
 .lb-empty{grid-column:1/-1;opacity:.65;font-size:14px;padding:24px 4px;text-align:center}
+.lb-coins b{font-variant-numeric:tabular-nums}
+.lb-coins.pop{animation:lbpop .5s}
+@keyframes lbpop{40%{transform:scale(1.25);background:#ffd34d;color:#14060a}}
+.lb-play{background:#ffd34d!important;color:#14060a!important}
 .lb-bag{display:grid;grid-auto-flow:column;grid-auto-columns:104px;gap:10px;overflow-x:auto;padding:5px;touch-action:pan-x;flex:none}
 .lb-foot{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .lb-foot .st{margin-right:auto;font-size:14px;font-weight:650}
@@ -90,31 +95,37 @@ root.setAttribute("role", "application"); root.setAttribute("aria-label", "Tradi
 root.innerHTML = `
 <canvas id="lbCanvas"></canvas><div id="lbLabels"></div>
 <div class="lb-load" id="lbLoad" role="status" aria-live="polite"><div class="lb-disc"><i></i></div><div><h3>Entering the lobby</h3><p id="lbLoadMsg">Connecting to the server…</p></div><div class="lb-bar"><b></b></div></div>
-<div class="lb-top"><button class="btn sm ghost lb-pill" data-lb="exit">&larr; Back</button><span class="lb-pill" id="lbWho">Connecting…</span><span class="lb-gap"></span>
+<div class="lb-top"><button class="btn sm ghost lb-pill" data-lb="exit">&larr; Back</button><span class="lb-pill" id="lbWho">Connecting…</span><span class="lb-pill lb-coins" id="lbCoins" hidden>🪙 <b>0</b></span><span class="lb-gap"></span>
   <label class="lb-pill" id="lbRoomWrap" hidden>Room <select id="lbRoom"></select></label></div>
 <div class="lb-notes"><div class="lb-msg" id="lbMsg" hidden></div><div class="lb-note" id="lbNote" hidden></div></div>
 <div id="lbStick" aria-hidden="true"><i></i></div>
 <div class="lb-bottom">
+  <button class="btn lb-play" data-lb="play" id="lbPlay" hidden></button>
   <button class="btn" data-lb="near" id="lbNear" hidden></button>
-  <div class="lb-row">${Object.entries(EMOTES).map(([k, v]) => `<button class="lb-pill" data-emote="${k}">${v}</button>`).join("")}<button class="lb-pill" data-lb="jump">Jump</button></div>
-  <div class="lb-help">WASD or arrows to move · drag to look · E to trade · Space to jump</div>
+  <div class="lb-row">${Object.entries(EMOTES).map(([k, v]) => `<button class="lb-pill" data-emote="${k}">${v}</button>`).join("")}<button class="lb-pill" data-lb="arcade" id="lbArcadeBtn">🎮 Arcade</button><button class="lb-pill" data-lb="jump">Jump</button></div>
+  <div class="lb-help">WASD or arrows to move · drag to look · E to trade or play · 1-6 emotes · Space to jump</div>
 </div>
 <div class="lb-ask" id="lbAsk" hidden role="alertdialog"></div>
 <div class="lb-trade" id="lbTrade" hidden role="dialog" aria-label="Trade table"></div>`;
 document.body.appendChild(root);
 const canvas = $("#lbCanvas");
+if (Arc()) Arc().mount(root, { cfg, onCoins: () => applyCfg(true) });
 
 /* ---------- state ---------- */
 let backScroll = 0, gfx = null, models = {}, running = false, raf = 0, last = 0, net = null, session = null, gen = 0;
 const me = { x: 0, z: 6, r: Math.PI, y: 0, vy: 0, moving: false, emote: null, color: "#ff5b1f", name: "You" };
 const peers = new Map(), keys = new Set(), stick = { x: 0, y: 0 };
 const cam = { yaw: 0, pitch: .45, dist: 7.5 };
-let nearId = null;
+let nearId = null, nearCab = null;
 const TABLES = [[-6,-3],[6,-3],[-6,5],[6,5]];
 const SOLIDS = [[0,-2,2.4], ...TABLES.map(([x,z]) => [x,z,1.35])];
 
 /* ---------- world ---------- */
 const C = Object.fromEntries(Object.entries({ floor:"#171a4d", tile:"#1f2368", wall:"#121442", blue:"#2230d8", orange:"#ff5b1f", ink:"#07091f", vinyl:"#101018", paper:"#f4f0e8", pink:"#ff7ad9", gold:"#ffd34d", violet:"#c084ff", sky:"#62c8ff", mint:"#6ff0a0", wood:"#6a4a8c" }).map(([k, v]) => [k, rgb(v)]));
+const CABS = [{ key: "beat", name: "Beat Tap", x: -5, z: -11, col: C.pink }, { key: "match", name: "Vinyl Match", x: 0, z: -11.4, col: C.gold }, { key: "catch", name: "Crate Catch", x: 5, z: -11, col: C.sky }];
+CABS.forEach(c => SOLIDS.push([c.x, c.z, 1.0]));
+let live = null; /* settings, refreshed about once a second */
+const cabsOn = () => { const c = live || cfg(); return c.arcade ? CABS.filter(b => c.games[b.key]) : []; };
 function model(name, x, y, z, ry, tint) {
   const parts = models[name];
   if (!parts) return false;
@@ -154,6 +165,17 @@ function drawWorld(t) {
     d("box", x-.3, 1.05, z, .32, .02, .46, C.gold, .6, .3);
     d("box", x+.34, 1.05, z+.1, .32, .02, .46, C.pink, .6, -.4);
   });
+  cabsOn().forEach((c, i) => {
+    const pulse = .55 + Math.sin(t*3 + i*2)*.25, near = nearCab === c;
+    d("box", c.x, 1.1, c.z, 1.5, 2.2, 1.0, C.ink);
+    d("box", c.x, 2.4, c.z + .04, 1.56, .42, 1.06, c.col, near ? 1 : .8);
+    d("box", c.x, 1.55, c.z + .51, 1.1, .8, .05, c.col, pulse + (near ? .3 : 0));
+    d("box", c.x, 1.0, c.z + .42, 1.5, .1, .6, C.blue);
+    d("ball", c.x - .32, 1.12, c.z + .55, .16, .16, .16, C.orange, .4);
+    d("ball", c.x + .1, 1.08, c.z + .55, .13, .13, .13, C.paper);
+    d("ball", c.x + .35, 1.08, c.z + .55, .13, .13, .13, C.mint, .5);
+    d("ball", c.x, 3.1 + Math.sin(t*2 + i)*.12, c.z, .5, .5, .09, C.gold, .7, t*2.2);
+  });
   [[-11.5,-11.5],[11.5,-11.5],[-11.5,11.5],[11.5,11.5]].forEach(([x,z], i) => {
     d("box", x, 1.1, z, 1.5, 2.2, 1.5, C.ink);
     const pulse = 1 + Math.max(0, Math.sin(t*4 + i))*.08;
@@ -162,7 +184,7 @@ function drawWorld(t) {
 }
 function drawAvatar(p, t) {
   const col = p.rgb || (p.rgb = rgb(p.color));
-  const bob = p.moving ? Math.abs(Math.sin(t*10))*.09 : Math.sin(t*2 + p.x)*.025, y = (p.y || 0) + bob;
+  const dancing = p.emote && p.emote.k === "dance" && Date.now() - p.emote.at < 3000, bob = dancing ? Math.abs(Math.sin(t*9))*.16 : p.moving ? Math.abs(Math.sin(t*10))*.09 : Math.sin(t*2 + p.x)*.025, y = (p.y || 0) + bob;
   gfx.draw("cyl", M.trs(p.x, .015, p.z, 0, .9, .01, .9), C.ink, 1, .45);
   const s = Math.sin(p.r), c = Math.cos(p.r);
   const at = (shape, lx, ly, lz, sx, sy, sz, color, glow) => gfx.draw(shape, M.trs(p.x + lx*c + lz*s, y + ly, p.z - lx*s + lz*c, p.r, sx, sy, sz), color, glow);
@@ -177,8 +199,8 @@ function drawAvatar(p, t) {
   }
   /* floating hands */
   const waving = p.emote && p.emote.k === "wave", sw = p.moving ? Math.sin(t*10)*.2 : 0;
-  at("ball", -.52, .8, sw, .22, .22, .22, C.paper);
-  at("ball", .52 + (waving ? Math.sin(t*14)*.14 : 0), waving ? 1.65 : .8, -sw, .22, .22, .22, C.paper);
+  at("ball", -.52, dancing ? 1.35 + Math.sin(t*9)*.3 : .8, sw, .22, .22, .22, C.paper);
+  at("ball", .52 + (waving ? Math.sin(t*14)*.14 : 0), dancing ? 1.35 - Math.sin(t*9)*.3 : waving ? 1.65 : .8, -sw, .22, .22, .22, C.paper);
 }
 
 /* ---------- labels ---------- */
@@ -207,6 +229,7 @@ function step(dt, t) {
     if (keys.has("w") || keys.has("arrowup")) iz -= 1;
     if (keys.has("s") || keys.has("arrowdown")) iz += 1;
   } else ix = iz = 0;
+  if (arcadeOpen()) ix = iz = 0;
   if (keys.has("q")) cam.yaw -= 1.8*dt;
   if (keys.has("r")) cam.yaw += 1.8*dt;
   const len = Math.hypot(ix, iz);
@@ -231,7 +254,10 @@ function step(dt, t) {
     const d = Math.hypot(p.x - me.x, p.z - me.z);
     if (d < bd && !p.busy) { bd = d; best = id; }
   }
-  if (session || !cfg().trades) best = null;
+  if (session || arcadeOpen() || !(live || cfg()).trades) best = null;
+  let cab = null;
+  if (!session && !arcadeOpen()) for (const c of cabsOn()) if (Math.hypot(me.x - c.x, me.z - c.z) < 2.7) { cab = c; break; }
+  if (cab !== nearCab) { nearCab = cab; const pb = $("#lbPlay"); pb.hidden = !cab; if (cab) pb.textContent = "Play " + cab.name; }
   if (best !== nearId) { nearId = best; const b = $("#lbNear"); b.hidden = !best; if (best) b.textContent = "Trade with " + peers.get(best).name; }
   net?.tick?.(dt);
 }
@@ -245,6 +271,7 @@ function frame(now) {
     drawWorld(t);
     drawAvatar(me, t); setTag("_me", me, true);
     for (const [id, p] of peers) { drawAvatar(p, t); setTag(id, p, false); }
+    const on = cabsOn(); CABS.forEach(c => on.includes(c) ? setTag("cab:" + c.key, { x: c.x, z: c.z, y: .85, name: "🎮 " + c.name }, false) : dropTag("cab:" + c.key));
   }
   raf = requestAnimationFrame(frame);
 }
@@ -259,6 +286,11 @@ function applyCfg(force) {
   if (m.textContent !== txt) m.textContent = txt;
   m.hidden = !txt;
   root.querySelectorAll("[data-emote]").forEach(b => b.hidden = !c.emotes);
+  live = c; $("#lbArcadeBtn").hidden = !(c.arcade && Object.values(c.games).some(Boolean));
+  if (!c.arcade && arcadeOpen()) Arc().close();
+  const info = B.info(), earn = !!(info.user && info.handle && !info.demo), pill = $("#lbCoins"), amt = B.coins ? B.coins() : 0;
+  pill.hidden = !earn || !c.arcade;
+  if (pill.lastChild.textContent !== amt.toLocaleString()) { if (pill.lastChild.textContent !== "0") { pill.classList.remove("pop"); void pill.offsetWidth; pill.classList.add("pop"); } pill.lastChild.textContent = amt.toLocaleString(); }
 }
 
 /* ---------- loading screen ---------- */
@@ -644,6 +676,7 @@ function open() {
 function close() {
   if (!running) return;
   running = false; gen++; cancelAnimationFrame(raf);
+  Arc()?.close();
   if (session) { if (session.abort) session.abort(); else session.close(); }
   endSession();
   net?.stop(); net = null;
@@ -662,6 +695,8 @@ root.addEventListener("click", e => {
   if (a === "exit") close();
   else if (a === "jump") jump();
   else if (a === "near" && nearId) net?.invite(nearId);
+  else if (a === "play" && nearCab) Arc()?.open(nearCab.key);
+  else if (a === "arcade" && !session) Arc()?.open();
   else if (a === "leave") session?.close();
   else if (a === "ready" && session && session.state === "open") { const sig = sigNow(session); session.myReady = session.myReady === sig ? "" : sig; session.setReady(session.myReady); checkReady(); }
 });
@@ -671,7 +706,7 @@ canvas.addEventListener("pointermove", e => { if (!drag || e.pointerId !== drag.
 ["pointerup","pointercancel"].forEach(ev => canvas.addEventListener(ev, () => drag = null));
 canvas.addEventListener("wheel", e => { cam.dist = clamp(cam.dist + e.deltaY*.008, 4.5, 13); e.preventDefault(); }, { passive: false });
 const pad = $("#lbStick"); let padId = null;
-const padMove = e => { const r = pad.getBoundingClientRect(); let x = (e.clientX - r.left - r.width/2)/40, y = (e.clientY - r.top - r.height/2)/40; const l = Math.hypot(x, y); if (l > 1) { x /= l; y /= l; } stick.x = session ? 0 : x; stick.y = session ? 0 : y; pad.firstElementChild.style.transform = `translate(${x*34}px,${y*34}px)`; };
+const padMove = e => { const r = pad.getBoundingClientRect(); let x = (e.clientX - r.left - r.width/2)/40, y = (e.clientY - r.top - r.height/2)/40; const l = Math.hypot(x, y); if (l > 1) { x /= l; y /= l; } stick.x = session || arcadeOpen() ? 0 : x; stick.y = session || arcadeOpen() ? 0 : y; pad.firstElementChild.style.transform = `translate(${x*34}px,${y*34}px)`; };
 pad.addEventListener("pointerdown", e => { padId = e.pointerId; pad.setPointerCapture(padId); padMove(e); });
 pad.addEventListener("pointermove", e => { if (e.pointerId === padId) padMove(e); });
 ["pointerup","pointercancel"].forEach(ev => pad.addEventListener(ev, () => { padId = null; stick.x = stick.y = 0; pad.firstElementChild.style.transform = ""; }));
@@ -680,9 +715,11 @@ window.addEventListener("keydown", e => {
   if (e.target.tagName === "SELECT") return;
   e.stopPropagation();
   const k = e.key.toLowerCase();
-  if (k === "escape") { if (session) { if (session.state === "open") session.close(); } else close(); return; }
-  if (session) return;
+  if (k === "escape") { if (arcadeOpen()) return; if (session) { if (session.state === "open") session.close(); } else close(); return; }
+  if (session || arcadeOpen()) return;
+  if (k === "e" && !e.repeat && nearCab) return Arc().open(nearCab.key);
   if (k === "e" && nearId && !e.repeat) return net?.invite(nearId);
+  if (/^[1-9]$/.test(k) && !e.repeat) { const em = Object.keys(EMOTES)[+k - 1]; if (em) return emote(em); }
   if (k === " " && e.target.tagName !== "BUTTON") { e.preventDefault(); return jump(); }
   if (k.startsWith("arrow")) e.preventDefault();
   keys.add(k);
