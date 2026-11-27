@@ -4,7 +4,7 @@
 "use strict";
 
 /* ===== SETUP: paste your Realtime Database URL between the quotes (see SETUP.md) ===== */
-const LOBBY_DB_URL = " https://streamdex-40c93-default-rtdb.firebaseio.com";
+const LOBBY_DB_URL = "https://streamdex-40c93-default-rtdb.firebaseio.com";
 /* Set to true after you export models from Blender into the models folder. */
 const USE_BLENDER_MODELS = false;
 /* ===================================================================================== */
@@ -121,9 +121,16 @@ const TABLES = [[-6,-3],[6,-3],[-6,5],[6,5]];
 const SOLIDS = [[0,-2,2.4], ...TABLES.map(([x,z]) => [x,z,1.35])];
 
 /* ---------- world ---------- */
-const C = Object.fromEntries(Object.entries({ floor:"#171a4d", tile:"#1f2368", wall:"#121442", blue:"#2230d8", orange:"#ff5b1f", ink:"#07091f", vinyl:"#101018", paper:"#f4f0e8", pink:"#ff7ad9", gold:"#ffd34d", violet:"#c084ff", sky:"#62c8ff", mint:"#6ff0a0", wood:"#6a4a8c" }).map(([k, v]) => [k, rgb(v)]));
-const CABS = [{ key: "beat", name: "Beat Tap", x: -5, z: -11, col: C.pink }, { key: "match", name: "Vinyl Match", x: 0, z: -11.4, col: C.gold }, { key: "catch", name: "Crate Catch", x: 5, z: -11, col: C.sky }];
+const C = Object.fromEntries(Object.entries({ floor:"#171a4d", tile:"#1f2368", wall:"#121442", blue:"#2230d8", orange:"#ff5b1f", ink:"#07091f", vinyl:"#101018", paper:"#f4f0e8", pink:"#ff7ad9", gold:"#ffd34d", violet:"#c084ff", sky:"#62c8ff", mint:"#6ff0a0", wood:"#9a6b44", grass:"#4f9a7e", grass2:"#468f75", dirt:"#a46f58", dirt2:"#86594a", rock:"#7b8499", stone:"#8d95a8", stone2:"#6d758a", trunk:"#6b4a3a", pine:"#2f6b4a", pine2:"#3d8159", pine3:"#245a3f", water:"#2f93d6", water2:"#73c8f4", lamp:"#ffe45e", wood2:"#7a5638", plank:"#b98a5a", cloud:"#ffffff", pants:"#232a63", blush:"#ff9aa8", red:"#c2412a" }).map(([k, v]) => [k, rgb(v)]));
+const CABS = [{ key: "beat", name: "Beat Tap", x: -5, z: -8.4, col: C.pink }, { key: "match", name: "Vinyl Match", x: 0, z: -8.8, col: C.gold }, { key: "catch", name: "Crate Catch", x: 5, z: -8.4, col: C.sky }];
 CABS.forEach(c => SOLIDS.push([c.x, c.z, 1.0]));
+/* Streamdex Island: a floating low-poly island with pines, a cliff backdrop, lamp posts and a pier */
+const SKY = rgb("#7cc4f2"), ZMIN = -9.8;
+const TREES = [[-11,-4,1.25],[-12.3,-.5,1],[-10.4,6.5,1.1],[-12,9.8,1.3],[11.4,-3.6,1.25],[12.4,.6,1],[10.6,7,1.1],[12,10,1.2],[3.8,12,1],[-5.8,12,.9],[-8.4,-8,1.1],[8.6,-7.8,1.15]];
+const LAMPS = [[-3.4,6.2],[3.6,5.6],[-8.6,1],[8.6,1.4],[-2.4,-5.6],[2.6,-5.8]];
+const ROCKS = [[-7.4,9.2,1],[7,10.2,.8],[-9.6,-3,.9],[9.4,-1.2,1.1],[1.4,10.4,.7],[-1,-9,.8]];
+TREES.forEach(([x, z, s]) => SOLIDS.push([x, z, .42*s])); LAMPS.forEach(([x, z]) => SOLIDS.push([x, z, .28]));
+const FLOWERS = Array.from({ length: 46 }, (_, i) => { const a = Math.sin(i*91.7)*43758.5453, b = Math.sin(i*37.1)*24634.6345; return [(a - Math.floor(a))*25 - 12.5, (b - Math.floor(b))*21 - 9.2, [C.pink, C.gold, C.paper, C.violet][i % 4]]; }).filter(([x, z]) => Math.hypot(x, z + 2) > 3.6 && !SOLIDS.some(([ox, oz, or]) => Math.hypot(x - ox, z - oz) < or + .5));
 let live = null; /* settings, refreshed about once a second */
 const cabsOn = () => { const c = live || cfg(); return c.arcade ? CABS.filter(b => c.games[b.key]) : []; };
 function model(name, x, y, z, ry, tint) {
@@ -135,19 +142,24 @@ function model(name, x, y, z, ry, tint) {
 }
 function drawWorld(t) {
   const d = (s, x, y, z, sx, sy, sz, col, glow, ry = 0) => gfx.draw(s, M.trs(x, y, z, ry, sx, sy, sz), col, glow);
-  d("box", 0, -.25, 0, 28, .5, 28, C.floor);
-  for (let i = -6; i <= 6; i++) for (let j = -6; j <= 6; j++) if ((i + j) & 1) d("box", i*2, .004, j*2, 1.94, .006, 1.94, C.tile);
-  /* walls: only the far ones are drawn, so the camera never gets blocked */
-  const ex = Math.sin(cam.yaw), ez = Math.cos(cam.yaw);
-  [[0,-14,28,.4,0,-1],[0,14,28,.4,0,1],[-14,0,.4,28,-1,0],[14,0,.4,28,1,0]].forEach(([x,z,w,dp,nx,nz]) => {
-    if (nx*ex + nz*ez > .25) { d("box", x, .2, z, w, .4, dp, C.blue); return; }
-    d("box", x, 2, z, w, 4, dp, C.wall);
-    d("box", x*.98, 3.6, z*.98, nx ? .1 : 27, .12, nx ? 27 : .1, C.orange, 1);
-    d("box", x*.98, .25, z*.98, nx ? .1 : 27, .12, nx ? 27 : .1, C.blue, 1);
-    [C.pink, C.gold, C.violet, C.sky, C.mint].forEach((col, i) => { const o = (i-2)*4.4; d("box", x*.975 + (nz ? o : 0), 2, z*.975 + (nx ? o : 0), nx ? .08 : 1.5, 2.1, nx ? 1.5 : .08, col, .75); });
-  });
-  /* centre stage with a spinning record */
-  d("cyl", 0, .2, -2, 5, .4, 5, C.blue);
+  /* sea, with drifting ripples */
+  d("box", 0, -1.9, 0, 220, .2, 220, C.water);
+  for (let i = 0; i < 22; i++) { const a = i*2.4, r = 19 + (i % 5)*4.2, x = Math.sin(a)*r + Math.sin(t*.4 + i)*1.4, z = Math.cos(a)*r; d("box", x, -1.78, z, 2.6 + (i % 3), .04, .14, C.water2, .5, a); }
+  /* island body: grass cap, dirt layers, grey rock keel */
+  d("box", 0, -.08, 0, 30, .16, 30, C.grass);
+  for (let i = -7; i <= 7; i++) for (let j = -7; j <= 7; j++) if (((i*7 + j*13) & 3) === 0) d("box", i*2, .005, j*2, 1.9, .02, 1.9, C.grass2);
+  d("box", 0, -.95, 0, 30, 1.6, 30, C.dirt); d("box", 0, -1.45, 0, 30.4, .5, 30.4, C.dirt2); d("box", 0, -2.1, 0, 28.4, 1.0, 28.4, C.rock);
+  /* cliff backdrop with a ladder, like a little ruin to explore */
+  d("box", 0, 1.6, -12.8, 30, 3.2, 4.6, C.dirt); d("box", 0, 3.22, -12.8, 30.1, .16, 4.7, C.grass);
+  d("box", -6, 4.4, -13.9, 11, 2.6, 2.6, C.dirt2); d("box", -6, 5.72, -13.9, 11.1, .14, 2.7, C.grass);
+  d("box", 8, 3.9, -13.6, 9, 1.4, 3, C.dirt2); d("box", 8, 4.64, -13.6, 9.1, .14, 3.1, C.grass);
+  d("box", -13.6, 1.2, -9, 3.4, 2.4, 3.4, C.rock);
+  for (const x of [-9.1, -8.5]) d("box", x, 1.65, -10.45, .09, 3.3, .09, C.wood2);
+  for (let i = 0; i < 9; i++) d("box", -8.8, .3 + i*.36, -10.45, .7, .07, .08, C.wood2);
+  d("hex", 4, 4.7, -10.62, .09, 3.2, .09, C.wood2); d("box", 4.45, 6.2, -10.62, 1, .08, .08, C.wood2); d("box", 4.8, 5.8, -10.62, .5, .7, .06, C.plank);
+  d("box", 3.9, 4.5, -10.4, .3, .3, .3, C.lamp, 1);
+  /* centre stage: a stone podium with the spinning record */
+  d("cyl", 0, .1, -2, 6.4, .2, 6.4, C.stone2); d("cyl", 0, .22, -2, 5.6, .12, 5.6, C.stone); d("cyl", 0, .3, -2, 5, .06, 5, C.blue);
   d("cyl", 0, .42, -2, 4.6, .06, 4.6, C.ink);
   if (!model("record", 0, .5, -2, t*.9)) {
     d("cyl", 0, .5, -2, 3.8, .1, 3.8, C.vinyl);
@@ -156,15 +168,42 @@ function drawWorld(t) {
     d("cyl", 0, .6, -2, .14, .12, .14, C.paper);
   }
   [C.pink, C.gold, C.violet, C.sky].forEach((col, i) => { const a = t*.5 + i*Math.PI/2; d("box", Math.sin(a)*1.5, 2.2 + Math.sin(t*1.7+i)*.15, -2 + Math.cos(a)*1.5, .66, .92, .05, col, .55, a); });
-  TABLES.forEach(([x,z]) => {
+  /* stepping stones from the spawn to the podium */
+  for (let i = 0; i < 7; i++) d("box", Math.sin(i*1.7)*.35, .04, 7 - i*.7, 1.5, .08, .6, C.stone, 0, Math.sin(i*2.3)*.12);
+  /* trading tables: tree-stump tables with stools */
+  TABLES.forEach(([x, z]) => {
     if (model("table", x, 0, z, 0)) return;
-    d("cyl", x, .06, z, 1.2, .12, 1.2, C.ink);
-    d("cyl", x, .48, z, .28, .86, .28, C.wood);
-    d("cyl", x, .95, z, 2.2, .14, 2.2, C.wood);
-    d("cyl", x, 1.025, z, 1.9, .02, 1.9, C.blue, .35);
-    d("box", x-.3, 1.05, z, .32, .02, .46, C.gold, .6, .3);
-    d("box", x+.34, 1.05, z+.1, .32, .02, .46, C.pink, .6, -.4);
+    d("hex", x, .45, z, 1.0, .9, 1.0, C.wood2); d("cyl", x, .93, z, 2.3, .16, 2.3, C.plank); d("cyl", x, 1.03, z, 1.9, .03, 1.9, C.blue, .3);
+    d("box", x-.3, 1.07, z, .32, .02, .46, C.gold, .6, .3); d("box", x+.34, 1.07, z+.1, .32, .02, .46, C.pink, .6, -.4);
+    for (let k = 0; k < 3; k++) { const a = k*2.1 + x; d("hex", x + Math.sin(a)*1.75, .22, z + Math.cos(a)*1.75, .5, .44, .5, C.trunk); }
   });
+  /* pines */
+  const tree = (x, y, z, s) => {
+    d("hex", x, y + .5*s, z, .46*s, 1.1*s, .46*s, C.trunk);
+    d("cone", x, y + 1.55*s, z, 2.5*s, 1.6*s, 2.5*s, C.pine, 0, x); d("cone", x, y + 2.45*s, z, 2*s, 1.5*s, 2*s, C.pine2, 0, x + 1);
+    d("cone", x, y + 3.3*s, z, 1.5*s, 1.4*s, 1.5*s, C.pine3, 0, x + 2); d("cone", x, y + 4*s, z, .9*s, 1.1*s, .9*s, C.pine2, 0, x + 3);
+  };
+  TREES.forEach(([x, z, s]) => tree(x, 0, z, s)); tree(-7, 5.7, -13.8, 1.1); tree(-3.5, 5.7, -14.2, .9); tree(9, 4.7, -14, 1);
+  /* lamp posts, glowing a little */
+  LAMPS.forEach(([x, z], i) => {
+    d("box", x, .18, z, .55, .36, .55, C.stone); d("hex", x, 1.4, z, .16, 2.2, .16, C.wood2); d("box", x, 2.6, z, .36, .44, .36, C.lamp, 1); d("box", x, 2.88, z, .5, .1, .5, C.wood2);
+    gfx.draw("ball", M.trs(x, 2.6, z, 0, 1.15 + Math.sin(t*2 + i)*.06), C.lamp, 1, .08);
+  });
+  /* fences along the edges */
+  const fence = (x1, z1, x2, z2) => {
+    const len = Math.hypot(x2 - x1, z2 - z1), n = Math.max(1, Math.round(len/1.8)), ry = -Math.atan2(z2 - z1, x2 - x1), mx = (x1 + x2)/2, mz = (z1 + z2)/2;
+    for (let i = 0; i <= n; i++) d("box", x1 + (x2 - x1)*i/n, .5, z1 + (z2 - z1)*i/n, .22, 1, .22, C.wood2);
+    d("box", mx, .78, mz, len, .14, .1, C.plank, 0, ry); d("box", mx, .4, mz, len, .14, .1, C.plank, 0, ry);
+  };
+  fence(-13.7, 4, -13.7, 13.7); fence(13.7, 4, 13.7, 13.7); fence(-13.7, 13.7, 4.6, 13.7); fence(11.4, 13.7, 13.7, 13.7);
+  /* pier and a rowboat */
+  for (let i = 0; i < 7; i++) d("box", 8, -.02, 14.9 + i*.75, 2.4, .1, .68, i & 1 ? C.plank : C.wood);
+  for (let i = 0; i < 4; i++) { d("hex", 6.9, -.8, 15.2 + i*1.6, .22, 1.9, .22, C.wood2); d("hex", 9.1, -.8, 15.2 + i*1.6, .22, 1.9, .22, C.wood2); }
+  d("box", 11, -1.72 + Math.sin(t*1.3)*.03, 17.6, 1.5, .4, 3, C.red, 0, .15); d("box", 11, -1.5 + Math.sin(t*1.3)*.03, 17.6, 1.1, .06, 2.6, C.plank, 0, .15);
+  /* rocks, flowers */
+  ROCKS.forEach(([x, z, s], i) => d("rock", x, .2*s, z, 1.1*s, .7*s, .95*s, i & 1 ? C.stone : C.rock, 0, i));
+  FLOWERS.forEach(([x, z, col], i) => { d("box", x, .08, z, .03, .16, .03, C.pine2); d("ball", x, .2 + Math.sin(t*2 + i)*.01, z, .15, .15, .15, col, .15); });
+  /* arcade cabinets, in front of the cliff */
   cabsOn().forEach((c, i) => {
     const pulse = .55 + Math.sin(t*3 + i*2)*.25, near = nearCab === c;
     d("box", c.x, 1.1, c.z, 1.5, 2.2, 1.0, C.ink);
@@ -176,31 +215,90 @@ function drawWorld(t) {
     d("ball", c.x + .35, 1.08, c.z + .55, .13, .13, .13, C.mint, .5);
     d("ball", c.x, 3.1 + Math.sin(t*2 + i)*.12, c.z, .5, .5, .09, C.gold, .7, t*2.2);
   });
-  [[-11.5,-11.5],[11.5,-11.5],[-11.5,11.5],[11.5,11.5]].forEach(([x,z], i) => {
-    d("box", x, 1.1, z, 1.5, 2.2, 1.5, C.ink);
-    const pulse = 1 + Math.max(0, Math.sin(t*4 + i))*.08;
-    d("ball", x - Math.sign(x)*.7, 1.45, z - Math.sign(z)*.7, .7*pulse, .7*pulse, .7*pulse, C.orange, .5);
-  });
+  /* sky: clouds drifting past */
+  for (let i = 0; i < 9; i++) { const a = i*0.7 + t*.012, r = 52 + (i % 3)*8, x = Math.sin(a)*r, z = Math.cos(a)*r, y = 17 + (i % 4)*3; d("ball", x, y, z, 11, 3.4, 5, C.cloud, .6); d("ball", x + 4, y + .5, z + 1, 7, 3, 4, C.cloud, .6); d("ball", x - 4, y - .2, z - 1, 6, 2.6, 4, C.cloud, .6); }
 }
+/* ---------- avatars: blocky little music fans with real limbs and moods ---------- */
+const SKINS = ["#f2c29a","#e0a070","#c68642","#8d5524","#f5cfb0","#b97a56"].map(rgb), HAIRS = ["#2b1b14","#6a3b1e","#f2c14e","#d94f70","#3d5be0","#1f1f2e","#e8e8f0"].map(rgb);
+const hashOf = s => [...String(s)].reduce((h, c) => (h*31 + c.charCodeAt(0)) >>> 0, 7);
+const MOODS = { wave: "happy", yes: "wink", love: "love", trade: "hope", dance: "dance", laugh: "laugh" };
+const node = (parent, x, y, z, rx = 0, ry = 0, rz = 0) => M.mul(parent, M.mul(M.t(x, y, z), M.rot(rx, ry, rz)));
 function drawAvatar(p, t) {
-  const col = p.rgb || (p.rgb = rgb(p.color));
-  const dancing = p.emote && p.emote.k === "dance" && Date.now() - p.emote.at < 3000, bob = dancing ? Math.abs(Math.sin(t*9))*.16 : p.moving ? Math.abs(Math.sin(t*10))*.09 : Math.sin(t*2 + p.x)*.025, y = (p.y || 0) + bob;
-  gfx.draw("cyl", M.trs(p.x, .015, p.z, 0, .9, .01, .9), C.ink, 1, .45);
-  const s = Math.sin(p.r), c = Math.cos(p.r);
-  const at = (shape, lx, ly, lz, sx, sy, sz, color, glow) => gfx.draw(shape, M.trs(p.x + lx*c + lz*s, y + ly, p.z - lx*s + lz*c, p.r, sx, sy, sz), color, glow);
-  if (!model("avatar", p.x, y, p.z, p.r, col)) {
-    at("ball", 0, .52, 0, .66, .5, .54, col);
-    at("cyl", 0, .76, 0, .66, .48, .54, col);
-    at("ball", 0, 1.0, 0, .66, .4, .54, col);
-    at("ball", 0, 1.52, 0, .66, .64, .64, C.paper);
-    at("ball", -.12, 1.57, .29, .09, .13, .07, C.ink);
-    at("ball", .12, 1.57, .29, .09, .13, .07, C.ink);
-    at("box", 0, 1.40, .31, .18, .035, .03, C.ink);
+  const col = p.rgb || (p.rgb = rgb(p.color)), seed = p.seed ?? (p.seed = hashOf(p.id || p.color));
+  const dt = Math.min(.05, Math.max(0, t - (p._t ?? t))); p._t = t;
+  p.ph = (p.ph || 0) + (p.moving ? dt*11 : 0); p.amp = (p.amp || 0) + ((p.moving ? 1 : 0) - (p.amp || 0))*Math.min(1, dt*10);
+  const em = p.emote && Date.now() - p.emote.at < 3000 ? p.emote.k : "", air = (p.y || 0) > .05;
+  const mood = MOODS[em] || (p.busy ? "focus" : air ? "wow" : "idle");
+  const amp = p.amp, ph = p.ph, dance = em === "dance", laugh = em === "laugh";
+  const bounce = Math.abs(Math.sin(ph))*.07*amp + (dance ? Math.abs(Math.sin(t*9))*.14 : 0) + (laugh ? Math.sin(t*30)*.015 : 0) + Math.sin(t*2 + seed)*.01*(1 - amp);
+  const y = (p.y || 0) + bounce;
+  gfx.draw("cyl", M.trs(p.x, .015, p.z, 0, .95, .01, .95), C.ink, 1, .4);
+  if (models.avatar) { /* custom Blender model: keep the simple floating hands */
+    model("avatar", p.x, y, p.z, p.r, col);
+    const s = Math.sin(p.r), c = Math.cos(p.r), at = (lx, ly, lz) => M.trs(p.x + lx*c + lz*s, y + ly, p.z - lx*s + lz*c, p.r, .22);
+    gfx.draw("ball", at(-.52, .8, p.moving ? Math.sin(t*10)*.2 : 0), C.paper, 0); gfx.draw("ball", at(.52, .8, 0), C.paper, 0); return;
   }
-  /* floating hands */
-  const waving = p.emote && p.emote.k === "wave", sw = p.moving ? Math.sin(t*10)*.2 : 0;
-  at("ball", -.52, dancing ? 1.35 + Math.sin(t*9)*.3 : .8, sw, .22, .22, .22, C.paper);
-  at("ball", .52 + (waving ? Math.sin(t*14)*.14 : 0), dancing ? 1.35 - Math.sin(t*9)*.3 : waving ? 1.65 : .8, -sw, .22, .22, .22, C.paper);
+  const skin = SKINS[seed % SKINS.length], hair = HAIRS[(seed >> 3) % HAIRS.length], style = (seed >> 6) % 3;
+  const part = (n, shape, lx, ly, lz, sx, sy, sz, color, glow = 0) => gfx.draw(shape, M.mul(n, M.mul(M.t(lx, ly, lz), M.s(sx, sy, sz))), color, glow);
+  const root = M.trs(p.x, y, p.z, p.r);
+  /* pose */
+  const sw = Math.sin(ph)*.75*amp, lean = .1*amp + (mood === "focus" ? .05 : 0), roll = Math.sin(ph)*.04*amp + (dance ? Math.sin(t*6)*.1 : 0);
+  let aL = [sw, 0, 0], aR = [-sw, 0, 0], lL = sw, lR = -sw, hp = [Math.sin(ph*2)*.03*amp, 0, 0];
+  if (air) { lL = -.5; lR = .35; aL = [0, 0, -2.4]; aR = [0, 0, 2.4]; }
+  if (em === "wave") aR = [0, 0, 2.5 + Math.sin(t*14)*.35];
+  if (em === "yes") { aR = [-1.9, 0, .15]; }
+  if (em === "love") { aL = [-1.2, 0, -.45]; aR = [-1.2, 0, .45]; }
+  if (em === "trade" || mood === "focus") { aL = [-1.15 + Math.sin(t*3)*.05, 0, -.18]; aR = [-1.15 + Math.sin(t*3 + 1)*.05, 0, .18]; }
+  if (dance) { const q = Math.sin(t*9); aL = [0, 0, -(2.1 + q*.5)]; aR = [0, 0, 2.1 - q*.5]; lL = Math.sin(t*9)*.5; lR = -Math.sin(t*9)*.5; hp = [0, 0, Math.sin(t*6)*.1]; }
+  if (laugh) { aL = [-.7, 0, -.5]; aR = [-.7, 0, .5]; hp = [Math.sin(t*30)*.04, 0, 0]; }
+  if (!em && !air && !p.moving && mood !== "focus") { aL = [Math.sin(t*1.6 + seed)*.05, 0, -.06]; aR = [-Math.sin(t*1.6 + seed)*.05, 0, .06]; }
+  /* legs */
+  for (const [sgn, a] of [[-1, lL], [1, lR]]) {
+    const leg = node(root, sgn*.15, .62, 0, a, 0, 0);
+    part(leg, "box", 0, -.31, 0, .24, .62, .26, C.pants); part(leg, "box", 0, -.58, .05, .27, .13, .38, C.paper); part(leg, "box", 0, -.64, .05, .28, .04, .4, C.orange);
+  }
+  /* torso */
+  const torso = node(root, 0, .62, 0, lean + hp[0], 0, roll + hp[2]);
+  part(torso, "box", 0, .31, 0, .64, .62, .34, col); part(torso, "box", 0, .02, 0, .66, .08, .36, C.ink);
+  gfx.draw("cyl", M.mul(node(torso, 0, .36, .175, Math.PI/2, 0, 0), M.s(.24, .02, .24)), C.ink, 0); gfx.draw("cyl", M.mul(node(torso, 0, .36, .19, Math.PI/2, 0, 0), M.s(.11, .02, .11)), C.orange, .5);
+  /* arms */
+  for (const [sgn, a] of [[-1, aL], [1, aR]]) {
+    const arm = node(torso, sgn*.4, .56, 0, a[0], a[1], a[2]);
+    part(arm, "box", 0, -.15, 0, .22, .3, .22, col); part(arm, "box", 0, -.42, 0, .19, .26, .19, skin);
+    if (em === "yes" && sgn > 0) part(arm, "box", 0, -.5, .13, .07, .13, .07, skin);
+  }
+  /* head */
+  const hr = laugh ? -.25 + Math.sin(t*30)*.05 : em === "trade" ? -.12 : mood === "focus" ? .08 : Math.sin(ph*2)*.03*amp;
+  const head = node(torso, 0, .62, 0, hr, 0, dance ? Math.sin(t*6)*.15 : em === "wave" ? .08 : 0), hc = node(head, 0, .29, 0);
+  part(hc, "box", 0, 0, 0, .56, .56, .52, skin);
+  if (style === 1) { for (const x of [-.14, 0, .14]) part(hc, "cone", x, .38, 0, .2, .26, .2, hair); part(hc, "box", 0, .29, -.02, .58, .1, .54, hair); part(hc, "box", 0, 0, -.25, .58, .56, .08, hair); }
+  else if (style === 2) { part(hc, "box", 0, .33, -.01, .62, .2, .58, col); part(hc, "ball", 0, .5, 0, .16, .16, .16, C.paper); part(hc, "box", 0, .05, -.25, .58, .5, .08, hair); }
+  else { part(hc, "box", 0, .3, 0, .6, .14, .56, hair); part(hc, "box", 0, .02, -.25, .58, .56, .08, hair); part(hc, "box", -.29, .2, -.04, .05, .24, .4, hair); part(hc, "box", .29, .2, -.04, .05, .24, .4, hair); }
+  part(hc, "box", 0, .38, 0, .66, .05, .13, C.ink); /* headphones */
+  for (const x of [-1, 1]) { part(hc, "box", x*.32, .2, 0, .05, .36, .11, C.ink); part(hc, "ball", x*.33, -.02, 0, .13, .24, .26, C.orange, .15); part(hc, "ball", x*.38, -.02, 0, .06, .18, .2, C.ink); }
+  /* face: changes with the emote */
+  const fp = (lx, ly, sx, sy, color, rz = 0, glow = 0) => gfx.draw("box", M.mul(M.mul(hc, M.mul(M.t(lx, ly, .272), M.rot(0, 0, rz))), M.s(sx, sy, .03)), color, glow);
+  const ball = (lx, ly, s, color, glow = 0) => gfx.draw("ball", M.mul(M.mul(hc, M.t(lx, ly, .275)), M.s(s, s, s*.5)), color, glow);
+  const blink = ((t + seed % 7) % 3.6) < .12, ex = Math.sin(t*.7 + seed)*.012, E = C.ink, EY = .04;
+  const eyes = (h = .12, up = 0) => { for (const x of [-.14, .14]) fp(x + ex, EY + up, .075, blink ? .015 : h, E); };
+  const caret = x => { fp(x - .03, EY, .09, .032, E, .7); fp(x + .03, EY, .09, .032, E, -.7); };
+  const chev = (x, dir) => { fp(x - dir*.02, EY + .035, .1, .032, E, -dir*.6); fp(x - dir*.02, EY - .035, .1, .032, E, dir*.6); };
+  const heart = (x, k) => { ball(x - .028, EY + .02, .07*k, C.red, .6); ball(x + .028, EY + .02, .07*k, C.red, .6); fp(x, EY - .01, .055*k, .055*k, C.red, .785, .6); };
+  const brow = (up, tilt) => { fp(-.14, .15 + up, .1, .026, hair, tilt); fp(.14, .15 + up, .1, .026, hair, -tilt); };
+  const smile = (w = 1) => { fp(0, -.14, .1*w, .03, E); fp(-.07*w, -.115, .045, .03, E, .55); fp(.07*w, -.115, .045, .03, E, -.55); };
+  const open = (w, h) => { fp(0, -.12, w, h, E); fp(0, -.12 + h/2 - .015, w*.85, .028, C.paper); fp(0, -.12 - h/2 + .02, w*.5, .035, C.pink); };
+  const blush = () => { fp(-.21, -.06, .09, .05, C.blush); fp(.21, -.06, .09, .05, C.blush); };
+  switch (mood) {
+    case "happy": eyes(.13); brow(.03, 0); open(.2, .09); break;
+    case "wink": eyes(.12); fp(.14, EY, .085, .028, E); smile(1.3); break;
+    case "love": heart(-.14, 1 + Math.sin(t*8)*.12); heart(.14, 1 + Math.sin(t*8)*.12); open(.17, .08); blush(); break;
+    case "hope": eyes(.15, .015); brow(.045, -.1); smile(.8); break;
+    case "dance": caret(-.14); caret(.14); open(.22, .1); blush(); break;
+    case "laugh": { chev(-.14, 1); chev(.14, -1); open(.26, .1 + Math.abs(Math.sin(t*30))*.05); const f = (t*1.3) % 1; ball(-.2, EY - .05 - f*.1, .045, C.sky); ball(.2, EY - .05 - f*.1, .045, C.sky); break; }
+    case "focus": eyes(.09); brow(.0, .3); fp(0, -.14, .1, .026, E); break;
+    case "wow": eyes(.17); brow(.05, 0); fp(0, -.13, .07, .09, E); break;
+    default: eyes(.12); smile(1);
+  }
 }
 
 /* ---------- labels ---------- */
@@ -208,7 +306,7 @@ const tags = new Map();
 function setTag(id, p, isMe) {
   let el = tags.get(id);
   if (!el) { el = document.createElement("div"); el.className = "lb-tag"; el.innerHTML = "<em hidden></em><b></b>"; $("#lbLabels").appendChild(el); tags.set(id, el); }
-  const s = gfx.project(p.x, 2.15 + (p.y || 0), p.z);
+  const s = gfx.project(p.x, 2.35 + (p.y || 0), p.z);
   el.hidden = !s; if (!s) return;
   const name = (isMe ? "You" : p.name) + (p.bot ? " (bot)" : "") + (p.busy && !isMe ? " · trading" : "");
   if (el.lastChild.textContent !== name) el.lastChild.textContent = name;
@@ -237,7 +335,7 @@ function step(dt, t) {
   if (me.moving) {
     const k = SPEED*dt/Math.max(1, len), c = Math.cos(cam.yaw), s = Math.sin(cam.yaw);
     const dx = (ix*c + iz*s)*k, dz = (-ix*s + iz*c)*k;
-    me.x = clamp(me.x + dx, -ARENA, ARENA); me.z = clamp(me.z + dz, -ARENA, ARENA);
+    me.x = clamp(me.x + dx, -ARENA, ARENA); me.z = clamp(me.z + dz, ZMIN, ARENA);
     for (const [ox,oz,or] of SOLIDS) { const ax = me.x-ox, az = me.z-oz, d = Math.hypot(ax, az), min = or + .35; if (d < min) { const f = min/(d || 1); me.x = ox + (ax || .01)*f; me.z = oz + az*f; } }
     me.r = Math.atan2(dx, dz);
   }
@@ -267,7 +365,7 @@ function frame(now) {
   step(dt, t); applyCfg();
   if (gfx) {
     const cp = Math.cos(cam.pitch), target = [me.x, 1.2, me.z];
-    gfx.begin([me.x + Math.sin(cam.yaw)*cp*cam.dist, 1.2 + Math.sin(cam.pitch)*cam.dist, me.z + Math.cos(cam.yaw)*cp*cam.dist], target);
+    gfx.begin([me.x + Math.sin(cam.yaw)*cp*cam.dist, 1.2 + Math.sin(cam.pitch)*cam.dist, me.z + Math.cos(cam.yaw)*cp*cam.dist], target, SKY);
     drawWorld(t);
     drawAvatar(me, t); setTag("_me", me, true);
     for (const [id, p] of peers) { drawAvatar(p, t); setTag(id, p, false); }
@@ -444,7 +542,7 @@ function liveNet(db, user) {
     if (!fresh(v)) { peers.delete(id); dropTag(id); return who(); }
     let p = peers.get(id);
     if (!p) { p = { id, x: v.x, z: v.z, r: v.r, color: colorFor(id) }; peers.set(id, p); }
-    p.name = name; p.tx = clamp(+v.x || 0, -ARENA, ARENA); p.tz = clamp(+v.z || 0, -ARENA, ARENA); p.tr = +v.r || 0; p.busy = !!v.b; p.seen = v.t;
+    p.name = name; p.tx = clamp(+v.x || 0, -ARENA, ARENA); p.tz = clamp(+v.z || 0, ZMIN, ARENA); p.tr = +v.r || 0; p.busy = !!v.b; p.seen = v.t;
     if (v.e && v.e !== p.eRaw) { p.eRaw = v.e; p.emote = { k: v.e.split(":")[0], at: Date.now() }; }
     if (v.j && v.j !== p.jRaw) { p.jRaw = v.j; p.jumpAt = Date.now(); }
     who();
