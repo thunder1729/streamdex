@@ -15,11 +15,10 @@ const { M, rgb } = R3;
 const MAX_CARDS = 5, SEND_MS = 200, BEAT_MS = 15000, STALE_MS = 45000;
 const ARENA = 12.5, SPEED = 4.6;
 const MUSIC_SRC = "Ready_Room.mp3"; /* the default lobby music, kept next to index.html */
-const JUKE_MS = 31000; /* a jukebox pick is a 30 second preview; the room is locked a touch longer */
 const JUKE_OK = /^https:\/\/[a-z0-9-]+\.(itunes\.apple\.com|mzstatic\.com)\//i;
 const EMOTES = { wave: "👋", yes: "👍", love: "🔥", trade: "🔁 Trade?", dance: "💃", laugh: "😂" };
 /* admin settings (Admin > Multiplayer); safe defaults if the site doesn't provide them */
-const cfg = () => { const c = { on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", arcade: true, arcadeCap: 150, arcadeRate: 100, chat: true, chatSlow: 2, chatWords: "", jukebox: true, jukeCooldown: 60, ...(B.lobbyCfg ? B.lobbyCfg() : {}) }; c.games = { beat: true, match: true, catch: true, ...(c.games || {}) }; return c; };
+const cfg = () => { const c = { on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", arcade: true, arcadeCap: 150, arcadeRate: 100, chat: true, chatSlow: 2, chatWords: "", jukebox: true, jukeCooldown: 60, jukeStart: 0, jukeLen: 30, jukeVol: 90, musicVol: 45, ...(B.lobbyCfg ? B.lobbyCfg() : {}) }; c.games = { beat: true, match: true, catch: true, ...(c.games || {}) }; return c; };
 const Arc = () => window.StreamdexArcade, arcadeOpen = () => !!(Arc() && Arc().isOpen());
 const ROOMS = () => Math.max(1, Math.min(5, Math.round(+cfg().rooms) || 5)), ROOM_CAP = () => Math.max(2, Math.min(20, Math.round(+cfg().cap) || 12));
 const $ = s => root.querySelector(s);
@@ -581,7 +580,8 @@ let musicOn = true; try { musicOn = localStorage.getItem("sdx_lobby_music") !== 
 let bgm = null, bgmVol = 0;
 const jk = { cur: null, audio: null, seq: 0, lastKey: "", lastT: 0, pick: "", busy: false, myNext: 0, msg: "", timer: 0, cards: [] };
 const jukeEnabled = () => (live || cfg()).jukebox !== false;
-const jukeIsOn = () => !!jk.cur && Date.now() - jk.cur.lt < JUKE_MS;
+const jukeIsOn = () => !!jk.cur && Date.now() - jk.cur.lt < jk.cur.d + 1000;
+const pct = (v, d) => clamp((isFinite(+v) && v !== "" && v !== null ? +v : d), 0, 100)/100;
 function musicLabel() { const b = $("#lbMusicBtn"); if (b) b.textContent = (musicOn ? "🔊" : "🔇") + " Music"; }
 function bgmStart() {
   if (!bgm) { bgm = new Audio(MUSIC_SRC); bgm.loop = true; bgm.preload = "auto"; bgm.addEventListener("error", () => console.warn("lobby music: couldn't load " + MUSIC_SRC)); }
@@ -590,8 +590,13 @@ function bgmStart() {
 }
 function bgmStop() { if (bgm) { bgm.pause(); bgm.currentTime = 0; } bgmVol = 0; }
 function musicTick(dt) {
-  if (bgm && musicOn) { const ducked = !!jk.audio && !jk.audio.paused, want = ducked ? 0 : .45; bgmVol += (want - bgmVol)*(1 - Math.exp(-3*dt)); bgm.volume = clamp(bgmVol, 0, 1); }
-  if (jk.audio) jk.audio.volume = musicOn ? .9 : 0;
+  const c = live || cfg();
+  if (bgm && musicOn) { const ducked = !!jk.audio && !jk.audio.paused, want = ducked ? 0 : pct(c.musicVol, 45); bgmVol += (want - bgmVol)*(1 - Math.exp(-3*dt)); bgm.volume = clamp(bgmVol, 0, 1); }
+  if (jk.audio && jk.cur) {
+    const left = jk.cur.s + jk.cur.d/1000 - jk.audio.currentTime; /* the admin can trim a pick: stop at the end of its window, with a short fade */
+    if (left <= 0 && !jk.audio.paused) return jukeStop();
+    jk.audio.volume = musicOn ? clamp(pct(c.jukeVol, 90)*Math.min(1, Math.max(0, left)/1.5), 0, 1) : 0;
+  }
 }
 function toggleMusic() {
   musicOn = !musicOn; try { localStorage.setItem("sdx_lobby_music", musicOn ? "1" : "0"); } catch {}
@@ -603,13 +608,13 @@ function jukeStop() {
   if (a) { a.pause(); a.removeAttribute("src"); try { a.load(); } catch {} }
   jukeUI();
 }
-function jukePlay(c, elapsedMs) { /* c: { id, n, a, p, by, u } */
+function jukePlay(c, elapsedMs) { /* c: { id, n, a, p, s (start seconds), d (length ms), by, u } */
   jukeStop();
   const a = new Audio(c.p); a.preload = "auto"; a.volume = 0;
-  jk.audio = a; jk.cur = { ...c, lt: Date.now() - elapsedMs };
+  jk.audio = a; jk.cur = { ...c, s: clamp(+c.s || 0, 0, 25), d: clamp(+c.d || 30000, 5000, 30000), lt: Date.now() - elapsedMs };
   const start = () => {
     if (jk.audio !== a) return;
-    try { if (elapsedMs > 1500 && isFinite(a.duration)) a.currentTime = Math.min(elapsedMs/1000, Math.max(0, a.duration - .5)); } catch {}
+    try { const at = c.s + elapsedMs/1000; if (at > 1.5 && isFinite(a.duration)) a.currentTime = Math.min(at, Math.max(0, a.duration - .5)); } catch {}
     a.play().catch(() => B.toast("Click anywhere to hear the jukebox."));
   };
   a.addEventListener("loadedmetadata", start, { once: true });
@@ -622,7 +627,7 @@ function jukeStatus(t) { const e = $("#lbJSt"); if (e && e.textContent !== t) e.
 function jukeUI() {
   if (!jukeOpen) return;
   const now = Date.now(), cur = jk.cur, playing = jukeIsOn(), wait = Math.max(0, jk.myNext - now), card = jk.cards.find(c => c.id === jk.pick);
-  $("#lbJNow").innerHTML = playing ? `🎵 Now playing: <b>${esc(cur.n)}</b> · ${esc(cur.a)}<br><small>Picked by ${esc(cur.by)} · ${Math.max(0, Math.ceil((JUKE_MS - 1000 - (now - cur.lt))/1000))}s left</small>` : `Nothing playing right now. The lobby is on <b>Ready Room</b>.`;
+  $("#lbJNow").innerHTML = playing ? `🎵 Now playing: <b>${esc(cur.n)}</b> · ${esc(cur.a)}<br><small>Picked by ${esc(cur.by)} · ${Math.max(0, Math.ceil((cur.d - (now - cur.lt))/1000))}s left</small>` : `Nothing playing right now. The lobby is on <b>Ready Room</b>.`;
   $("#lbJPlay").disabled = !card || playing || !!wait || jk.busy;
   jukeStatus(jk.msg || (playing ? "Wait for this song to finish, then pick yours." : wait ? `You can pick again in ${Math.ceil(wait/1000)}s.` : card ? `Ready: ${card.name} by ${card.artist}` : "Tap one of your cards, then press Play."));
 }
@@ -654,7 +659,8 @@ async function jukeSend() {
   if (!jukeOpen) { jk.busy = false; return; }
   const p = r && r.u ? String(r.u).replace(/^http:/, "https:") : "";
   if (!p || !JUKE_OK.test(p)) return fail("No preview exists for that song. Pick another card.");
-  const ok = await net.jukebox({ id: c.id, n: c.name, a: c.artist, p });
+  const cf = cfg(), st = clamp(Math.round(+cf.jukeStart || 0), 0, 25), ln = clamp(Math.round(+cf.jukeLen || 30), 5, 30), d = Math.max(5, Math.min(ln, 30 - st))*1000;
+  const ok = await net.jukebox({ id: c.id, n: c.name, a: c.artist, p, s: st, d });
   if (!ok) return fail("Couldn't start it. Someone may have just picked a song.");
   jk.busy = false; jk.msg = ""; jk.myNext = Date.now() + Math.max(0, +cfg().jukeCooldown || 0)*1000;
   jukeClosePanel();
@@ -779,13 +785,13 @@ function liveNet(db, user) {
   async function jukeIn(snap) {
     const v = snap.val(), inRoom = room;
     if (!v || typeof v.p !== "string" || typeof v.n !== "string" || typeof v.a !== "string" || !JUKE_OK.test(v.p)) return;
-    const elapsed = now() - (+v.t || 0), key = v.u + "|" + v.id;
-    if (elapsed < -4000 || elapsed > JUKE_MS - 2500) return; /* too old to join in */
+    const elapsed = now() - (+v.t || 0), key = v.u + "|" + v.id, st = clamp(+v.s || 0, 0, 25), len = clamp(+v.d || 30000, 5000, 30000);
+    if (elapsed < -4000 || elapsed > len - 2500) return; /* too old to join in */
     if (key === jk.lastKey && Math.abs((+v.t || 0) - jk.lastT) < 6000) return; /* same pick, just the server's time arriving */
     jk.lastKey = key; jk.lastT = +v.t || 0;
     const seq = ++jk.seq, by = v.u === uid ? "You" : await nameFor(v.u);
     if (stopped || room !== inRoom || seq !== jk.seq || !by) return;
-    jukePlay({ id: String(v.id), n: v.n.slice(0, 100), a: v.a.slice(0, 100), p: v.p, by, u: v.u }, Math.max(0, now() - (+v.t || 0)));
+    jukePlay({ id: String(v.id), n: v.n.slice(0, 100), a: v.a.slice(0, 100), p: v.p, s: st, d: len, by, u: v.u }, Math.max(0, now() - (+v.t || 0)));
   }
 
   /* one shared trade session, seen from side "a" (inviter) or "b" */
@@ -919,7 +925,7 @@ function liveNet(db, user) {
     },
     async jukebox(c) {
       if (!room) return false;
-      try { await base.child("jukebox/" + room).set({ u: uid, id: String(c.id).slice(0, 80), n: String(c.n).slice(0, 100), a: String(c.a).slice(0, 100), p: c.p, t: firebase.database.ServerValue.TIMESTAMP }); return true; }
+      try { await base.child("jukebox/" + room).set({ u: uid, id: String(c.id).slice(0, 80), n: String(c.n).slice(0, 100), a: String(c.a).slice(0, 100), p: c.p, s: c.s, d: c.d, t: firebase.database.ServerValue.TIMESTAMP }); return true; }
       catch (e) { console.warn("lobby jukebox", e); return false; }
     },
     async invite(partnerId) {
