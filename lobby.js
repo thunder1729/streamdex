@@ -14,9 +14,12 @@ if (!B || !R3) return;
 const { M, rgb } = R3;
 const MAX_CARDS = 5, SEND_MS = 200, BEAT_MS = 15000, STALE_MS = 45000;
 const ARENA = 12.5, SPEED = 4.6;
+const MUSIC_SRC = "Ready_Room.mp3"; /* the default lobby music, kept next to index.html */
+const JUKE_MS = 31000; /* a jukebox pick is a 30 second preview; the room is locked a touch longer */
+const JUKE_OK = /^https:\/\/[a-z0-9-]+\.(itunes\.apple\.com|mzstatic\.com)\//i;
 const EMOTES = { wave: "👋", yes: "👍", love: "🔥", trade: "🔁 Trade?", dance: "💃", laugh: "😂" };
 /* admin settings (Admin > Multiplayer); safe defaults if the site doesn't provide them */
-const cfg = () => { const c = { on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", arcade: true, arcadeCap: 150, arcadeRate: 100, chat: true, chatSlow: 2, chatWords: "", ...(B.lobbyCfg ? B.lobbyCfg() : {}) }; c.games = { beat: true, match: true, catch: true, ...(c.games || {}) }; return c; };
+const cfg = () => { const c = { on: true, practiceOnly: false, trades: true, emotes: true, rooms: 5, cap: 12, note: "", arcade: true, arcadeCap: 150, arcadeRate: 100, chat: true, chatSlow: 2, chatWords: "", jukebox: true, jukeCooldown: 60, ...(B.lobbyCfg ? B.lobbyCfg() : {}) }; c.games = { beat: true, match: true, catch: true, ...(c.games || {}) }; return c; };
 const Arc = () => window.StreamdexArcade, arcadeOpen = () => !!(Arc() && Arc().isOpen());
 const ROOMS = () => Math.max(1, Math.min(5, Math.round(+cfg().rooms) || 5)), ROOM_CAP = () => Math.max(2, Math.min(20, Math.round(+cfg().cap) || 12));
 const $ = s => root.querySelector(s);
@@ -99,6 +102,13 @@ button.lb-card.sel{outline:3px solid #6ff0a0;outline-offset:2px}
 .lb-foot{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
 .lb-foot .st{margin-right:auto;font-size:14px;font-weight:650}
 @media (max-width:620px){.lb-cards{grid-template-columns:repeat(2,1fr);min-height:90px}}
+.lb-juke{max-width:720px}
+.lb-juke h3{margin:0;font-size:18px}
+.lb-jnow{padding:10px 12px;border-radius:12px;background:rgba(255,211,77,.1);border:1.5px solid rgba(255,211,77,.35);font-weight:650;line-height:1.4}
+.lb-jnow small{font-weight:500;opacity:.8}
+.lb-jsearch{padding:9px 12px;border-radius:12px;border:1.5px solid rgba(244,240,232,.25);background:rgba(7,9,31,.82);color:inherit;font:inherit;font-size:14px;outline:none;user-select:text;-webkit-user-select:text}
+.lb-jsearch:focus{border-color:#ffd34d}
+.lb-jcards{max-height:42vh;overflow:auto;padding:4px;touch-action:pan-y;min-height:120px}
 `;
 const style = document.createElement("style"); style.textContent = css; document.head.appendChild(style);
 const root = document.createElement("div");
@@ -114,12 +124,14 @@ root.innerHTML = `
 <div class="lb-bottom">
   <button class="btn lb-play" data-lb="play" id="lbPlay" hidden></button>
   <button class="btn" data-lb="near" id="lbNear" hidden></button>
-  <div class="lb-row">${Object.entries(EMOTES).map(([k, v]) => `<button class="lb-pill" data-emote="${k}">${v}</button>`).join("")}<button class="lb-pill" data-lb="chat" id="lbChatBtn">💬 Chat<i class="lb-dot" hidden></i></button><button class="lb-pill" data-lb="arcade" id="lbArcadeBtn">🎮 Arcade</button><button class="lb-pill" data-lb="jump">Jump</button></div>
-  <div class="lb-help">WASD or arrows to move · drag to look · Enter to chat · E to trade or play · 1-6 emotes · Space to jump</div>
+  <button class="btn lb-play" data-lb="juke" id="lbJukeBtn" hidden>🎵 Use the Jukebox</button>
+  <div class="lb-row">${Object.entries(EMOTES).map(([k, v]) => `<button class="lb-pill" data-emote="${k}">${v}</button>`).join("")}<button class="lb-pill" data-lb="chat" id="lbChatBtn">💬 Chat<i class="lb-dot" hidden></i></button><button class="lb-pill" data-lb="arcade" id="lbArcadeBtn">🎮 Arcade</button><button class="lb-pill" data-lb="music" id="lbMusicBtn">🔊 Music</button><button class="lb-pill" data-lb="jump">Jump</button></div>
+  <div class="lb-help">WASD or arrows to move · drag to look · Enter to chat · E to trade, play or use the jukebox · 1-6 emotes · Space to jump</div>
 </div>
 <div class="lb-chat" id="lbChat" hidden><div class="lb-log" id="lbLog" aria-live="polite" aria-label="Lobby chat"></div><form class="lb-chatform" id="lbChatForm"><input id="lbChatIn" maxlength="120" placeholder="Press Enter to chat" autocomplete="off" enterkeyhint="send" aria-label="Chat message"><button class="btn sm" type="submit">Send</button></form></div>
 <div class="lb-ask" id="lbAsk" hidden role="alertdialog"></div>
-<div class="lb-trade" id="lbTrade" hidden role="dialog" aria-label="Trade table"></div>`;
+<div class="lb-trade" id="lbTrade" hidden role="dialog" aria-label="Trade table"></div>
+<div class="lb-trade" id="lbJuke" hidden role="dialog" aria-label="Jukebox"></div>`;
 document.body.appendChild(root);
 const canvas = $("#lbCanvas");
 if (Arc()) Arc().mount(root, { cfg, onCoins: () => applyCfg(true) });
@@ -129,7 +141,7 @@ let backScroll = 0, gfx = null, models = {}, running = false, raf = 0, last = 0,
 const me = { x: 0, z: 6, r: Math.PI, y: 0, vy: 0, moving: false, emote: null, color: "#ff5b1f", name: "You" };
 const peers = new Map(), keys = new Set(), stick = { x: 0, y: 0 };
 const cam = { yaw: 0, pitch: .45, dist: 7.5 };
-let nearId = null, nearCab = null;
+let nearId = null, nearCab = null, nearJuke = false, jukeOpen = false;
 const TABLES = [[-6,-3],[6,-3],[-6,5],[6,5]];
 const SOLIDS = [[0,-2,2.4], ...TABLES.map(([x,z]) => [x,z,1.35])];
 
@@ -137,6 +149,8 @@ const SOLIDS = [[0,-2,2.4], ...TABLES.map(([x,z]) => [x,z,1.35])];
 const C = Object.fromEntries(Object.entries({ floor:"#171a4d", tile:"#1f2368", wall:"#121442", blue:"#2230d8", orange:"#ff5b1f", ink:"#07091f", vinyl:"#101018", paper:"#f4f0e8", pink:"#ff7ad9", gold:"#ffd34d", violet:"#c084ff", sky:"#62c8ff", mint:"#6ff0a0", wood:"#9a6b44", grass:"#4f9a7e", grass2:"#468f75", dirt:"#a46f58", dirt2:"#86594a", rock:"#7b8499", stone:"#8d95a8", stone2:"#6d758a", trunk:"#6b4a3a", pine:"#2f6b4a", pine2:"#3d8159", pine3:"#245a3f", water:"#2f93d6", water2:"#73c8f4", lamp:"#ffe45e", wood2:"#7a5638", plank:"#b98a5a", cloud:"#ffffff", pants:"#232a63", blush:"#ff9aa8", red:"#c2412a" }).map(([k, v]) => [k, rgb(v)]));
 const CABS = [{ key: "beat", name: "Beat Tap", x: -5, z: -8.4, col: C.pink }, { key: "match", name: "Vinyl Match", x: 0, z: -8.8, col: C.gold }, { key: "catch", name: "Crate Catch", x: 5, z: -8.4, col: C.sky }];
 CABS.forEach(c => SOLIDS.push([c.x, c.z, 1.0]));
+const JUKE = { x: 9.9, z: 3.3 }; /* the jukebox, by the right-hand fence */
+SOLIDS.push([JUKE.x, JUKE.z, 1.0]);
 /* Streamdex Island: a floating low-poly island with pines, a cliff backdrop, lamp posts and a pier */
 const SKY = rgb("#7cc4f2"), ZMIN = -9.8;
 const TREES = [[-11,-4,1.25],[-12.3,-.5,1],[-10.4,6.5,1.1],[-12,9.8,1.3],[11.4,-3.6,1.25],[12.4,.6,1],[10.6,7,1.1],[12,10,1.2],[3.8,12,1],[-5.8,12,.9],[-8.4,-8,1.1],[8.6,-7.8,1.15]];
@@ -228,6 +242,28 @@ function drawWorld(t) {
     d("ball", c.x + .35, 1.08, c.z + .55, .13, .13, .13, C.mint, .5);
     d("ball", c.x, 3.1 + Math.sin(t*2 + i)*.12, c.z, .5, .5, .09, C.gold, .7, t*2.2);
   });
+  /* jukebox: glows and bounces to the music while a song is playing */
+  if (jukeEnabled()) {
+    const j = JUKE, on = jukeIsOn(), beat = on ? Math.abs(Math.sin(t*6.5)) : 0, hot = nearJuke ? .3 : 0;
+    d("box", j.x, .16, j.z, 1.8, .32, 1.15, C.stone2);
+    d("box", j.x, 1.25, j.z, 1.5, 1.95, .95, C.orange);
+    d("ball", j.x, 2.2, j.z, 1.5, 1.05, .95, C.orange);
+    d("box", j.x - .8, 1.3, j.z, .09, 1.7, .5, C.pink, (on ? .9 : .3) + hot);
+    d("box", j.x + .8, 1.3, j.z, .09, 1.7, .5, C.sky, (on ? .9 : .3) + hot);
+    d("box", j.x, 1.62, j.z + .49, 1.12, 1.0, .05, C.ink);
+    d("box", j.x, 1.62, j.z + .52, .98, .86, .04, on ? [C.pink, C.gold, C.sky, C.violet][Math.floor(t*4) % 4] : C.blue, on ? .9 : .35 + hot);
+    d("ball", j.x, 1.64, j.z + .57, .62, .62, .06, C.vinyl);
+    d("ball", j.x, 1.64, j.z + .61, .2 + beat*.05, .2 + beat*.05, .06, C.gold, on ? .9 : .25);
+    d("box", j.x, 1.0, j.z + .49, .5, .1, .04, C.gold, .5 + hot);
+    d("ball", j.x - .38, .65, j.z + .5, .42 + beat*.08, .42 + beat*.08, .05, C.ink);
+    d("ball", j.x + .38, .65, j.z + .5, .42 + beat*.08, .42 + beat*.08, .05, C.ink);
+    d("ball", j.x - .38, .65, j.z + .54, .14, .14, .04, C.gold, on ? .8 : .2);
+    d("ball", j.x + .38, .65, j.z + .54, .14, .14, .04, C.gold, on ? .8 : .2);
+    if (on) for (let i = 0; i < 3; i++) {
+      const ph = (t*.55 + i/3) % 1, nx = j.x + Math.sin(ph*6 + i*2)*.7, ny = 2.9 + ph*1.9, col = [C.pink, C.gold, C.sky][i];
+      d("ball", nx, ny, j.z + .2, .22, .18, .1, col, 1 - ph*.6); d("box", nx + .09, ny + .22, j.z + .2, .035, .34, .035, col, 1 - ph*.6);
+    }
+  }
   /* sky: clouds drifting past */
   for (let i = 0; i < 9; i++) { const a = i*0.7 + t*.012, r = 52 + (i % 3)*8, x = Math.sin(a)*r, z = Math.cos(a)*r, y = 17 + (i % 4)*3; d("ball", x, y, z, 11, 3.4, 5, C.cloud, .6); d("ball", x + 4, y + .5, z + 1, 7, 3, 4, C.cloud, .6); d("ball", x - 4, y - .2, z - 1, 6, 2.6, 4, C.cloud, .6); }
 }
@@ -342,7 +378,7 @@ function step(dt, t) {
     if (keys.has("w") || keys.has("arrowup")) iz -= 1;
     if (keys.has("s") || keys.has("arrowdown")) iz += 1;
   } else ix = iz = 0;
-  if (arcadeOpen()) ix = iz = 0;
+  if (arcadeOpen() || jukeOpen) ix = iz = 0;
   if (keys.has("q")) cam.yaw -= 1.8*dt;
   if (keys.has("r")) cam.yaw += 1.8*dt;
   const len = Math.hypot(ix, iz);
@@ -370,6 +406,8 @@ function step(dt, t) {
   if (session || arcadeOpen() || !(live || cfg()).trades) best = null;
   let cab = null;
   if (!session && !arcadeOpen()) for (const c of cabsOn()) if (Math.hypot(me.x - c.x, me.z - c.z) < 2.7) { cab = c; break; }
+  const jb = !session && !arcadeOpen() && !jukeOpen && jukeEnabled() && Math.hypot(me.x - JUKE.x, me.z - JUKE.z) < 2.7;
+  if (jb !== nearJuke) { nearJuke = jb; $("#lbJukeBtn").hidden = !jb; }
   if (cab !== nearCab) { nearCab = cab; const pb = $("#lbPlay"); pb.hidden = !cab; if (cab) pb.textContent = "Play " + cab.name; }
   if (best !== nearId) { nearId = best; const b = $("#lbNear"); b.hidden = !best; if (best) b.textContent = "Trade with " + peers.get(best).name; }
   net?.tick?.(dt);
@@ -377,13 +415,14 @@ function step(dt, t) {
 function frame(now) {
   if (!running) return;
   const dt = Math.min(.05, (now - last)/1000 || 0), t = now/1000; last = now;
-  step(dt, t); applyCfg();
+  step(dt, t); applyCfg(); musicTick(dt);
   if (gfx) {
     const cp = Math.cos(cam.pitch), target = [me.x, 1.2, me.z];
     gfx.begin([me.x + Math.sin(cam.yaw)*cp*cam.dist, 1.2 + Math.sin(cam.pitch)*cam.dist, me.z + Math.cos(cam.yaw)*cp*cam.dist], target, SKY);
     drawWorld(t);
     drawAvatar(me, t); setTag("_me", me, true);
     for (const [id, p] of peers) { drawAvatar(p, t); setTag(id, p, false); }
+    if (jukeEnabled()) setTag("juke", { x: JUKE.x, z: JUKE.z, y: .55, name: jukeIsOn() ? ("🎵 " + jk.cur.n + " · " + jk.cur.a).slice(0, 44) : "🎵 Jukebox" }, false); else dropTag("juke");
     const on = cabsOn(); CABS.forEach(c => on.includes(c) ? setTag("cab:" + c.key, { x: c.x, z: c.z, y: .85, name: "🎮 " + c.name }, false) : dropTag("cab:" + c.key));
   }
   raf = requestAnimationFrame(frame);
@@ -537,6 +576,98 @@ $("#lbLog").addEventListener("click", e => {
   if (muted.has(id)) { muted.delete(id); B.toast(`Unmuted ${name}.`); } else { muted.add(id); if (p) p.say = null; B.toast(`Muted ${name}. Click their name again to unmute.`); }
 });
 
+/* ---------- lobby music + the jukebox ---------- */
+let musicOn = true; try { musicOn = localStorage.getItem("sdx_lobby_music") !== "0"; } catch {}
+let bgm = null, bgmVol = 0;
+const jk = { cur: null, audio: null, seq: 0, lastKey: "", lastT: 0, pick: "", busy: false, myNext: 0, msg: "", timer: 0, cards: [] };
+const jukeEnabled = () => (live || cfg()).jukebox !== false;
+const jukeIsOn = () => !!jk.cur && Date.now() - jk.cur.lt < JUKE_MS;
+function musicLabel() { const b = $("#lbMusicBtn"); if (b) b.textContent = (musicOn ? "🔊" : "🔇") + " Music"; }
+function bgmStart() {
+  if (!bgm) { bgm = new Audio(MUSIC_SRC); bgm.loop = true; bgm.preload = "auto"; bgm.addEventListener("error", () => console.warn("lobby music: couldn't load " + MUSIC_SRC)); }
+  bgmVol = 0; bgm.volume = 0; musicLabel();
+  if (musicOn) bgm.play().catch(() => {}); /* if the browser blocks it, the next click or key press starts it */
+}
+function bgmStop() { if (bgm) { bgm.pause(); bgm.currentTime = 0; } bgmVol = 0; }
+function musicTick(dt) {
+  if (bgm && musicOn) { const ducked = !!jk.audio && !jk.audio.paused, want = ducked ? 0 : .45; bgmVol += (want - bgmVol)*(1 - Math.exp(-3*dt)); bgm.volume = clamp(bgmVol, 0, 1); }
+  if (jk.audio) jk.audio.volume = musicOn ? .9 : 0;
+}
+function toggleMusic() {
+  musicOn = !musicOn; try { localStorage.setItem("sdx_lobby_music", musicOn ? "1" : "0"); } catch {}
+  musicLabel(); if (!bgm) return;
+  if (musicOn) bgm.play().catch(() => {}); else bgm.pause();
+}
+function jukeStop() {
+  const a = jk.audio; jk.audio = null; jk.cur = null; jk.seq++;
+  if (a) { a.pause(); a.removeAttribute("src"); try { a.load(); } catch {} }
+  jukeUI();
+}
+function jukePlay(c, elapsedMs) { /* c: { id, n, a, p, by, u } */
+  jukeStop();
+  const a = new Audio(c.p); a.preload = "auto"; a.volume = 0;
+  jk.audio = a; jk.cur = { ...c, lt: Date.now() - elapsedMs };
+  const start = () => {
+    if (jk.audio !== a) return;
+    try { if (elapsedMs > 1500 && isFinite(a.duration)) a.currentTime = Math.min(elapsedMs/1000, Math.max(0, a.duration - .5)); } catch {}
+    a.play().catch(() => B.toast("Click anywhere to hear the jukebox."));
+  };
+  a.addEventListener("loadedmetadata", start, { once: true });
+  a.addEventListener("ended", () => { if (jk.audio === a) jukeStop(); });
+  a.addEventListener("error", () => { if (jk.audio === a) { jukeStop(); B.toast("Couldn't play that jukebox song."); } });
+  B.toast(`🎵 ${c.by} put on ${c.n} by ${c.a}`);
+  jukeUI();
+}
+function jukeStatus(t) { const e = $("#lbJSt"); if (e && e.textContent !== t) e.textContent = t; }
+function jukeUI() {
+  if (!jukeOpen) return;
+  const now = Date.now(), cur = jk.cur, playing = jukeIsOn(), wait = Math.max(0, jk.myNext - now), card = jk.cards.find(c => c.id === jk.pick);
+  $("#lbJNow").innerHTML = playing ? `🎵 Now playing: <b>${esc(cur.n)}</b> · ${esc(cur.a)}<br><small>Picked by ${esc(cur.by)} · ${Math.max(0, Math.ceil((JUKE_MS - 1000 - (now - cur.lt))/1000))}s left</small>` : `Nothing playing right now. The lobby is on <b>Ready Room</b>.`;
+  $("#lbJPlay").disabled = !card || playing || !!wait || jk.busy;
+  jukeStatus(jk.msg || (playing ? "Wait for this song to finish, then pick yours." : wait ? `You can pick again in ${Math.ceil(wait/1000)}s.` : card ? `Ready: ${card.name} by ${card.artist}` : "Tap one of your cards, then press Play."));
+}
+function jukeOpenPanel() {
+  if (jukeOpen || session || arcadeOpen() || !jukeEnabled()) return;
+  jk.cards = B.cards().slice().sort((x, y) => y.niche - x.niche); jk.pick = ""; jk.msg = ""; jk.busy = false;
+  const el = $("#lbJuke");
+  el.innerHTML = `<div class="lb-box lb-juke"><h3>🎵 Jukebox</h3>
+    <div class="lb-jnow" id="lbJNow" role="status"></div>
+    <input class="lb-jsearch" id="lbJSearch" placeholder="Search your cards" autocomplete="off" aria-label="Search your cards">
+    <div class="lb-cards lb-jcards" aria-label="Your cards">${jk.cards.length ? jk.cards.map(c => `<button class="lb-card" type="button" data-juke="${esc(c.id)}" data-q="${esc((c.name + " " + c.artist).toLowerCase())}" aria-label="${esc(c.name)} by ${esc(c.artist)}">${B.cardHTML(c)}</button>`).join("") : `<div class="lb-empty">You have no cards yet. Open a pack first.</div>`}</div>
+    <div class="lb-foot"><span class="st" id="lbJSt" role="status"></span><button class="btn sm ghost" data-lb="jclose">Close</button><button class="btn sm" data-lb="jplay" id="lbJPlay" disabled>Play for the lobby</button></div></div>`;
+  el.hidden = false; jukeOpen = true; keys.clear(); stick.x = stick.y = 0;
+  $("#lbJukeBtn").hidden = true; jukeUI(); clearInterval(jk.timer); jk.timer = setInterval(jukeUI, 500);
+}
+function jukeClosePanel() {
+  clearInterval(jk.timer); jukeOpen = false; const el = $("#lbJuke"); if (el) { el.hidden = true; el.innerHTML = ""; }
+}
+function jukePickCard(id) {
+  jk.pick = jk.pick === id ? "" : id; jk.msg = "";
+  $("#lbJuke").querySelectorAll("[data-juke]").forEach(b => { const on = b.dataset.juke === jk.pick; b.classList.toggle("sel", on); b.setAttribute("aria-pressed", on); });
+  jukeUI();
+}
+async function jukeSend() {
+  const c = jk.cards.find(x => x.id === jk.pick); if (!c || jk.busy || jukeIsOn() || Date.now() < jk.myNext || !net) return;
+  jk.busy = true; jk.msg = "Finding the song…"; jukeUI();
+  const fail = m => { jk.busy = false; jk.msg = m; jukeUI(); };
+  let r; try { r = await B.preview({ artist: c.artist, name: c.name }); } catch { return fail("Couldn't reach the music service. Try again."); }
+  if (!jukeOpen) { jk.busy = false; return; }
+  const p = r && r.u ? String(r.u).replace(/^http:/, "https:") : "";
+  if (!p || !JUKE_OK.test(p)) return fail("No preview exists for that song. Pick another card.");
+  const ok = await net.jukebox({ id: c.id, n: c.name, a: c.artist, p });
+  if (!ok) return fail("Couldn't start it. Someone may have just picked a song.");
+  jk.busy = false; jk.msg = ""; jk.myNext = Date.now() + Math.max(0, +cfg().jukeCooldown || 0)*1000;
+  jukeClosePanel();
+}
+root.addEventListener("input", e => {
+  if (e.target.id !== "lbJSearch") return;
+  const q = e.target.value.trim().toLowerCase();
+  $("#lbJuke").querySelectorAll("[data-juke]").forEach(b => { b.hidden = !!q && !b.dataset.q.includes(q); });
+});
+/* browsers can block sound until the first click or key press: retry then */
+const unlockSound = () => { if (!running) return; if (musicOn && bgm && bgm.paused) bgm.play().catch(() => {}); if (jk.audio && jk.audio.paused) jk.audio.play().catch(() => {}); };
+root.addEventListener("pointerdown", unlockSound, true); window.addEventListener("keydown", unlockSound, true);
+
 /* ---------- practice room: bots, nothing is saved ---------- */
 function practiceNet(reason) {
   const sample = (id, name, artist, niche) => slim({ id, name, artist, niche, plays: 12, pop: Math.round(10 ** (2 + niche/100*4.7)), type: "Normal", no: 1 });
@@ -560,6 +691,7 @@ function practiceNet(reason) {
       }
     },
     publish() {},
+    async jukebox(c) { jukePlay({ ...c, by: "You", u: "me" }, 0); return true; },
     chat() {
       const lines = ["Nice to meet you!", "Want to trade?", "Try the arcade, it's fun 🎮", "That's a rare one!", "gg", "Hi hi 👋", "Love this island"];
       later(1200 + Math.random()*1500, () => { const p = peers.get(Math.random() < .5 ? "bot-a" : "bot-b"); if (!p) return; const text = lines[Math.floor(Math.random()*lines.length)]; chatAdd({ uid: p.id, name: p.name, text }); p.say = { text, at: Date.now() }; });
@@ -589,7 +721,7 @@ function liveNet(db, user) {
   const later = (ms, f) => { const t = setTimeout(() => { timers.delete(t); f(); }, ms); timers.add(t); return t; };
   const packMe = () => ({ x: +me.x.toFixed(2), z: +me.z.toFixed(2), r: +me.r.toFixed(2), b: !!me.busy, e: me.emote && Date.now() - me.emote.at < 3000 ? me.emote.k + ":" + me.emote.at : "", j: me.jumpAt && Date.now() - me.jumpAt < 500 ? me.jumpAt : 0, t: firebase.database.ServerValue.TIMESTAMP });
   let roomOffs = [];
-  function leaveRoom() { roomOffs.forEach(f => f()); roomOffs = []; if (myRef) { myRef.onDisconnect().cancel(); myRef.remove(); myRef = null; } [...peers.keys()].forEach(id => { peers.delete(id); dropTag(id); }); }
+  function leaveRoom() { roomOffs.forEach(f => f()); roomOffs = []; jukeStop(); jk.lastKey = ""; if (myRef) { myRef.onDisconnect().cancel(); myRef.remove(); myRef = null; } [...peers.keys()].forEach(id => { peers.delete(id); dropTag(id); }); }
   const fresh = v => v && now() - (v.t || 0) < STALE_MS;
   async function nameFor(id) { /* names come from the account profile, not from whatever a player sends */
     if (!names.has(id)) names.set(id, B.handleFor(id).catch(() => { names.delete(id); return ""; }));
@@ -631,6 +763,7 @@ function liveNet(db, user) {
     note(""); who();
     chatClear();
     roomOffs.push(on(base.child("chat/" + room).limitToLast(30), "child_added", chatIn));
+    roomOffs.push(on(base.child("jukebox/" + room), "value", jukeIn));
   }
   async function chatIn(snap) {
     const v = snap.val(), inRoom = room;
@@ -640,6 +773,19 @@ function liveNet(db, user) {
     const text = clean(v.m); if (!text) return;
     chatAdd({ uid: v.u, name, text });
     const p = peers.get(v.u); if (p && !muted.has(v.u) && now() - v.t < 8000) p.say = { text, at: Date.now() };
+  }
+
+  /* the shared jukebox: one song at a time per room, played in sync for everyone */
+  async function jukeIn(snap) {
+    const v = snap.val(), inRoom = room;
+    if (!v || typeof v.p !== "string" || typeof v.n !== "string" || typeof v.a !== "string" || !JUKE_OK.test(v.p)) return;
+    const elapsed = now() - (+v.t || 0), key = v.u + "|" + v.id;
+    if (elapsed < -4000 || elapsed > JUKE_MS - 2500) return; /* too old to join in */
+    if (key === jk.lastKey && Math.abs((+v.t || 0) - jk.lastT) < 6000) return; /* same pick, just the server's time arriving */
+    jk.lastKey = key; jk.lastT = +v.t || 0;
+    const seq = ++jk.seq, by = v.u === uid ? "You" : await nameFor(v.u);
+    if (stopped || room !== inRoom || seq !== jk.seq || !by) return;
+    jukePlay({ id: String(v.id), n: v.n.slice(0, 100), a: v.a.slice(0, 100), p: v.p, by, u: v.u }, Math.max(0, now() - (+v.t || 0)));
   }
 
   /* one shared trade session, seen from side "a" (inviter) or "b" */
@@ -771,6 +917,11 @@ function liveNet(db, user) {
       r.catch(e => { console.warn("lobby chat", e); B.toast("Couldn't send that. The chat rules may not be published yet (see SETUP.md)."); });
       later(120000, () => r.remove().catch(() => {}));
     },
+    async jukebox(c) {
+      if (!room) return false;
+      try { await base.child("jukebox/" + room).set({ u: uid, id: String(c.id).slice(0, 80), n: String(c.n).slice(0, 100), a: String(c.a).slice(0, 100), p: c.p, t: firebase.database.ServerValue.TIMESTAMP }); return true; }
+      catch (e) { console.warn("lobby jukebox", e); return false; }
+    },
     async invite(partnerId) {
       const p = peers.get(partnerId);
       if (!p || session || pendingInvite || asking) return;
@@ -845,6 +996,7 @@ function open() {
   backScroll = window.scrollY; root.hidden = false; document.body.classList.add("noscroll", "lb-open");
   Object.assign(me, { x: (Math.random()-.5)*4, z: 5 + Math.random()*2, r: Math.PI, y: 0, vy: 0, busy: false, emote: null });
   applyCfg(true); cam.yaw = 0; nearId = null; $("#lbNear").hidden = true; $("#lbWho").textContent = "Connecting…"; loading(true);
+  nearJuke = false; jukeOpen = false; $("#lbJukeBtn").hidden = true; jukeClosePanel(); bgmStart();
   running = true; last = performance.now(); raf = requestAnimationFrame(frame);
   connect();
   canvas.setAttribute("tabindex", "-1"); canvas.focus();
@@ -852,7 +1004,7 @@ function open() {
 function close() {
   if (!running) return;
   running = false; gen++; cancelAnimationFrame(raf);
-  Arc()?.close();
+  Arc()?.close(); jukeClosePanel(); jukeStop(); jk.lastKey = ""; bgmStop();
   if (session) { if (session.abort) session.abort(); else session.close(); }
   endSession();
   net?.stop(); net = null;
@@ -864,7 +1016,8 @@ function close() {
 /* ---------- input ---------- */
 root.addEventListener("click", e => {
   e.stopPropagation(); /* keep lobby clicks away from the main site's handlers */
-  const el = e.target.closest("[data-lb],[data-emote],[data-pick]"); if (!el) return;
+  const el = e.target.closest("[data-lb],[data-emote],[data-pick],[data-juke]"); if (!el) return;
+  if (el.dataset.juke) return jukePickCard(el.dataset.juke);
   if (el.dataset.emote) return emote(el.dataset.emote);
   if (el.dataset.pick) return toggleCard(el.dataset.pick);
   const a = el.dataset.lb;
@@ -873,6 +1026,10 @@ root.addEventListener("click", e => {
   else if (a === "near" && nearId) net?.invite(nearId);
   else if (a === "play" && nearCab) Arc()?.open(nearCab.key);
   else if (a === "arcade" && !session) Arc()?.open();
+  else if (a === "juke") jukeOpenPanel();
+  else if (a === "jclose") jukeClosePanel();
+  else if (a === "jplay") jukeSend();
+  else if (a === "music") toggleMusic();
   else if (a === "chat") { chatOpen = !chatOpen; chatShow(); if (chatOpen && !matchMedia("(pointer:coarse)").matches) $("#lbChatIn").focus(); }
   else if (a === "leave") session?.close();
   else if (a === "ready" && session && session.state === "open") { const sig = sigNow(session); session.myReady = session.myReady === sig ? "" : sig; session.setReady(session.myReady); checkReady(); }
@@ -883,7 +1040,7 @@ canvas.addEventListener("pointermove", e => { if (!drag || e.pointerId !== drag.
 ["pointerup","pointercancel"].forEach(ev => canvas.addEventListener(ev, () => drag = null));
 canvas.addEventListener("wheel", e => { cam.dist = clamp(cam.dist + e.deltaY*.008, 4.5, 13); e.preventDefault(); }, { passive: false });
 const pad = $("#lbStick"); let padId = null;
-const padMove = e => { const r = pad.getBoundingClientRect(); let x = (e.clientX - r.left - r.width/2)/40, y = (e.clientY - r.top - r.height/2)/40; const l = Math.hypot(x, y); if (l > 1) { x /= l; y /= l; } stick.x = session || arcadeOpen() ? 0 : x; stick.y = session || arcadeOpen() ? 0 : y; pad.firstElementChild.style.transform = `translate(${x*34}px,${y*34}px)`; };
+const padMove = e => { const r = pad.getBoundingClientRect(); let x = (e.clientX - r.left - r.width/2)/40, y = (e.clientY - r.top - r.height/2)/40; const l = Math.hypot(x, y); if (l > 1) { x /= l; y /= l; } stick.x = session || arcadeOpen() || jukeOpen ? 0 : x; stick.y = session || arcadeOpen() || jukeOpen ? 0 : y; pad.firstElementChild.style.transform = `translate(${x*34}px,${y*34}px)`; };
 pad.addEventListener("pointerdown", e => { padId = e.pointerId; pad.setPointerCapture(padId); padMove(e); });
 pad.addEventListener("pointermove", e => { if (e.pointerId === padId) padMove(e); });
 ["pointerup","pointercancel"].forEach(ev => pad.addEventListener(ev, () => { padId = null; stick.x = stick.y = 0; pad.firstElementChild.style.transform = ""; }));
@@ -893,9 +1050,11 @@ window.addEventListener("keydown", e => {
   if (e.target.tagName === "INPUT") { e.stopPropagation(); if (e.key === "Escape") e.target.blur(); return; } /* typing in chat */
   e.stopPropagation();
   const k = e.key.toLowerCase();
+  if (jukeOpen) { if (k === "escape") jukeClosePanel(); return; }
   if (k === "escape") { if (arcadeOpen()) return; if (session) { if (session.state === "open") session.close(); } else close(); return; }
   if (session || arcadeOpen()) return;
   if ((k === "enter" || k === "t") && !e.repeat && cfg().chat) { e.preventDefault(); chatOpen = true; chatShow(); return $("#lbChatIn").focus(); }
+  if (k === "e" && !e.repeat && nearJuke) return jukeOpenPanel();
   if (k === "e" && !e.repeat && nearCab) return Arc().open(nearCab.key);
   if (k === "e" && nearId && !e.repeat) return net?.invite(nearId);
   if (/^[1-9]$/.test(k) && !e.repeat) { const em = Object.keys(EMOTES)[+k - 1]; if (em) return emote(em); }
